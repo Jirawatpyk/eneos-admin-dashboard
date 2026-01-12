@@ -11,6 +11,11 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        eneos: {
+          red: "#E60012",
+          "red-dark": "#C5000F",
+          "red-light": "#FF1A2C",
+        },
       },
     },
   },
