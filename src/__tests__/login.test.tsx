@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 
 // Use vi.hoisted() for mock functions
-const { mockSignIn, mockSearchParams } = vi.hoisted(() => ({
+const { mockSignIn, mockSearchParams, mockReplace } = vi.hoisted(() => ({
   mockSignIn: vi.fn(),
   mockSearchParams: new URLSearchParams(),
+  mockReplace: vi.fn(),
 }));
 
 // Mock next-auth/react
@@ -22,7 +23,7 @@ vi.mock('next-auth/react', () => ({
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
-    replace: vi.fn(),
+    replace: mockReplace,
   }),
   useSearchParams: () => mockSearchParams,
   usePathname: () => '/login',
@@ -37,6 +38,7 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
     // Clear search params
     mockSearchParams.delete('error');
+    mockSearchParams.delete('signedOut');
   });
 
   // AC1: Login Page Display
@@ -182,6 +184,108 @@ describe('LoginPage', () => {
       expect(
         screen.getByText(new RegExp(`${currentYear} ENEOS Thailand`))
       ).toBeInTheDocument();
+    });
+  });
+
+  // Story 1.4: AC6 - Signed Out Success Message
+  describe('AC6: Signed Out Success Message (Story 1.4)', () => {
+    it('should display success message when signedOut=true', async () => {
+      mockSearchParams.set('signedOut', 'true');
+
+      render(<LoginPage />);
+
+      // Message appears immediately on render
+      const successMessage = screen.getByTestId('signedout-message');
+      expect(successMessage).toBeInTheDocument();
+      expect(successMessage).toHaveTextContent('You have been signed out successfully.');
+    });
+
+    it('should have role="status" for accessibility', async () => {
+      mockSearchParams.set('signedOut', 'true');
+
+      render(<LoginPage />);
+
+      const successMessage = screen.getByTestId('signedout-message');
+      expect(successMessage).toHaveAttribute('role', 'status');
+    });
+
+    it('should show green styling for success message', async () => {
+      mockSearchParams.set('signedOut', 'true');
+
+      render(<LoginPage />);
+
+      const successMessage = screen.getByTestId('signedout-message');
+      expect(successMessage).toHaveClass('bg-green-50', 'border-green-200', 'text-green-700');
+    });
+
+    it('should NOT show success message when signedOut is not true', () => {
+      render(<LoginPage />);
+
+      expect(screen.queryByTestId('signedout-message')).not.toBeInTheDocument();
+    });
+
+    it('should NOT show success message when there is an error', () => {
+      mockSearchParams.set('signedOut', 'true');
+      mockSearchParams.set('error', 'AccessDenied');
+
+      render(<LoginPage />);
+
+      // Error takes precedence over success
+      expect(screen.queryByTestId('signedout-message')).not.toBeInTheDocument();
+      expect(screen.getByTestId('error-message')).toBeInTheDocument();
+    });
+
+    it('should clean URL by calling router.replace', async () => {
+      mockSearchParams.set('signedOut', 'true');
+
+      render(<LoginPage />);
+
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('/login', { scroll: false });
+      });
+    });
+
+    it('should auto-dismiss success message after 5 seconds', async () => {
+      // Spy on setTimeout to verify it's called with 5000ms
+      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+      mockSearchParams.set('signedOut', 'true');
+
+      render(<LoginPage />);
+
+      // Message should be visible initially
+      expect(screen.getByTestId('signedout-message')).toBeInTheDocument();
+
+      // Verify setTimeout was called with 5000ms for auto-dismiss
+      await waitFor(() => {
+        const autodismissCall = setTimeoutSpy.mock.calls.find(
+          (call) => call[1] === 5000
+        );
+        expect(autodismissCall).toBeDefined();
+      });
+
+      setTimeoutSpy.mockRestore();
+    });
+
+    it('should NOT auto-dismiss before 5 seconds', async () => {
+      vi.useFakeTimers();
+      mockSearchParams.set('signedOut', 'true');
+
+      await act(async () => {
+        render(<LoginPage />);
+      });
+
+      // Message should be visible initially
+      expect(screen.getByTestId('signedout-message')).toBeInTheDocument();
+
+      // Fast-forward 4 seconds (not yet 5)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4000);
+      });
+
+      // Message should still be visible
+      expect(screen.getByTestId('signedout-message')).toBeInTheDocument();
+
+      vi.useRealTimers();
     });
   });
 });

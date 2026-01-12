@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
-import { UserMenu } from '@/components/user-menu';
+import { UserNav } from '@/components/layout/user-nav';
 import { SessionWarning } from '@/components/shared/session-warning';
 import { SessionSync } from '@/components/shared/session-sync';
 
@@ -31,7 +31,7 @@ export default async function DashboardLayout({
                 Sales Dashboard
               </span>
             </div>
-            {session.user && <UserMenu user={session.user} />}
+            {session.user && <UserNav user={session.user} />}
           </div>
         </div>
       </header>

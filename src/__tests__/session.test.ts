@@ -132,12 +132,12 @@ describe('Session Management - Story 1.3', () => {
       const result = await sessionCallback!({
         session: mockSession as Session,
         token: mockToken as JWT,
-        user: undefined as unknown as User,
+        user: { id: 'user-123', email: 'test@eneos.co.th', emailVerified: null },
         trigger: 'update',
         newSession: undefined,
       });
 
-      expect(result.expiresAt).toBe(mockToken.expiresAt);
+      expect((result as { expiresAt?: number }).expiresAt).toBe(mockToken.expiresAt);
     });
 
     it('should NOT expose accessToken to session (AC7 security)', async () => {
@@ -154,13 +154,13 @@ describe('Session Management - Story 1.3', () => {
       const result = await sessionCallback!({
         session: mockSession as Session,
         token: mockToken as JWT,
-        user: undefined as unknown as User,
+        user: { id: 'user-123', email: 'test@eneos.co.th', emailVerified: null },
         trigger: 'update',
         newSession: undefined,
       });
 
       // accessToken should NOT be exposed to client for security
-      expect(result.accessToken).toBeUndefined();
+      expect((result as { accessToken?: string }).accessToken).toBeUndefined();
     });
 
     it('should expose user.id to session', async () => {
@@ -178,12 +178,12 @@ describe('Session Management - Story 1.3', () => {
       const result = await sessionCallback!({
         session: mockSession as Session,
         token: mockToken as JWT,
-        user: undefined as unknown as User,
+        user: { id: 'user-123', email: 'test@eneos.co.th', emailVerified: null },
         trigger: 'update',
         newSession: undefined,
       });
 
-      expect(result.user.id).toBe('user-123');
+      expect((result.user as { id: string }).id).toBe('user-123');
     });
   });
 

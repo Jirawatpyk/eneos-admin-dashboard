@@ -132,9 +132,12 @@ describe('Auth Configuration', () => {
           expires: new Date().toISOString(),
         },
         token: { id: 'user-123', accessToken: 'test-token' },
+        user: { id: 'user-123', email: 'test@eneos.co.th', emailVerified: null },
+        trigger: 'update',
+        newSession: undefined,
       });
 
-      expect(result.user.id).toBe('user-123');
+      expect((result.user as { id: string }).id).toBe('user-123');
     });
 
     it('should NOT expose accessToken to client session (AC7 security)', async () => {
@@ -146,10 +149,13 @@ describe('Auth Configuration', () => {
           expires: new Date().toISOString(),
         },
         token: { id: 'user-123', accessToken: 'test-token' },
+        user: { id: 'user-123', email: 'test@eneos.co.th', emailVerified: null },
+        trigger: 'update',
+        newSession: undefined,
       });
 
       // accessToken should NOT be exposed to client for security
-      expect(result.accessToken).toBeUndefined();
+      expect((result as { accessToken?: string }).accessToken).toBeUndefined();
     });
   });
 

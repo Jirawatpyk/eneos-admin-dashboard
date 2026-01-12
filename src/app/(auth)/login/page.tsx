@@ -1,14 +1,34 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 
 function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const error = searchParams.get('error');
+  const signedOut = searchParams.get('signedOut');
   const currentYear = new Date().getFullYear();
+
+  // Initialize state based on URL params
+  const shouldShowMessage = signedOut === 'true' && !error;
+  const [showSignedOutMessage, setShowSignedOutMessage] = useState(shouldShowMessage);
+
+  // Handle signed out message with auto-dismiss (AC6)
+  useEffect(() => {
+    if (shouldShowMessage) {
+      setShowSignedOutMessage(true);
+      // Clean URL immediately
+      router.replace('/login', { scroll: false });
+      // Auto-dismiss after 5 seconds
+      const timer = setTimeout(() => {
+        setShowSignedOutMessage(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowMessage, router]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -55,9 +75,24 @@ function LoginContent() {
           Only authorized company accounts are allowed
         </p>
 
+        {/* Success Message - Signed Out (AC6) */}
+        {showSignedOutMessage && (
+          <div
+            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm"
+            data-testid="signedout-message"
+            role="status"
+          >
+            You have been signed out successfully.
+          </div>
+        )}
+
         {/* Error Message */}
         {errorMessage && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+          <div
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm"
+            data-testid="error-message"
+            role="alert"
+          >
             {errorMessage}
           </div>
         )}

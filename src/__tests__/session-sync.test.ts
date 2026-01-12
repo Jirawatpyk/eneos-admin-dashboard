@@ -18,7 +18,7 @@ class MockBroadcastChannel {
   name: string;
   onmessage: ((event: MessageEvent) => void) | null = null;
   private listeners: Map<string, Set<EventListener>> = new Map();
-  private static channels: Map<string, Set<MockBroadcastChannel>> = new Map();
+  static channels: Map<string, Set<MockBroadcastChannel>> = new Map();
 
   constructor(name: string) {
     this.name = name;

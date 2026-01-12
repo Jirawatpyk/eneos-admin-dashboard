@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 
+// SessionProvider props type
+interface SessionProviderProps {
+  children: React.ReactNode;
+  refetchInterval?: number;
+  refetchOnWindowFocus?: boolean;
+  refetchWhenOffline?: boolean;
+}
+
 // Use vi.hoisted() for mock functions
 const { mockSessionProvider } = vi.hoisted(() => ({
-  mockSessionProvider: vi.fn(({ children }: { children: React.ReactNode }) => (
+  mockSessionProvider: vi.fn(({ children }: SessionProviderProps) => (
     <div data-testid="session-provider">{children}</div>
   )),
 }));
@@ -42,7 +50,7 @@ describe('Providers - Task 2: Session Provider Enhancement', () => {
 
       // SessionProvider should be called with refetchInterval
       expect(mockSessionProvider).toHaveBeenCalled();
-      const props = mockSessionProvider.mock.calls[0][0];
+      const props = mockSessionProvider.mock.calls[0][0] as SessionProviderProps;
       expect(props.refetchInterval).toBeDefined();
       expect(props.refetchInterval).toBe(5 * 60); // 5 minutes in seconds
     });
@@ -54,7 +62,7 @@ describe('Providers - Task 2: Session Provider Enhancement', () => {
         </Providers>
       );
 
-      const props = mockSessionProvider.mock.calls[0][0];
+      const props = mockSessionProvider.mock.calls[0][0] as SessionProviderProps;
       expect(props.refetchOnWindowFocus).toBe(true);
     });
 
@@ -65,7 +73,7 @@ describe('Providers - Task 2: Session Provider Enhancement', () => {
         </Providers>
       );
 
-      const props = mockSessionProvider.mock.calls[0][0];
+      const props = mockSessionProvider.mock.calls[0][0] as SessionProviderProps;
       expect(props.refetchWhenOffline).toBe(false);
     });
   });
