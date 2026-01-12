@@ -123,7 +123,7 @@ describe('Auth Configuration', () => {
   describe('session Callback - AC4: Session Data', () => {
     const sessionCallback = authOptions.callbacks?.session;
 
-    it('should expose user id and accessToken in session', async () => {
+    it('should expose user id in session', async () => {
       if (!sessionCallback) throw new Error('session callback not defined');
 
       const result = await sessionCallback({
@@ -135,7 +135,44 @@ describe('Auth Configuration', () => {
       });
 
       expect(result.user.id).toBe('user-123');
-      expect(result.accessToken).toBe('test-token');
+    });
+
+    it('should NOT expose accessToken to client session (AC7 security)', async () => {
+      if (!sessionCallback) throw new Error('session callback not defined');
+
+      const result = await sessionCallback({
+        session: {
+          user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+          expires: new Date().toISOString(),
+        },
+        token: { id: 'user-123', accessToken: 'test-token' },
+      });
+
+      // accessToken should NOT be exposed to client for security
+      expect(result.accessToken).toBeUndefined();
+    });
+  });
+
+  // AC7: Session Storage Security Tests
+  describe('AC7: Session Storage Security', () => {
+    it('should use JWT strategy (stateless, cookie-based)', () => {
+      expect(authOptions.session?.strategy).toBe('jwt');
+    });
+
+    it('should not override cookie settings (uses NextAuth httpOnly defaults)', () => {
+      // NextAuth defaults: httpOnly=true, secure=true in production, sameSite=lax
+      // We don't override these, so cookies config should be undefined
+      expect(authOptions.cookies).toBeUndefined();
+    });
+
+    it('should use custom pages for signin and error', () => {
+      expect(authOptions.pages?.signIn).toBe('/login');
+      expect(authOptions.pages?.error).toBe('/login');
+    });
+
+    it('should have session maxAge configured for security', () => {
+      // 24 hours is a reasonable session duration
+      expect(authOptions.session?.maxAge).toBe(24 * 60 * 60);
     });
   });
 });

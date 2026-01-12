@@ -60,7 +60,7 @@ describe('LoginPage', () => {
       render(<LoginPage />);
 
       expect(
-        screen.getByText(/only @eneos.co.th accounts are allowed/i)
+        screen.getByText(/only authorized company accounts are allowed/i)
       ).toBeInTheDocument();
     });
   });
@@ -104,7 +104,7 @@ describe('LoginPage', () => {
 
       expect(
         screen.getByText(
-          'Access denied. Only @eneos.co.th accounts are allowed.'
+          'Access denied. Only authorized company accounts are allowed.'
         )
       ).toBeInTheDocument();
     });
@@ -126,6 +126,16 @@ describe('LoginPage', () => {
 
       expect(
         screen.getByText('An error occurred during sign in.')
+      ).toBeInTheDocument();
+    });
+
+    it('should display session expired message for SessionExpired error (AC4)', () => {
+      mockSearchParams.set('error', 'SessionExpired');
+
+      render(<LoginPage />);
+
+      expect(
+        screen.getByText('Your session has expired. Please log in again.')
       ).toBeInTheDocument();
     });
   });

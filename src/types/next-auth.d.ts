@@ -9,7 +9,8 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
     };
-    accessToken?: string;
+    // Note: accessToken intentionally NOT exposed to client for security
+    expiresAt?: number; // Unix timestamp when session expires
   }
 
   interface User {
@@ -24,5 +25,9 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id?: string;
     accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: number; // Unix timestamp when token expires
+    issuedAt?: number; // Unix timestamp when token was originally issued (never changes)
+    lastRefreshedAt?: number; // Unix timestamp when token was last refreshed
   }
 }

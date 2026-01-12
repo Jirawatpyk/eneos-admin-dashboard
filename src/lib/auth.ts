@@ -54,18 +54,41 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     jwt: async ({ token, account, user }) => {
-      // Persist access token and user ID to JWT
+      const now = Math.floor(Date.now() / 1000);
+      const SESSION_MAX_AGE = 24 * 60 * 60; // 24 hours in seconds
+      const REFRESH_WINDOW = 6 * 60 * 60; // Last 6 hours of session
+
+      // Initial sign in - set all token data
       if (account && user) {
         token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
         token.id = user.id;
+        token.issuedAt = now; // Original login time - never changes
+        token.lastRefreshedAt = now; // Tracks last refresh
+        token.expiresAt = now + SESSION_MAX_AGE;
+        return token;
       }
+
+      // Subsequent calls - check if token needs refresh
+      if (token.expiresAt) {
+        const timeUntilExpiry = token.expiresAt - now;
+
+        // If within refresh window (last 6 hours) and not expired, refresh the token
+        if (timeUntilExpiry > 0 && timeUntilExpiry <= REFRESH_WINDOW) {
+          token.expiresAt = now + SESSION_MAX_AGE;
+          token.lastRefreshedAt = now; // Update refresh time, keep original issuedAt
+        }
+      }
+
       return token;
     },
     session: async ({ session, token }) => {
-      // Expose user data to client
+      // Expose user data and expiry to client
+      // Note: accessToken is intentionally NOT exposed to client for security
+      // It remains in the JWT cookie for server-side use only
       if (session.user) {
         session.user.id = token.id as string;
-        session.accessToken = token.accessToken as string;
+        session.expiresAt = token.expiresAt;
       }
       return session;
     },

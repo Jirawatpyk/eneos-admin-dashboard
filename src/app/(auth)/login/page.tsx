@@ -23,9 +23,11 @@ function LoginContent() {
   const getErrorMessage = (errorCode: string | null) => {
     switch (errorCode) {
       case 'AccessDenied':
-        return 'Access denied. Only @eneos.co.th accounts are allowed.';
+        return 'Access denied. Only authorized company accounts are allowed.';
       case 'OAuthCallback':
         return 'Authentication failed. Please try again.';
+      case 'SessionExpired':
+        return 'Your session has expired. Please log in again.';
       default:
         return errorCode ? 'An error occurred during sign in.' : null;
     }
@@ -50,7 +52,7 @@ function LoginContent() {
 
         {/* Domain Restriction Message */}
         <p className="text-sm text-gray-500 text-center mb-6">
-          Only @eneos.co.th accounts are allowed
+          Only authorized company accounts are allowed
         </p>
 
         {/* Error Message */}

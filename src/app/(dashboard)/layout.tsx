@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { UserMenu } from '@/components/user-menu';
+import { SessionWarning } from '@/components/shared/session-warning';
+import { SessionSync } from '@/components/shared/session-sync';
 
 export default async function DashboardLayout({
   children,
@@ -36,6 +38,8 @@ export default async function DashboardLayout({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+      <SessionWarning />
+      <SessionSync />
     </div>
   );
 }
