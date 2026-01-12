@@ -21,22 +21,34 @@ if (isRuntime) {
   }
 }
 
+// Parse allowed domains from environment variable
+// Default to eneos.co.th for production safety
+const ALLOWED_DOMAINS = (process.env.ALLOWED_DOMAINS || 'eneos.co.th')
+  .split(',')
+  .map((domain) => domain.trim().toLowerCase());
+
+// Helper function to check if email domain is allowed
+const isAllowedDomain = (email: string | null | undefined): boolean => {
+  if (!email) return false;
+  const domain = email.split('@')[1]?.toLowerCase();
+  return ALLOWED_DOMAINS.includes(domain);
+};
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      authorization: {
-        params: {
-          hd: 'eneos.co.th', // Domain restriction at OAuth level
-        },
-      },
+      // Note: hd param removed to support multiple domains (dev + production)
+      // Domain restriction is enforced in signIn callback instead
     }),
   ],
   callbacks: {
     signIn: async ({ user }) => {
-      // Double-check domain even if hd param is bypassed
-      if (!user.email?.endsWith('@eneos.co.th')) {
+      // Verify email domain is in allowed list
+      // This is the primary security check for domain restriction
+      if (!isAllowedDomain(user.email)) {
+        console.warn(`Login rejected: ${user.email} - domain not allowed`);
         return false;
       }
       return true;
