@@ -2,7 +2,9 @@
 
 import { signOut } from 'next-auth/react';
 import { useState, useCallback, useEffect } from 'react';
-import { LogOut, Loader2 } from 'lucide-react';
+import { LogOut, Loader2, Shield, Eye } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import type { Role } from '@/config/roles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -22,6 +24,7 @@ interface UserNavProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: Role;
   };
 }
 
@@ -116,9 +119,29 @@ export function UserNav({ user }: UserNavProps) {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none" data-testid="user-name">
-              {user.name || 'User'}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium leading-none" data-testid="user-name">
+                {user.name || 'User'}
+              </p>
+              {/* AC#5: Role Display - Show role badge in user menu */}
+              <Badge
+                variant={user.role === 'admin' ? 'default' : 'secondary'}
+                className="text-[10px] px-1.5 py-0"
+                data-testid="user-role-badge"
+              >
+                {user.role === 'admin' ? (
+                  <>
+                    <Shield className="w-3 h-3 mr-0.5" />
+                    Admin
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3 h-3 mr-0.5" />
+                    Viewer
+                  </>
+                )}
+              </Badge>
+            </div>
             <p
               className="text-xs leading-none text-muted-foreground truncate"
               data-testid="user-email"

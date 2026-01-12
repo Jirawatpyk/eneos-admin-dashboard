@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { getUserRole, ROLES } from '../config/roles';
 
 // Validate required environment variables at module load
 const requiredEnvVars = {
@@ -66,6 +67,8 @@ export const authOptions: NextAuthOptions = {
         token.issuedAt = now; // Original login time - never changes
         token.lastRefreshedAt = now; // Tracks last refresh
         token.expiresAt = now + SESSION_MAX_AGE;
+        // AC#2: Fetch role based on user email during sign-in
+        token.role = getUserRole(user.email || '');
         return token;
       }
 
@@ -89,6 +92,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.expiresAt = token.expiresAt;
+        // AC#2: Expose role to client, default to viewer for safety
+        session.user.role = (token.role as typeof ROLES[keyof typeof ROLES]) || ROLES.VIEWER;
       }
       return session;
     },

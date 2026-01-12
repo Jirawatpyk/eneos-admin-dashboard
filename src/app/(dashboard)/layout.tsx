@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { UserNav } from '@/components/layout/user-nav';
 import { SessionWarning } from '@/components/shared/session-warning';
 import { SessionSync } from '@/components/shared/session-sync';
+import { PermissionErrorHandler } from '@/components/shared/permission-error-handler';
 
 export default async function DashboardLayout({
   children,
@@ -40,6 +41,7 @@ export default async function DashboardLayout({
       </main>
       <SessionWarning />
       <SessionSync />
+      <PermissionErrorHandler />
     </div>
   );
 }

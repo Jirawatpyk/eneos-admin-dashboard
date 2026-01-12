@@ -303,6 +303,48 @@ describe('UserNav - Story 1.4: Logout', () => {
     });
   });
 
+  // Story 1.5 AC#5: Role Display
+  describe('AC#5: Role Display in User Menu', () => {
+    it('should display Admin badge when user is admin', async () => {
+      render(<UserNav user={{ ...mockUser, role: 'admin' }} />);
+
+      const triggerButton = screen.getByTestId('user-nav-trigger');
+      await userEvent.click(triggerButton);
+
+      await waitFor(() => {
+        const badge = screen.getByTestId('user-role-badge');
+        expect(badge).toBeInTheDocument();
+        expect(badge).toHaveTextContent('Admin');
+      });
+    });
+
+    it('should display Viewer badge when user is viewer', async () => {
+      render(<UserNav user={{ ...mockUser, role: 'viewer' }} />);
+
+      const triggerButton = screen.getByTestId('user-nav-trigger');
+      await userEvent.click(triggerButton);
+
+      await waitFor(() => {
+        const badge = screen.getByTestId('user-role-badge');
+        expect(badge).toBeInTheDocument();
+        expect(badge).toHaveTextContent('Viewer');
+      });
+    });
+
+    it('should display Viewer badge by default when no role', async () => {
+      render(<UserNav user={mockUser} />);
+
+      const triggerButton = screen.getByTestId('user-nav-trigger');
+      await userEvent.click(triggerButton);
+
+      await waitFor(() => {
+        const badge = screen.getByTestId('user-role-badge');
+        expect(badge).toBeInTheDocument();
+        expect(badge).toHaveTextContent('Viewer');
+      });
+    });
+  });
+
   // Edge Cases
   describe('Edge Cases', () => {
     it('should handle missing user name gracefully', async () => {
