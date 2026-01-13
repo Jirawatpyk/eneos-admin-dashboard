@@ -9,25 +9,25 @@ import { render, screen } from '@testing-library/react';
 import { LeadTrendChart } from '../components/dashboard/lead-trend-chart';
 import type { DailyTrend } from '@/types/dashboard';
 
-// Mock Tremor AreaChart to avoid actual chart rendering complexity
-vi.mock('@tremor/react', () => ({
-  AreaChart: ({ data, categories, colors, className, showLegend }: {
-    data: unknown[];
-    categories: string[];
-    colors: string[];
-    className: string;
-    showLegend: boolean;
-  }) => (
-    <div
-      data-testid="mock-area-chart"
-      data-categories={categories.join(',')}
-      data-colors={colors.join(',')}
-      data-count={data.length}
-      className={className}
-      data-show-legend={showLegend}
-    >
-      Mock Area Chart
+// Mock Recharts components to avoid rendering complexity
+vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
+  AreaChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
+    <div data-testid="recharts-area-chart" data-count={data.length}>
+      {children}
     </div>
+  ),
+  Area: ({ dataKey, stroke }: { dataKey: string; stroke: string }) => (
+    <div data-testid={`area-${dataKey}`} data-stroke={stroke} />
+  ),
+  XAxis: () => <div data-testid="x-axis" />,
+  YAxis: () => <div data-testid="y-axis" />,
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  Tooltip: () => <div data-testid="tooltip" />,
+  Legend: ({ content }: { content: React.ReactNode }) => (
+    <div data-testid="legend">{content}</div>
   ),
 }));
 
@@ -64,35 +64,39 @@ describe('LeadTrendChart', () => {
 
   // AC#2: Dual line series (New Leads and Closed)
   describe('AC#2: Dual Line Series', () => {
-    it('should configure chart with two categories', () => {
+    it('should render both area series', () => {
       render(<LeadTrendChart data={mockTrendData} />);
 
-      const chart = screen.getByTestId('mock-area-chart');
-      expect(chart).toHaveAttribute('data-categories', 'New Leads,Closed');
+      expect(screen.getByTestId('area-newLeads')).toBeInTheDocument();
+      expect(screen.getByTestId('area-closed')).toBeInTheDocument();
     });
 
-    it('should use correct colors (blue for New Leads, green for Closed)', () => {
+    it('should use correct colors for areas', () => {
       render(<LeadTrendChart data={mockTrendData} />);
 
-      const chart = screen.getByTestId('mock-area-chart');
-      expect(chart).toHaveAttribute('data-colors', 'blue,emerald');
+      const newLeadsArea = screen.getByTestId('area-newLeads');
+      const closedArea = screen.getByTestId('area-closed');
+
+      // LEAD_TREND_COLORS.newLeads = '#6366F1' (Indigo-500)
+      // LEAD_TREND_COLORS.closed = '#10B981' (Emerald-500)
+      expect(newLeadsArea).toHaveAttribute('data-stroke', '#6366F1');
+      expect(closedArea).toHaveAttribute('data-stroke', '#10B981');
     });
 
     it('should pass correct data count to chart', () => {
       render(<LeadTrendChart data={mockTrendData} />);
 
-      const chart = screen.getByTestId('mock-area-chart');
+      const chart = screen.getByTestId('recharts-area-chart');
       expect(chart).toHaveAttribute('data-count', '5');
     });
   });
 
   // AC#5: Legend display
   describe('AC#5: Legend', () => {
-    it('should enable legend display', () => {
+    it('should render legend component', () => {
       render(<LeadTrendChart data={mockTrendData} />);
 
-      const chart = screen.getByTestId('mock-area-chart');
-      expect(chart).toHaveAttribute('data-show-legend', 'true');
+      expect(screen.getByTestId('legend')).toBeInTheDocument();
     });
   });
 
@@ -134,11 +138,10 @@ describe('LeadTrendChart', () => {
 
   // AC#8: Responsive sizing
   describe('AC#8: Responsive Sizing', () => {
-    it('should have h-72 height class on chart', () => {
+    it('should use ResponsiveContainer', () => {
       render(<LeadTrendChart data={mockTrendData} />);
 
-      const chart = screen.getByTestId('mock-area-chart');
-      expect(chart).toHaveClass('h-72');
+      expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
     });
   });
 });

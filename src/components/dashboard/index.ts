@@ -2,6 +2,7 @@
  * Dashboard Components Barrel Export
  * Story 2.1: KPI Cards
  * Story 2.2: Lead Trend Chart
+ * Story 2.3: Status Distribution Chart
  */
 
 // KPI Cards (Story 2.1)
@@ -16,3 +17,9 @@ export { LeadTrendChart } from './lead-trend-chart';
 export { LeadTrendChartSkeleton } from './lead-trend-chart-skeleton';
 export { LeadTrendChartEmpty } from './lead-trend-chart-empty';
 export { LeadTrendChartContainer } from './lead-trend-chart-container';
+
+// Status Distribution Chart (Story 2.3)
+export { StatusDistributionChart } from './status-distribution-chart';
+export { StatusDistributionSkeleton } from './status-distribution-skeleton';
+export { StatusDistributionEmpty } from './status-distribution-empty';
+export { StatusDistributionContainer } from './status-distribution-container';

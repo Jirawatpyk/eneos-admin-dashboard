@@ -113,3 +113,25 @@ export const LEAD_TREND_COLORS = {
   newLeads: CHART_COLORS.primary,
   closed: CHART_COLORS.secondary,
 } as const;
+
+// ===========================================
+// Status Distribution Chart Specific (Story 2.3)
+// ===========================================
+
+export const STATUS_COLORS = {
+  new: '#6B7280',        // Gray-500
+  claimed: '#3B82F6',    // Blue-500
+  contacted: '#EAB308',  // Yellow-500
+  closed: '#10B981',     // Emerald-500
+  lost: '#EF4444',       // Red-500
+  unreachable: '#F97316', // Orange-500
+} as const;
+
+export const STATUS_LABELS: Record<keyof typeof STATUS_COLORS, string> = {
+  new: 'New',
+  claimed: 'Claimed',
+  contacted: 'Contacted',
+  closed: 'Closed',
+  lost: 'Lost',
+  unreachable: 'Unreachable',
+} as const;

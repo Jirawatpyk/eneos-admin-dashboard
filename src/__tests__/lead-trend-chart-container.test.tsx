@@ -15,17 +15,22 @@ vi.mock('@/hooks/use-dashboard-data', () => ({
   useDashboardData: () => mockUseDashboardData(),
 }));
 
-// Mock Tremor AreaChart
-vi.mock('@tremor/react', () => ({
-  AreaChart: ({ data, categories }: { data: unknown[]; categories: string[] }) => (
-    <div
-      data-testid="mock-area-chart"
-      data-categories={categories.join(',')}
-      data-count={data.length}
-    >
-      Mock Area Chart
+// Mock Recharts components
+vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
+  AreaChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
+    <div data-testid="recharts-area-chart" data-count={data.length}>
+      {children}
     </div>
   ),
+  Area: ({ dataKey }: { dataKey: string }) => <div data-testid={`area-${dataKey}`} />,
+  XAxis: () => <div data-testid="x-axis" />,
+  YAxis: () => <div data-testid="y-axis" />,
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  Tooltip: () => <div data-testid="tooltip" />,
+  Legend: () => <div data-testid="legend" />,
 }));
 
 function createTestQueryClient() {
@@ -130,7 +135,7 @@ describe('LeadTrendChartContainer', () => {
       );
 
       expect(screen.getByTestId('lead-trend-chart')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-area-chart')).toBeInTheDocument();
+      expect(screen.getByTestId('recharts-area-chart')).toBeInTheDocument();
     });
 
     it('should pass correct data count to chart', () => {
@@ -154,7 +159,7 @@ describe('LeadTrendChartContainer', () => {
         </TestWrapper>
       );
 
-      const chart = screen.getByTestId('mock-area-chart');
+      const chart = screen.getByTestId('recharts-area-chart');
       expect(chart).toHaveAttribute('data-count', '3');
     });
   });

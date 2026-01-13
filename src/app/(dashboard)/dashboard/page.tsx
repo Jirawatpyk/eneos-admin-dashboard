@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { KPICardsGrid, LeadTrendChartContainer } from '@/components/dashboard';
+import { KPICardsGrid, LeadTrendChartContainer, StatusDistributionContainer } from '@/components/dashboard';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -18,8 +18,14 @@ export default async function DashboardPage() {
       {/* KPI Cards - Story 2.1 */}
       <KPICardsGrid period="month" />
 
-      {/* Lead Trend Chart - Story 2.2 */}
-      <LeadTrendChartContainer period="month" />
+      {/* Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Lead Trend Chart - Story 2.2 */}
+        <LeadTrendChartContainer period="month" />
+
+        {/* Status Distribution Chart - Story 2.3 */}
+        <StatusDistributionContainer period="month" />
+      </div>
     </div>
   );
 }
