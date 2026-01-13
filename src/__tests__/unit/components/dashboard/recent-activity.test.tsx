@@ -233,6 +233,20 @@ describe('ActivityItem', () => {
       expect(icon).toHaveClass('text-gray-600');
     });
 
+    it('applies correct color for lost type', () => {
+      const activity = { ...mockActivities[0], id: '5', type: 'lost' as const };
+      renderWithProvider(<ActivityItem activity={activity} />);
+      const icon = screen.getByTestId(`activity-icon-${activity.id}`);
+      expect(icon).toHaveClass('text-red-600');
+    });
+
+    it('applies correct color for unreachable type', () => {
+      const activity = { ...mockActivities[0], id: '6', type: 'unreachable' as const };
+      renderWithProvider(<ActivityItem activity={activity} />);
+      const icon = screen.getByTestId(`activity-icon-${activity.id}`);
+      expect(icon).toHaveClass('text-orange-600');
+    });
+
     // H-02 Fix verification: Unknown activity type fallback
     it('handles unknown activity type gracefully', () => {
       const activity = {

@@ -36,3 +36,4 @@ export { TopSalesTableContainer } from './top-sales-table-container';
 export { RecentActivity } from './recent-activity';
 export { ActivityItem, type Activity, type ActivityType } from './activity-item';
 export { RecentActivitySkeleton } from './recent-activity-skeleton';
+export { RecentActivityContainer } from './recent-activity-container';

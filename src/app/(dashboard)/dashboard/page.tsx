@@ -5,6 +5,7 @@ import {
   LeadTrendChartContainer,
   StatusDistributionContainer,
   TopSalesTableContainer,
+  RecentActivityContainer,
 } from '@/components/dashboard';
 
 export default async function DashboardPage() {
@@ -34,6 +35,15 @@ export default async function DashboardPage() {
 
       {/* Top Sales Table - Story 2.4 */}
       <TopSalesTableContainer period="month" />
+
+      {/* Bottom Section - Story 2.5 & 2.6 */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Recent Activity - Story 2.5 */}
+        <RecentActivityContainer period="month" />
+
+        {/* Alerts Panel - Story 2.6 (placeholder) */}
+        {/* <AlertsPanelContainer period="month" /> */}
+      </div>
     </div>
   );
 }

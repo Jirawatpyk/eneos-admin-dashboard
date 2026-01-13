@@ -2,7 +2,35 @@
  * Dashboard API Types
  * Story 2.1: KPI Cards
  * Story 2.4: Top Sales Table
+ * Story 2.5: Recent Activity Feed
  */
+
+/**
+ * API Activity Item (from backend)
+ * Different from frontend Activity type - needs transformation
+ */
+export interface ApiActivityItem {
+  id: string;
+  type: 'new' | 'claimed' | 'contacted' | 'closed' | 'lost' | 'unreachable';
+  salesId: string;
+  salesName: string;
+  leadId: number;
+  company: string;
+  customerName: string;
+  timestamp: string;
+}
+
+/**
+ * Alert/Warning Item from backend
+ */
+export interface ApiAlert {
+  id: string;
+  type: 'unclaimed' | 'stale_contacted' | 'campaign_ending';
+  message: string;
+  count?: number;
+  severity: 'warning' | 'info';
+  link?: string;
+}
 
 export interface DashboardSummary {
   totalLeads: number;
@@ -44,6 +72,8 @@ export interface DashboardData {
   summary: DashboardSummary;
   trends: DashboardTrends;
   topSales?: TopSalesPerson[];
+  recentActivity?: ApiActivityItem[];
+  alerts?: ApiAlert[];
 }
 
 export interface DashboardResponse {

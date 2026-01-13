@@ -9,7 +9,7 @@
  */
 'use client';
 
-import { CheckCircle2, UserCheck, Phone, Inbox, HelpCircle } from 'lucide-react';
+import { CheckCircle2, UserCheck, Phone, Inbox, HelpCircle, XCircle, PhoneOff } from 'lucide-react';
 import { formatActivityTime } from '@/lib/format-activity-time';
 import { cn } from '@/lib/utils';
 import {
@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-export type ActivityType = 'claimed' | 'contacted' | 'closed' | 'new_lead';
+export type ActivityType = 'new_lead' | 'claimed' | 'contacted' | 'closed' | 'lost' | 'unreachable';
 
 export interface Activity {
   id: string;
@@ -41,13 +41,19 @@ interface ActivityConfig {
 
 /**
  * Activity type configuration with icons and colors
- * AC#6: 🟢=closed, 🔵=claimed, 📞=contacted, 📥=new_lead
+ * 6 Status Types:
+ * 🟢 closed (green) - Deal closed successfully
+ * 🔵 claimed (blue) - Lead claimed by sales
+ * 🟡 contacted (amber) - Customer contacted
+ * ⚪ new_lead (gray) - New lead from system
+ * 🔴 lost (red) - Deal lost
+ * 🟠 unreachable (orange) - Cannot reach customer
  */
 const ACTIVITY_CONFIG: Record<ActivityType, ActivityConfig> = {
-  closed: {
-    icon: CheckCircle2,
-    colorClass: 'text-green-600',
-    label: 'Closed deal',
+  new_lead: {
+    icon: Inbox,
+    colorClass: 'text-gray-600',
+    label: 'New lead',
   },
   claimed: {
     icon: UserCheck,
@@ -59,10 +65,20 @@ const ACTIVITY_CONFIG: Record<ActivityType, ActivityConfig> = {
     colorClass: 'text-amber-600',
     label: 'Contacted',
   },
-  new_lead: {
-    icon: Inbox,
-    colorClass: 'text-gray-600',
-    label: 'New lead',
+  closed: {
+    icon: CheckCircle2,
+    colorClass: 'text-green-600',
+    label: 'Closed deal',
+  },
+  lost: {
+    icon: XCircle,
+    colorClass: 'text-red-600',
+    label: 'Lost deal',
+  },
+  unreachable: {
+    icon: PhoneOff,
+    colorClass: 'text-orange-600',
+    label: 'Unreachable',
   },
 };
 

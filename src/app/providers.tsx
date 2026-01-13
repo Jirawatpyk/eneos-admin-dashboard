@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { ReactNode, useState } from 'react';
 
 interface ProvidersProps {
@@ -13,6 +14,7 @@ interface ProvidersProps {
  * Configures:
  * - SessionProvider for authentication
  * - QueryClientProvider for TanStack Query v5
+ * - TooltipProvider for Radix UI tooltips
  */
 export function Providers({ children }: ProvidersProps) {
   // Create QueryClient instance per component lifecycle to prevent memory leaks
@@ -36,7 +38,9 @@ export function Providers({ children }: ProvidersProps) {
         refetchOnWindowFocus={true} // Sync across tabs
         refetchWhenOffline={false} // Don't try to refresh when offline
       >
-        {children}
+        <TooltipProvider delayDuration={300}>
+          {children}
+        </TooltipProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

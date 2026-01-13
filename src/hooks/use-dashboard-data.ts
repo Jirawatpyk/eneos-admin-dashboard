@@ -15,7 +15,7 @@ interface UseDashboardDataOptions {
   enabled?: boolean;
 }
 
-interface UseDashboardDataReturn {
+export interface UseDashboardDataReturn {
   data: DashboardData | undefined;
   isLoading: boolean;
   isError: boolean;
