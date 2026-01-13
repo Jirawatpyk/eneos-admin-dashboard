@@ -116,11 +116,11 @@ export function UserNav({ user }: UserNavProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-64" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium leading-none" data-testid="user-name">
+              <p className="text-sm font-medium leading-none truncate max-w-[180px]" data-testid="user-name">
                 {user.name || 'User'}
               </p>
               {/* AC#5: Role Display - Show role badge in user menu */}
@@ -143,7 +143,7 @@ export function UserNav({ user }: UserNavProps) {
               </Badge>
             </div>
             <p
-              className="text-xs leading-none text-muted-foreground truncate"
+              className="text-xs leading-none text-muted-foreground"
               data-testid="user-email"
             >
               {user.email}
