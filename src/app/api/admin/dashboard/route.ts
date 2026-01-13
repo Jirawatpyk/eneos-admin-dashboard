@@ -1,0 +1,68 @@
+/**
+ * Dashboard API Proxy Route
+ * Proxies requests to Backend API with Google ID token authentication
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Get JWT token from NextAuth session
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
+        { status: 401 }
+      );
+    }
+
+    // Get Google ID token from JWT
+    const idToken = token.idToken as string;
+
+    if (!idToken) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found' } },
+        { status: 401 }
+      );
+    }
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || 'month';
+
+    // Forward request to Backend API
+    const backendUrl = `${BACKEND_URL}/api/admin/dashboard?period=${period}`;
+
+    const response = await fetch(backendUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Dashboard API proxy error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'PROXY_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch dashboard data',
+        },
+      },
+      { status: 500 }
+    );
+  }
+}

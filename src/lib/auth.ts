@@ -63,6 +63,7 @@ export const authOptions: NextAuthOptions = {
       if (account && user) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
+        token.idToken = account.id_token; // Google ID token for Backend API
         token.id = user.id;
         token.issuedAt = now; // Original login time - never changes
         token.lastRefreshedAt = now; // Tracks last refresh

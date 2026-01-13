@@ -10,7 +10,8 @@
 
 import type { DashboardData, DashboardPeriod, DashboardResponse } from '@/types/dashboard';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Use Next.js API route as proxy to Backend (handles authentication)
+const API_BASE_URL = '';
 
 export class DashboardApiError extends Error {
   constructor(
