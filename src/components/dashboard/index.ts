@@ -43,3 +43,8 @@ export { AlertsPanel } from './alerts-panel';
 export { AlertItem } from './alert-item';
 export { AlertsPanelSkeleton } from './alerts-panel-skeleton';
 export { AlertsPanelContainer } from './alerts-panel-container';
+
+// Date Filter (Story 2.7)
+export { DateFilter, PERIOD_OPTIONS, isValidPeriod, type Period } from './date-filter';
+export { CustomDateRange } from './custom-date-range';
+export { DashboardContent } from './dashboard-content';
