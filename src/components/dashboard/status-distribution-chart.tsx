@@ -193,6 +193,7 @@ function renderCustomLabel({
       textAnchor="middle"
       dominantBaseline="central"
       className="text-xs font-semibold"
+      style={{ pointerEvents: 'none' }}
     >
       {`${(percent * 100).toFixed(0)}%`}
     </text>
@@ -226,9 +227,8 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Chart container with relative positioning for center label */}
+        {/* Chart container */}
         <div
-          className="relative"
           role="img"
           aria-label="Pie chart showing lead status distribution by category"
         >
@@ -260,14 +260,11 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
               <Legend content={<CustomLegend />} />
             </PieChart>
           </ResponsiveContainer>
-
-          {/* Center total label (AC#3) - positioned in donut center */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: '-24px' }}>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{total}</p>
-              <p className="text-sm text-muted-foreground">Total Leads</p>
-            </div>
-          </div>
+        </div>
+        {/* Total summary below chart */}
+        <div className="text-center mt-2 pt-2 border-t">
+          <span className="text-2xl font-bold text-foreground">{total}</span>
+          <span className="text-sm text-muted-foreground ml-2">Total Leads</span>
         </div>
       </CardContent>
     </Card>
