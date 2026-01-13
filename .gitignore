@@ -37,3 +37,15 @@ next-env.d.ts
 
 # Claude Code temp files
 tmpclaude-*
+
+# Debug files
+dashboard-screenshot.png
+screenshot-dashboard.ts
+src/app/api/debug/
+
+# Playwright artifacts
+/playwright-report/
+/test-results/
+
+# Windows artifacts
+nul
