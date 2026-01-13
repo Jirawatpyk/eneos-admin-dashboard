@@ -4,6 +4,7 @@
  * Story 2.2: Lead Trend Chart
  * Story 2.3: Status Distribution Chart
  * Story 2.4: Top Sales Table
+ * Story 2.5: Recent Activity Feed
  */
 
 // KPI Cards (Story 2.1)
@@ -30,3 +31,8 @@ export { TopSalesTable } from './top-sales-table';
 export { TopSalesTableSkeleton } from './top-sales-table-skeleton';
 export { TopSalesTableEmpty } from './top-sales-table-empty';
 export { TopSalesTableContainer } from './top-sales-table-container';
+
+// Recent Activity Feed (Story 2.5)
+export { RecentActivity } from './recent-activity';
+export { ActivityItem, type Activity, type ActivityType } from './activity-item';
+export { RecentActivitySkeleton } from './recent-activity-skeleton';
