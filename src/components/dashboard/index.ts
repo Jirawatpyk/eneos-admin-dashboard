@@ -37,3 +37,9 @@ export { RecentActivity } from './recent-activity';
 export { ActivityItem, type Activity, type ActivityType } from './activity-item';
 export { RecentActivitySkeleton } from './recent-activity-skeleton';
 export { RecentActivityContainer } from './recent-activity-container';
+
+// Alerts Panel (Story 2.6)
+export { AlertsPanel } from './alerts-panel';
+export { AlertItem } from './alert-item';
+export { AlertsPanelSkeleton } from './alerts-panel-skeleton';
+export { AlertsPanelContainer } from './alerts-panel-container';

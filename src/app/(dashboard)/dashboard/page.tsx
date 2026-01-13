@@ -6,6 +6,7 @@ import {
   StatusDistributionContainer,
   TopSalesTableContainer,
   RecentActivityContainer,
+  AlertsPanelContainer,
 } from '@/components/dashboard';
 
 export default async function DashboardPage() {
@@ -41,8 +42,8 @@ export default async function DashboardPage() {
         {/* Recent Activity - Story 2.5 */}
         <RecentActivityContainer period="month" />
 
-        {/* Alerts Panel - Story 2.6 (placeholder) */}
-        {/* <AlertsPanelContainer period="month" /> */}
+        {/* Alerts Panel - Story 2.6 */}
+        <AlertsPanelContainer period="month" />
       </div>
     </div>
   );
