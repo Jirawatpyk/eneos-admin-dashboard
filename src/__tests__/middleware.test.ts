@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { config } from '@/middleware';
+import { config } from '@/proxy';
 
 describe('Auth Middleware - AC5: Protected Routes', () => {
   const matcher = config.matcher[0];

@@ -62,10 +62,10 @@ describe('Middleware Role Protection', () => {
     it('should allow admin to access /settings', async () => {
       mockGetToken.mockResolvedValue({ role: 'admin' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
       expect(NextResponse.redirect).not.toHaveBeenCalled();
@@ -74,10 +74,10 @@ describe('Middleware Role Protection', () => {
     it('should redirect viewer from /settings to /dashboard', async () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
       const redirectCall = vi.mocked(NextResponse.redirect).mock.calls[0][0] as URL;
@@ -88,10 +88,10 @@ describe('Middleware Role Protection', () => {
     it('should redirect user with no role (defaults to viewer) from /settings', async () => {
       mockGetToken.mockResolvedValue({ sub: 'user-123' }); // No role
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
     });
@@ -99,10 +99,10 @@ describe('Middleware Role Protection', () => {
     it('should protect nested settings routes like /settings/users', async () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/settings/users');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
     });
@@ -112,10 +112,10 @@ describe('Middleware Role Protection', () => {
     it('should allow viewer to access /dashboard', async () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/dashboard');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
       expect(NextResponse.redirect).not.toHaveBeenCalled();
@@ -124,10 +124,10 @@ describe('Middleware Role Protection', () => {
     it('should allow viewer to access /leads', async () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/leads');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
     });
@@ -135,10 +135,10 @@ describe('Middleware Role Protection', () => {
     it('should allow admin to access /dashboard', async () => {
       mockGetToken.mockResolvedValue({ role: 'admin' });
 
-      const { middleware } = await import('../middleware');
+      const { proxy } = await import('../proxy');
       const req = createMockRequest('http://localhost:3000/dashboard');
 
-      await middleware(req, mockEvent);
+      await proxy(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
     });
@@ -146,7 +146,7 @@ describe('Middleware Role Protection', () => {
 
   describe('Admin routes definition', () => {
     it('should define /settings as admin-only route', async () => {
-      const { ADMIN_ROUTES } = await import('../middleware');
+      const { ADMIN_ROUTES } = await import('../proxy');
 
       expect(ADMIN_ROUTES).toBeDefined();
       expect(ADMIN_ROUTES).toContain('/settings');

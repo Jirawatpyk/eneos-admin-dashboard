@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy (formerly Middleware)
  * Story 1.5: Role-based Access Control
  *
  * AC#5: Protected routes (requires authentication)
@@ -53,11 +53,11 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 // ===========================================
-// Middleware Function
+// Auth Handler (using next-auth withAuth)
 // ===========================================
 
 /**
- * Auth middleware with role-based access control
+ * Auth handler with role-based access control
  *
  * Flow:
  * 1. Check if E2E test bypass is enabled (dev only)
@@ -95,10 +95,10 @@ const authMiddleware = withAuth(
 );
 
 /**
- * Main middleware export
+ * Main proxy export (Next.js 16+ convention)
  * Uses E2E bypass in test mode, normal auth otherwise
  */
-export function middleware(req: NextRequest, event: NextFetchEvent) {
+export function proxy(req: NextRequest, event: NextFetchEvent) {
   // E2E Test Bypass - ONLY in development with explicit flag or header
   if (isE2ETestBypass(req)) {
     return NextResponse.next();
