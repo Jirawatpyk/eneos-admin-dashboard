@@ -5,18 +5,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, NextFetchEvent } from 'next/server';
+import type { NextRequestWithAuth } from 'next-auth/middleware';
 
 // Mock next-auth/middleware
 const mockWithAuth = vi.fn();
 const mockGetToken = vi.fn();
 
 vi.mock('next-auth/middleware', () => ({
-  withAuth: (fn: (req: NextRequest) => unknown, opts: unknown) => {
+  withAuth: (fn: (req: NextRequestWithAuth) => unknown, opts: unknown) => {
     mockWithAuth(fn, opts);
-    return async (req: NextRequest) => {
+    return async (req: NextRequest, _event: NextFetchEvent) => {
       const token = await mockGetToken({ req });
-      const reqWithAuth = Object.assign(req, { nextauth: { token } });
+      const reqWithAuth = Object.assign(req, { nextauth: { token } }) as NextRequestWithAuth;
       return fn(reqWithAuth);
     };
   },
@@ -38,6 +39,15 @@ vi.mock('next/server', async () => {
   };
 });
 
+// Create a mock NextFetchEvent
+const mockEvent = {} as NextFetchEvent;
+
+// Helper to create a request with proper type for testing
+function createMockRequest(url: string): NextRequestWithAuth {
+  const req = new NextRequest(url);
+  return Object.assign(req, { nextauth: { token: null } }) as NextRequestWithAuth;
+}
+
 describe('Middleware Role Protection', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -52,9 +62,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'admin' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/settings');
+      const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
       expect(NextResponse.redirect).not.toHaveBeenCalled();
@@ -64,9 +74,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/settings');
+      const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
       const redirectCall = vi.mocked(NextResponse.redirect).mock.calls[0][0] as URL;
@@ -78,9 +88,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ sub: 'user-123' }); // No role
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/settings');
+      const req = createMockRequest('http://localhost:3000/settings');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
     });
@@ -89,9 +99,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/settings/users');
+      const req = createMockRequest('http://localhost:3000/settings/users');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.redirect).toHaveBeenCalled();
     });
@@ -102,9 +112,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/dashboard');
+      const req = createMockRequest('http://localhost:3000/dashboard');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
       expect(NextResponse.redirect).not.toHaveBeenCalled();
@@ -114,9 +124,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'viewer' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/leads');
+      const req = createMockRequest('http://localhost:3000/leads');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
     });
@@ -125,9 +135,9 @@ describe('Middleware Role Protection', () => {
       mockGetToken.mockResolvedValue({ role: 'admin' });
 
       const { middleware } = await import('../middleware');
-      const req = new NextRequest('http://localhost:3000/dashboard');
+      const req = createMockRequest('http://localhost:3000/dashboard');
 
-      await middleware(req);
+      await middleware(req, mockEvent);
 
       expect(NextResponse.next).toHaveBeenCalled();
     });

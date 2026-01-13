@@ -128,7 +128,7 @@ describe('Auth Configuration', () => {
 
       const result = await sessionCallback({
         session: {
-          user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+          user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null, role: 'viewer' as const },
           expires: new Date().toISOString(),
         },
         token: { id: 'user-123', accessToken: 'test-token' },
@@ -145,7 +145,7 @@ describe('Auth Configuration', () => {
 
       const result = await sessionCallback({
         session: {
-          user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+          user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null, role: 'viewer' as const },
           expires: new Date().toISOString(),
         },
         token: { id: 'user-123', accessToken: 'test-token' },

@@ -19,7 +19,7 @@ import { authOptions } from '@/lib/auth';
 type MockAccount = Partial<Account> & { access_token?: string; refresh_token?: string };
 type MockUser = Partial<User> & { id: string };
 type MockToken = Partial<JWT>;
-type MockSession = Partial<Session> & { user: { id: string; name?: string; email?: string; image?: string | null }; expires: string };
+type MockSession = Partial<Session> & { user: { id: string; name?: string; email?: string; image?: string | null; role?: 'admin' | 'viewer' }; expires: string };
 
 describe('Session Management - Story 1.3', () => {
   beforeEach(() => {
@@ -125,7 +125,7 @@ describe('Session Management - Story 1.3', () => {
         issuedAt: Math.floor(Date.now() / 1000),
       };
       const mockSession: MockSession = {
-        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null, role: 'viewer' },
         expires: new Date().toISOString(),
       };
 
@@ -147,7 +147,7 @@ describe('Session Management - Story 1.3', () => {
         expiresAt: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
       };
       const mockSession: MockSession = {
-        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null, role: 'viewer' },
         expires: new Date().toISOString(),
       };
 
@@ -171,7 +171,7 @@ describe('Session Management - Story 1.3', () => {
         expiresAt: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
       };
       const mockSession: MockSession = {
-        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null },
+        user: { id: '', name: 'Test User', email: 'test@eneos.co.th', image: null, role: 'viewer' },
         expires: new Date().toISOString(),
       };
 

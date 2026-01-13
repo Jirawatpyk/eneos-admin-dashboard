@@ -5,8 +5,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { RoleGate, AdminOnly } from '../components/shared/role-gate';
 
 // Mock next-auth/react
 const mockUseSession = vi.fn();
@@ -25,12 +26,12 @@ vi.mock('@radix-ui/react-tooltip', async () => {
 
 describe('RoleGate Component', () => {
   beforeEach(() => {
-    vi.resetModules();
+    cleanup();
     mockUseSession.mockReset();
   });
 
   describe('Access control', () => {
-    it('should render children when user has allowed role', async () => {
+    it('should render children when user has allowed role', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
@@ -38,8 +39,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate allowedRoles={['admin']}>
@@ -50,7 +49,7 @@ describe('RoleGate Component', () => {
       expect(screen.getByText('Export Data')).toBeInTheDocument();
     });
 
-    it('should not render children when user does not have allowed role', async () => {
+    it('should not render children when user does not have allowed role', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -58,8 +57,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate allowedRoles={['admin']}>
@@ -70,7 +67,7 @@ describe('RoleGate Component', () => {
       expect(screen.queryByText('Export Data')).not.toBeInTheDocument();
     });
 
-    it('should render fallback when user does not have allowed role', async () => {
+    it('should render fallback when user does not have allowed role', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -78,8 +75,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate
@@ -94,7 +89,7 @@ describe('RoleGate Component', () => {
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
     });
 
-    it('should allow multiple roles', async () => {
+    it('should allow multiple roles', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -102,8 +97,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate allowedRoles={['admin', 'viewer']}>
@@ -116,13 +109,11 @@ describe('RoleGate Component', () => {
   });
 
   describe('Default behavior', () => {
-    it('should default to viewer role when no session', async () => {
+    it('should default to viewer role when no session', () => {
       mockUseSession.mockReturnValue({
         data: null,
         status: 'unauthenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate allowedRoles={['admin']}>
@@ -133,7 +124,7 @@ describe('RoleGate Component', () => {
       expect(screen.queryByText('Admin Only')).not.toBeInTheDocument();
     });
 
-    it('should default to viewer role when session has no role', async () => {
+    it('should default to viewer role when session has no role', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'User', email: 'user@eneos.co.th' },
@@ -141,8 +132,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       render(
         <RoleGate allowedRoles={['admin']}>
@@ -155,7 +144,7 @@ describe('RoleGate Component', () => {
   });
 
   describe('Tooltip with fallback', () => {
-    it('should render fallback with disabled state', async () => {
+    it('should render fallback with disabled state', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -163,8 +152,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { RoleGate } = await import('../components/shared/role-gate');
 
       // Test without tooltip to avoid provider issues
       render(
@@ -183,7 +170,7 @@ describe('RoleGate Component', () => {
   });
 
   describe('AdminOnly convenience component', () => {
-    it('should render children for admin user', async () => {
+    it('should render children for admin user', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
@@ -191,8 +178,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { AdminOnly } = await import('../components/shared/role-gate');
 
       render(
         <AdminOnly>
@@ -203,7 +188,7 @@ describe('RoleGate Component', () => {
       expect(screen.getByTestId('admin-button')).toBeInTheDocument();
     });
 
-    it('should not render children for viewer user', async () => {
+    it('should not render children for viewer user', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -211,8 +196,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { AdminOnly } = await import('../components/shared/role-gate');
 
       render(
         <AdminOnly>
@@ -223,7 +206,7 @@ describe('RoleGate Component', () => {
       expect(screen.queryByTestId('admin-button')).not.toBeInTheDocument();
     });
 
-    it('should render fallback for viewer user', async () => {
+    it('should render fallback for viewer user', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
@@ -231,8 +214,6 @@ describe('RoleGate Component', () => {
         },
         status: 'authenticated',
       });
-
-      const { AdminOnly } = await import('../components/shared/role-gate');
 
       render(
         <AdminOnly fallback={<span data-testid="fallback">No Access</span>}>

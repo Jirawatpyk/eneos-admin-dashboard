@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Role } from '@/config/roles';
 
 // Mock next-auth/providers/google
 vi.mock('next-auth/providers/google', () => ({
@@ -89,13 +90,15 @@ describe('Session Role Enhancement', () => {
       // Token already has role from previous sign-in
       const existingToken = {
         sub: 'user-123',
-        role: 'admin',
+        role: 'admin' as Role,
         expiresAt: Math.floor(Date.now() / 1000) + 86400,
       };
 
       // Subsequent call (no account)
       const result = await jwtCallback!({
         token: existingToken,
+        account: null,
+        user: { id: 'user-123' } as Parameters<NonNullable<typeof jwtCallback>>[0]['user'],
         trigger: 'update',
       });
 
@@ -118,6 +121,7 @@ describe('Session Role Enhancement', () => {
           name: 'Admin User',
           email: 'admin@eneos.co.th',
           image: 'https://example.com/avatar.jpg',
+          role: 'viewer' as Role,
         },
         expires: new Date(Date.now() + 86400000).toISOString(),
       };
@@ -125,18 +129,19 @@ describe('Session Role Enhancement', () => {
       const token = {
         sub: 'user-123',
         id: 'user-123',
-        role: 'admin',
+        role: 'admin' as Role,
         expiresAt: Math.floor(Date.now() / 1000) + 86400,
       };
 
       const result = await sessionCallback!({
         session,
         token,
+        user: { id: 'user-123', email: 'admin@eneos.co.th', emailVerified: null },
         trigger: 'update',
         newSession: undefined,
       });
 
-      expect(result.user.role).toBe('admin');
+      expect((result.user as { role: Role }).role).toBe('admin');
     });
 
     it('should default to viewer if no role in token', async () => {
@@ -149,6 +154,7 @@ describe('Session Role Enhancement', () => {
           name: 'User',
           email: 'user@eneos.co.th',
           image: null,
+          role: 'viewer' as Role,
         },
         expires: new Date(Date.now() + 86400000).toISOString(),
       };
@@ -163,11 +169,12 @@ describe('Session Role Enhancement', () => {
       const result = await sessionCallback!({
         session,
         token,
+        user: { id: 'user-123', email: 'user@eneos.co.th', emailVerified: null },
         trigger: 'update',
         newSession: undefined,
       });
 
-      expect(result.user.role).toBe('viewer');
+      expect((result.user as { role: Role }).role).toBe('viewer');
     });
   });
 });

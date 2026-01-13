@@ -1,27 +1,25 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { KPICardsGrid, LeadTrendChartContainer } from '@/components/dashboard';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">
-        Welcome to ENEOS Sales Dashboard
-      </h1>
-      <p className="text-gray-600 mb-4">
-        Hello, {session?.user?.name || 'User'}! You have successfully logged in.
-      </p>
-      <div className="bg-green-50 border border-green-200 rounded p-4">
-        <h2 className="text-green-800 font-semibold mb-2">Authentication Status</h2>
-        <ul className="text-sm text-green-700 space-y-1">
-          <li>Email: {session?.user?.email}</li>
-          <li>Session Active: Yes</li>
-        </ul>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">
+          Welcome back, {session?.user?.name || 'User'}
+        </p>
       </div>
-      <p className="text-sm text-gray-500 mt-6">
-        Dashboard features will be implemented in upcoming stories.
-      </p>
+
+      {/* KPI Cards - Story 2.1 */}
+      <KPICardsGrid period="month" />
+
+      {/* Lead Trend Chart - Story 2.2 */}
+      <LeadTrendChartContainer period="month" />
     </div>
   );
 }
