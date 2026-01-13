@@ -11,10 +11,10 @@ import { PermissionErrorHandler } from '@/components/shared/permission-error-han
  * Check if E2E test bypass is enabled
  * SECURITY: Only works when x-e2e-test-bypass header is present AND NODE_ENV !== 'production'
  */
-function isE2ETestBypass(): boolean {
+async function isE2ETestBypass(): Promise<boolean> {
   if (process.env.NODE_ENV === 'production') return false;
 
-  const headersList = headers();
+  const headersList = await headers();
   return headersList.get('x-e2e-test-bypass') === 'true';
 }
 
@@ -40,7 +40,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   // E2E Test Bypass - use mock session in test mode
-  const session = isE2ETestBypass()
+  const session = (await isE2ETestBypass())
     ? getMockSession()
     : await getServerSession(authOptions);
 
