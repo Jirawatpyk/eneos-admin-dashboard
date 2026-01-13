@@ -193,8 +193,12 @@ export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={CHART_STYLES.height}>
-          <AreaChart
+        <div
+          role="img"
+          aria-label="Lead trend chart showing new leads and closed leads over the last 30 days"
+        >
+          <ResponsiveContainer width="100%" height={CHART_STYLES.height}>
+            <AreaChart
             data={chartData}
             margin={CHART_STYLES.margin}
           >
@@ -263,7 +267,8 @@ export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
               activeDot={{ ...CHART_STYLES.area.activeDot, stroke: CHART_COLORS.background }}
             />
           </AreaChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

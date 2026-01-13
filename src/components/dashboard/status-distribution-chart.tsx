@@ -227,7 +227,11 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
       </CardHeader>
       <CardContent>
         {/* Chart container with relative positioning for center label */}
-        <div className="relative">
+        <div
+          className="relative"
+          role="img"
+          aria-label="Pie chart showing lead status distribution by category"
+        >
           <ResponsiveContainer width="100%" height={CHART_STYLES.height}>
             <PieChart>
               <Pie

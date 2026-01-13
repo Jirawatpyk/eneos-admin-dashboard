@@ -85,4 +85,4 @@ export interface DashboardResponse {
   };
 }
 
-export type DashboardPeriod = 'week' | 'month' | 'quarter' | 'year';
+export type DashboardPeriod = 'today' | 'week' | 'month' | 'quarter' | 'year';

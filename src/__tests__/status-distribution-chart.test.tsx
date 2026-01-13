@@ -9,15 +9,24 @@ import { describe, it, expect, vi } from 'vitest';
 import { StatusDistributionChart } from '@/components/dashboard/status-distribution-chart';
 import type { DashboardSummary } from '@/types/dashboard';
 
-// Mock Recharts to avoid canvas issues
-vi.mock('recharts', () => ({
-  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
-  Pie: ({ children }: { children: React.ReactNode }) => <div data-testid="pie">{children}</div>,
+// Use vi.hoisted to define mock at top level (TD-5: Consolidate test utilities)
+// Note: Cannot import from external file due to vi.mock hoisting rules
+const mockRechartsPieChart = vi.hoisted(() => ({
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
+  Pie: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie">{children}</div>
+  ),
   Cell: () => <div data-testid="cell" />,
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Tooltip: () => <div data-testid="tooltip" />,
   Legend: () => <div data-testid="legend" />,
 }));
+
+vi.mock('recharts', () => mockRechartsPieChart);
 
 const mockData: DashboardSummary = {
   totalLeads: 100,

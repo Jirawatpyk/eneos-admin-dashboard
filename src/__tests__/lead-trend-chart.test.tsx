@@ -9,8 +9,9 @@ import { render, screen } from '@testing-library/react';
 import { LeadTrendChart } from '../components/dashboard/lead-trend-chart';
 import type { DailyTrend } from '@/types/dashboard';
 
-// Mock Recharts components to avoid rendering complexity
-vi.mock('recharts', () => ({
+// Use vi.hoisted to define mock at top level (TD-5: Consolidate test utilities)
+// Note: Cannot import from external file due to vi.mock hoisting rules
+const mockRechartsAreaChart = vi.hoisted(() => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
@@ -30,6 +31,8 @@ vi.mock('recharts', () => ({
     <div data-testid="legend">{content}</div>
   ),
 }));
+
+vi.mock('recharts', () => mockRechartsAreaChart);
 
 const mockTrendData: DailyTrend[] = [
   { date: '2026-01-01', newLeads: 10, closed: 2 },

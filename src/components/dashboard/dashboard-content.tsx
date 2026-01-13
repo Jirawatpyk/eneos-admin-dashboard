@@ -1,6 +1,7 @@
 /**
  * Dashboard Content Component
  * Story 2.7: Date Filter Integration
+ * Story 2.8: Auto Refresh Integration
  *
  * Client component that reads period from URL and passes to all containers
  */
@@ -16,7 +17,11 @@ import {
   RecentActivityContainer,
   AlertsPanelContainer,
   DateFilter,
+  AutoRefreshToggle,
+  RefreshButton,
+  LastUpdated,
 } from '@/components/dashboard';
+import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { KPICardsSkeletonGrid } from './kpi-card-skeleton';
 import { LeadTrendChartSkeleton } from './lead-trend-chart-skeleton';
 import { StatusDistributionSkeleton } from './status-distribution-skeleton';
@@ -51,21 +56,48 @@ function mapPeriodToDashboardPeriod(period: Period): DashboardPeriod {
 
 interface DashboardHeaderProps {
   userName: string;
+  autoRefreshEnabled: boolean;
+  onAutoRefreshToggle: (enabled: boolean) => void;
+  onRefresh: () => void;
+  isRefreshing: boolean;
+  lastUpdated: Date | null;
 }
 
 /**
- * Dashboard Header with Date Filter
+ * Dashboard Header with Date Filter and Auto Refresh Controls
  */
-function DashboardHeader({ userName }: DashboardHeaderProps) {
+function DashboardHeader({
+  userName,
+  autoRefreshEnabled,
+  onAutoRefreshToggle,
+  onRefresh,
+  isRefreshing,
+  lastUpdated,
+}: DashboardHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back, {userName}</p>
+        <h1 className="text-2xl font-bold text-gray-900">แดชบอร์ด</h1>
+        <p className="text-gray-600 mt-1">ยินดีต้อนรับ, {userName}</p>
       </div>
-      <Suspense fallback={<div className="h-9 w-[180px] bg-gray-100 rounded animate-pulse" />}>
-        <DateFilter />
-      </Suspense>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Last Updated Timestamp - AC#5 */}
+        <LastUpdated timestamp={lastUpdated} />
+
+        {/* Refresh Controls - AC#1, AC#4 */}
+        <div className="flex items-center gap-2">
+          <RefreshButton onClick={onRefresh} isRefreshing={isRefreshing} />
+          <AutoRefreshToggle
+            enabled={autoRefreshEnabled}
+            onToggle={onAutoRefreshToggle}
+          />
+        </div>
+
+        {/* Date Filter - Story 2.7 */}
+        <Suspense fallback={<div className="h-9 w-[180px] bg-gray-100 rounded animate-pulse" />}>
+          <DateFilter />
+        </Suspense>
+      </div>
     </div>
   );
 }
@@ -77,6 +109,7 @@ interface DashboardContentProps {
 /**
  * Dashboard Content Component
  * Reads period from URL and passes to all container components
+ * Integrates auto-refresh functionality (Story 2.8)
  */
 export function DashboardContent({ userName }: DashboardContentProps) {
   const searchParams = useSearchParams();
@@ -86,10 +119,26 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const period: Period = urlPeriod && VALID_PERIODS.includes(urlPeriod) ? urlPeriod : 'month';
   const apiPeriod = mapPeriodToDashboardPeriod(period);
 
+  // Auto refresh hook (Story 2.8)
+  const {
+    enabled: autoRefreshEnabled,
+    toggleEnabled: onAutoRefreshToggle,
+    refresh,
+    isRefreshing,
+    lastUpdated,
+  } = useAutoRefresh();
+
   return (
     <div className="space-y-6">
-      {/* Page Header with Date Filter */}
-      <DashboardHeader userName={userName} />
+      {/* Page Header with Date Filter and Auto Refresh Controls */}
+      <DashboardHeader
+        userName={userName}
+        autoRefreshEnabled={autoRefreshEnabled}
+        onAutoRefreshToggle={onAutoRefreshToggle}
+        onRefresh={refresh}
+        isRefreshing={isRefreshing}
+        lastUpdated={lastUpdated}
+      />
 
       {/* KPI Cards - Story 2.1 */}
       <Suspense fallback={<KPICardsSkeletonGrid />}>

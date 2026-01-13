@@ -48,3 +48,8 @@ export { AlertsPanelContainer } from './alerts-panel-container';
 export { DateFilter, PERIOD_OPTIONS, isValidPeriod, type Period } from './date-filter';
 export { CustomDateRange } from './custom-date-range';
 export { DashboardContent } from './dashboard-content';
+
+// Auto Refresh (Story 2.8)
+export { AutoRefreshToggle } from './auto-refresh-toggle';
+export { RefreshButton } from './refresh-button';
+export { LastUpdated } from './last-updated';
