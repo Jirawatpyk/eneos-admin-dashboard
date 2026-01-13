@@ -15,7 +15,8 @@ const mockGetToken = vi.fn();
 vi.mock('next-auth/middleware', () => ({
   withAuth: (fn: (req: NextRequestWithAuth) => unknown, opts: unknown) => {
     mockWithAuth(fn, opts);
-    return async (req: NextRequest, _: NextFetchEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return async (req: NextRequest, event: NextFetchEvent) => {
       const token = await mockGetToken({ req });
       const reqWithAuth = Object.assign(req, { nextauth: { token } }) as NextRequestWithAuth;
       return fn(reqWithAuth);
