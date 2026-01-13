@@ -28,9 +28,12 @@ declare module 'next-auth/jwt' {
     id?: string;
     accessToken?: string;
     refreshToken?: string;
-    expiresAt?: number; // Unix timestamp when token expires
+    idToken?: string; // Google ID token for Backend API authentication
+    idTokenExpiresAt?: number; // Unix timestamp when Google ID token expires (~1 hour)
+    expiresAt?: number; // Unix timestamp when session expires
     issuedAt?: number; // Unix timestamp when token was originally issued (never changes)
     lastRefreshedAt?: number; // Unix timestamp when token was last refreshed
     role?: Role; // Story 1.5: Role-based access control (AC#2)
+    error?: string; // Error flag when token refresh fails
   }
 }

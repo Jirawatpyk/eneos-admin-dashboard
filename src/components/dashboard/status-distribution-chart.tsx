@@ -5,7 +5,7 @@
  * AC#1: Donut chart showing status distribution
  * AC#2: 6 status segments with distinct colors
  * AC#3: Percentage labels + center total
- * AC#4: Hover tooltip with name, count, percentage
+ * AC#4: Hover tooltip with name, count, percentage + segment highlight
  * AC#5: Legend with status name, color, count
  * AC#6: Color coding per status
  * AC#7: Loading & Empty states
@@ -59,8 +59,8 @@ function CustomLegend({ payload }: { payload?: LegendPayload[] }) {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-      {payload.map((entry, index) => (
-        <div key={index} className="flex items-center gap-2">
+      {payload.map((entry) => (
+        <div key={entry.payload.key} className="flex items-center gap-2">
           <span
             className="inline-block w-3 h-3 rounded-full"
             style={{ backgroundColor: entry.color }}
@@ -226,38 +226,44 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={CHART_STYLES.height}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
-              dataKey="value"
-              nameKey="name"
-              label={renderCustomLabel}
-              labelLine={false}
-            >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color}
-                  stroke={CHART_COLORS.background}
-                  strokeWidth={2}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip total={total} />} />
-            <Legend content={<CustomLegend />} />
-          </PieChart>
-        </ResponsiveContainer>
+        {/* Chart container with relative positioning for center label */}
+        <div className="relative">
+          <ResponsiveContainer width="100%" height={CHART_STYLES.height}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+                nameKey="name"
+                label={renderCustomLabel}
+                labelLine={false}
+              >
+                {chartData.map((entry) => (
+                  <Cell
+                    key={`cell-${entry.key}`}
+                    fill={entry.color}
+                    stroke={CHART_COLORS.background}
+                    strokeWidth={2}
+                    className="transition-opacity duration-200 hover:opacity-80 cursor-pointer"
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip total={total} />} />
+              <Legend content={<CustomLegend />} />
+            </PieChart>
+          </ResponsiveContainer>
 
-        {/* Center total label (AC#3) */}
-        <div className="text-center -mt-4">
-          <p className="text-2xl font-bold text-foreground">{total}</p>
-          <p className="text-sm text-muted-foreground">Total Leads</p>
+          {/* Center total label (AC#3) - positioned in donut center */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: '-24px' }}>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">{total}</p>
+              <p className="text-sm text-muted-foreground">Total Leads</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

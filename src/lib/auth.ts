@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { getUserRole, ROLES } from '../config/roles';
+import type { JWT } from 'next-auth/jwt';
 
 // Validate required environment variables at module load
 const requiredEnvVars = {
@@ -35,6 +36,54 @@ const isAllowedDomain = (email: string | null | undefined): boolean => {
   return ALLOWED_DOMAINS.includes(domain);
 };
 
+// Google ID tokens expire after ~1 hour, refresh 5 minutes before
+const ID_TOKEN_REFRESH_BUFFER = 5 * 60; // 5 minutes in seconds
+
+/**
+ * Refresh Google ID token using refresh_token
+ * Google ID tokens expire after ~1 hour, need to refresh before API calls fail
+ */
+async function refreshGoogleIdToken(token: JWT): Promise<JWT> {
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID ?? '',
+        client_secret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+        grant_type: 'refresh_token',
+        refresh_token: token.refreshToken as string,
+      }),
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      console.error('[Auth] Failed to refresh Google token:', refreshedTokens);
+      throw new Error('Failed to refresh Google token');
+    }
+
+    console.log('[Auth] Google ID token refreshed successfully');
+
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      idToken: refreshedTokens.id_token,
+      // Update expiry: Google access tokens last 1 hour
+      idTokenExpiresAt: Math.floor(Date.now() / 1000) + (refreshedTokens.expires_in || 3600),
+      // Keep refresh token (Google doesn't always return a new one)
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+    };
+  } catch (error) {
+    console.error('[Auth] Error refreshing Google token:', error);
+    // Return token with error flag - will force re-login
+    return {
+      ...token,
+      error: 'RefreshTokenError',
+    };
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -42,6 +91,15 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
       // Note: hd param removed to support multiple domains (dev + production)
       // Domain restriction is enforced in signIn callback instead
+      authorization: {
+        params: {
+          // Request offline access to get refresh_token
+          access_type: 'offline',
+          prompt: 'consent',
+          // Request openid scope to get id_token
+          scope: 'openid email profile',
+        },
+      },
     }),
   ],
   callbacks: {
@@ -64,6 +122,7 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.idToken = account.id_token; // Google ID token for Backend API
+        token.idTokenExpiresAt = now + 3600; // Google ID tokens expire in ~1 hour
         token.id = user.id;
         token.issuedAt = now; // Original login time - never changes
         token.lastRefreshedAt = now; // Tracks last refresh
@@ -73,11 +132,27 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // Subsequent calls - check if token needs refresh
-      if (token.expiresAt) {
-        const timeUntilExpiry = token.expiresAt - now;
+      // Check if Google ID token needs refresh (expires in ~1 hour)
+      // Refresh 5 minutes before expiry to avoid API failures
+      const idTokenExpiresAt = (token.idTokenExpiresAt as number) || 0;
+      if (idTokenExpiresAt > 0 && now >= idTokenExpiresAt - ID_TOKEN_REFRESH_BUFFER) {
+        console.log('[Auth] ID token expired or expiring soon, refreshing...');
+        const refreshedToken = await refreshGoogleIdToken(token);
 
-        // If within refresh window (last 6 hours) and not expired, refresh the token
+        // If refresh failed, token will have error flag
+        if (refreshedToken.error) {
+          console.error('[Auth] Token refresh failed, user needs to re-login');
+          return refreshedToken;
+        }
+
+        token = refreshedToken;
+      }
+
+      // Session refresh - check if session needs extension
+      if (token.expiresAt) {
+        const timeUntilExpiry = (token.expiresAt as number) - now;
+
+        // If within refresh window (last 6 hours) and not expired, refresh the session
         if (timeUntilExpiry > 0 && timeUntilExpiry <= REFRESH_WINDOW) {
           token.expiresAt = now + SESSION_MAX_AGE;
           token.lastRefreshedAt = now; // Update refresh time, keep original issuedAt
