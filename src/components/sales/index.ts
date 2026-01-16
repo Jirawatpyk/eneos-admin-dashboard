@@ -5,6 +5,7 @@
  * Story 3.3: Sales Performance Bar Chart
  * Story 3.4: Response Time Analytics
  * Story 3.5: Individual Performance Trend
+ * Story 3.6: Period Filter for Sales Performance
  */
 
 // Performance Table (Story 3.1)
@@ -45,3 +46,8 @@ export { TrendChartSkeleton } from './trend-chart-skeleton';
 export { TrendChartEmpty } from './trend-chart-empty';
 export { TrendChartTooltip } from './trend-chart-tooltip';
 export { TrendIndicator, calculateTrendDirection } from './trend-indicator';
+
+// Period Filter (Story 3.6 - AC#1-9)
+export { SalesPeriodFilter, SALES_PERIOD_OPTIONS, isValidSalesPeriod } from './sales-period-filter';
+export type { SalesPeriod } from './sales-period-filter';
+export { CustomDateRange } from './custom-date-range';

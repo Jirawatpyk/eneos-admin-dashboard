@@ -1,6 +1,7 @@
 /**
  * Sales Performance API Functions
  * Story 3.1: Sales Team Performance Table
+ * Story 3.6: Period Filter for Sales Performance
  *
  * Fetches sales performance data from backend API
  * Follows project context rules:
@@ -28,12 +29,49 @@ export class SalesApiError extends Error {
 }
 
 /**
+ * Parameters for fetching sales performance data
+ * Story 3.6: Period Filter support
+ */
+export interface FetchSalesPerformanceParams {
+  period?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+/**
  * Fetch sales team performance data from backend API
+ * @param params - Optional period and date range parameters (Story 3.6)
  * @returns Sales performance data with team metrics and summary
  * @throws SalesApiError on failure
  */
-export async function fetchSalesPerformance(): Promise<SalesPerformanceData> {
-  const url = `${API_BASE_URL}/api/admin/sales-performance`;
+export async function fetchSalesPerformance(
+  params?: FetchSalesPerformanceParams
+): Promise<SalesPerformanceData> {
+  // Build URL with query params
+  const queryParams = new URLSearchParams();
+
+  if (params?.period) {
+    // Map frontend period to backend period
+    // Backend expects: 'today', 'week', 'month', 'quarter', 'year', 'custom'
+    // Frontend sends: 'week', 'month', 'quarter', 'lastQuarter', 'custom'
+    if (params.period === 'lastQuarter') {
+      // For lastQuarter, we use custom with calculated dates
+      queryParams.set('period', 'custom');
+    } else {
+      queryParams.set('period', params.period);
+    }
+  }
+
+  if (params?.dateFrom) {
+    queryParams.set('startDate', params.dateFrom);
+  }
+
+  if (params?.dateTo) {
+    queryParams.set('endDate', params.dateTo);
+  }
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/api/admin/sales-performance${queryString ? `?${queryString}` : ''}`;
 
   const response = await fetch(url, {
     method: 'GET',
