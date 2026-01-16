@@ -3,10 +3,12 @@
  * Story 1.5: Role-based Access Control
  *
  * Defines roles and role-based access for the admin dashboard.
- * Two roles: admin (full access) and viewer (read-only)
+ * Three roles: admin (full access), manager (elevated access), viewer (read-only)
  *
- * AC#1: Role Definition - admin and viewer roles
- * AC#2: Role Storage - role mapping via ADMIN_EMAILS env var
+ * AC#1: Role Definition - admin, manager, and viewer roles
+ * AC#2: Role Storage - fetched from Backend API (Google Sheets Sales_Team)
+ *
+ * Note: Role is determined during login via fetchRoleFromBackend() in auth.ts
  */
 
 // ===========================================
@@ -19,6 +21,7 @@
  */
 export const ROLES = {
   ADMIN: 'admin',
+  MANAGER: 'manager',
   VIEWER: 'viewer',
 } as const;
 
@@ -29,12 +32,15 @@ export const ROLES = {
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 // ===========================================
-// Role Configuration
+// Legacy Role Configuration (Deprecated)
 // ===========================================
 
 /**
  * Parse admin emails from environment variable
  * Format: comma-separated list of emails
+ *
+ * @deprecated Use Backend API (fetchRoleFromBackend in auth.ts) instead.
+ * This function is kept for backwards compatibility only.
  *
  * @example
  * ADMIN_EMAILS=admin@eneos.co.th,manager@eneos.co.th
@@ -53,17 +59,18 @@ function getAdminEmails(): string[] {
 }
 
 // ===========================================
-// Role Resolution Functions
+// Legacy Role Resolution (Deprecated)
 // ===========================================
 
 /**
- * Get user role based on email
+ * Get user role based on email from ADMIN_EMAILS env var
  *
- * AC#1: Default role for new users is "viewer"
- * AC#2: Role is fetched from ADMIN_EMAILS configuration
+ * @deprecated Role is now fetched from Backend API during login.
+ * See fetchRoleFromBackend() in auth.ts for the current implementation.
+ * This function is kept for backwards compatibility and testing only.
  *
  * @param email - User email address
- * @returns User role (admin or viewer)
+ * @returns User role (admin or viewer - does NOT support manager)
  */
 export function getUserRole(email: string): Role {
   if (!email) {
@@ -92,6 +99,17 @@ export function isAdmin(role: Role): boolean {
 }
 
 /**
+ * Check if role has manager-level access or higher
+ * Returns true for both 'admin' and 'manager' roles
+ *
+ * @param role - User role to check
+ * @returns true if role is admin or manager
+ */
+export function isManager(role: Role): boolean {
+  return role === ROLES.ADMIN || role === ROLES.MANAGER;
+}
+
+/**
  * Check if role is viewer
  */
 export function isViewer(role: Role): boolean {
@@ -105,6 +123,8 @@ export function getRoleDisplayName(role: Role): string {
   switch (role) {
     case ROLES.ADMIN:
       return 'Admin';
+    case ROLES.MANAGER:
+      return 'Manager';
     case ROLES.VIEWER:
       return 'Viewer';
     default:

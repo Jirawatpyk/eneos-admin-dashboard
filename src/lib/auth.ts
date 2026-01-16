@@ -1,7 +1,10 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { getUserRole, ROLES } from '../config/roles';
+import { ROLES } from '../config/roles';
 import type { JWT } from 'next-auth/jwt';
+
+// Backend API URL for fetching user role
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // Validate required environment variables at module load
 const requiredEnvVars = {
@@ -38,6 +41,63 @@ const isAllowedDomain = (email: string | null | undefined): boolean => {
 
 // Google ID tokens expire after ~1 hour, refresh 5 minutes before
 const ID_TOKEN_REFRESH_BUFFER = 5 * 60; // 5 minutes in seconds
+
+// Timeout for backend API calls during authentication (5 seconds)
+const BACKEND_API_TIMEOUT = 5000;
+
+/**
+ * Fetch user role from Backend API (Single Source of Truth)
+ * Role is stored in Google Sheets Sales_Team sheet
+ *
+ * @param idToken - Google ID token for authentication
+ * @returns User role from backend, defaults to 'viewer' on error or timeout
+ */
+async function fetchRoleFromBackend(idToken: string): Promise<typeof ROLES[keyof typeof ROLES]> {
+  try {
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), BACKEND_API_TIMEOUT);
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn('[Auth] Failed to fetch role from backend:', response.status);
+      return ROLES.VIEWER;
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.data?.role) {
+      const role = data.data.role.toLowerCase();
+      if (role === 'admin' || role === 'manager') {
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Auth] Role fetched from backend:', role);
+        }
+        return role as typeof ROLES[keyof typeof ROLES];
+      }
+    }
+
+    return ROLES.VIEWER;
+  } catch (error) {
+    // Check if it was a timeout
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('[Auth] Backend API timeout - defaulting to viewer role');
+    } else {
+      console.error('[Auth] Error fetching role from backend:', error);
+    }
+    return ROLES.VIEWER;
+  }
+}
 
 /**
  * Refresh Google ID token using refresh_token
@@ -127,8 +187,8 @@ export const authOptions: NextAuthOptions = {
         token.issuedAt = now; // Original login time - never changes
         token.lastRefreshedAt = now; // Tracks last refresh
         token.expiresAt = now + SESSION_MAX_AGE;
-        // AC#2: Fetch role based on user email during sign-in
-        token.role = getUserRole(user.email || '');
+        // Fetch role from Backend API (Single Source of Truth: Google Sheets)
+        token.role = await fetchRoleFromBackend(account.id_token as string);
         return token;
       }
 

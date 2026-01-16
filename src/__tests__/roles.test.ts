@@ -13,20 +13,22 @@ describe('Role Configuration', () => {
   });
 
   describe('ROLES constant', () => {
-    it('should define ADMIN and VIEWER roles', async () => {
+    it('should define ADMIN, MANAGER and VIEWER roles', async () => {
       const { ROLES } = await import('../config/roles');
 
       expect(ROLES).toBeDefined();
       expect(ROLES.ADMIN).toBe('admin');
+      expect(ROLES.MANAGER).toBe('manager');
       expect(ROLES.VIEWER).toBe('viewer');
     });
 
-    it('should only have two roles (admin and viewer)', async () => {
+    it('should have three roles (admin, manager and viewer)', async () => {
       const { ROLES } = await import('../config/roles');
 
       const roleValues = Object.values(ROLES);
-      expect(roleValues).toHaveLength(2);
+      expect(roleValues).toHaveLength(3);
       expect(roleValues).toContain('admin');
+      expect(roleValues).toContain('manager');
       expect(roleValues).toContain('viewer');
     });
   });
@@ -106,10 +108,36 @@ describe('Role Configuration', () => {
       expect(isAdmin(ROLES.ADMIN)).toBe(true);
     });
 
+    it('should return false for manager role', async () => {
+      const { isAdmin, ROLES } = await import('../config/roles');
+
+      expect(isAdmin(ROLES.MANAGER)).toBe(false);
+    });
+
     it('should return false for viewer role', async () => {
       const { isAdmin, ROLES } = await import('../config/roles');
 
       expect(isAdmin(ROLES.VIEWER)).toBe(false);
+    });
+  });
+
+  describe('isManager helper', () => {
+    it('should return true for admin role', async () => {
+      const { isManager, ROLES } = await import('../config/roles');
+
+      expect(isManager(ROLES.ADMIN)).toBe(true);
+    });
+
+    it('should return true for manager role', async () => {
+      const { isManager, ROLES } = await import('../config/roles');
+
+      expect(isManager(ROLES.MANAGER)).toBe(true);
+    });
+
+    it('should return false for viewer role', async () => {
+      const { isManager, ROLES } = await import('../config/roles');
+
+      expect(isManager(ROLES.VIEWER)).toBe(false);
     });
   });
 
@@ -125,6 +153,12 @@ describe('Role Configuration', () => {
 
       expect(isViewer(ROLES.ADMIN)).toBe(false);
     });
+
+    it('should return false for manager role', async () => {
+      const { isViewer, ROLES } = await import('../config/roles');
+
+      expect(isViewer(ROLES.MANAGER)).toBe(false);
+    });
   });
 
   describe('getRoleDisplayName helper', () => {
@@ -132,6 +166,12 @@ describe('Role Configuration', () => {
       const { getRoleDisplayName, ROLES } = await import('../config/roles');
 
       expect(getRoleDisplayName(ROLES.ADMIN)).toBe('Admin');
+    });
+
+    it('should return "Manager" for manager role', async () => {
+      const { getRoleDisplayName, ROLES } = await import('../config/roles');
+
+      expect(getRoleDisplayName(ROLES.MANAGER)).toBe('Manager');
     });
 
     it('should return "Viewer" for viewer role', async () => {
