@@ -8,6 +8,13 @@
 import { getDaysInMonth } from 'date-fns';
 
 /**
+ * Threshold constants for target status calculation
+ * Used in getTargetStatus() to determine above/on/below status
+ */
+const TARGET_THRESHOLD_ABOVE = 100; // >= 100% = "above" (green)
+const TARGET_THRESHOLD_ON_TRACK = 70; // >= 70% = "on track" (amber), < 70% = "below" (red)
+
+/**
  * Target status type
  */
 export type TargetStatusType = 'above' | 'on' | 'below';
@@ -25,15 +32,25 @@ export interface TargetStatusResult {
  * Prorate monthly target based on selected period
  * Story 3.7 AC#6: Period-Adjusted Targets
  *
- * @param monthlyTarget - The full monthly target
+ * @param monthlyTarget - The full monthly target (e.g., 15 closed deals per person per month)
  * @param period - The selected period (week, month, quarter, lastQuarter, custom)
- * @param customDays - Number of days for custom range (optional)
+ * @param customDays - Number of days for custom date range (optional).
+ *                     Use `getDaysInRange(from, to)` to calculate this value.
+ *                     Only used when period is 'custom'. Falls back to monthlyTarget if 0 or undefined.
  * @returns Prorated target for the period
  *
  * @example
- * prorateTarget(15, 'week') // ~3.39 for a 31-day month
+ * // Weekly target (7 days of a 31-day month)
+ * prorateTarget(15, 'week') // ~3.39
+ *
+ * @example
+ * // Quarterly target (3 months)
  * prorateTarget(15, 'quarter') // 45
- * prorateTarget(15, 'custom', 10) // 5
+ *
+ * @example
+ * // Custom 10-day range (10/30 of monthly target)
+ * const days = getDaysInRange(startDate, endDate); // e.g., 10
+ * prorateTarget(15, 'custom', days) // 5
  */
 export function prorateTarget(
   monthlyTarget: number,
@@ -99,11 +116,11 @@ export function getTargetStatus(actual: number, target: number): TargetStatusRes
   const percent = (actual / target) * 100;
   const difference = actual - target;
 
-  // Determine status based on percentage thresholds
+  // Determine status based on percentage thresholds (see constants at top of file)
   let status: TargetStatusType;
-  if (percent >= 100) {
+  if (percent >= TARGET_THRESHOLD_ABOVE) {
     status = 'above';
-  } else if (percent >= 70) {
+  } else if (percent >= TARGET_THRESHOLD_ON_TRACK) {
     status = 'on';
   } else {
     status = 'below';
