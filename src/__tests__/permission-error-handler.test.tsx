@@ -7,13 +7,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 
-// Mock hooks
-const mockToast = vi.fn();
-const mockReplace = vi.fn();
-const mockSearchParams = new URLSearchParams();
+// Mock hooks - use vi.hoisted for proper mock hoisting
+const { mockToast, mockReplace, mockGet } = vi.hoisted(() => ({
+  mockToast: vi.fn(),
+  mockReplace: vi.fn(),
+  mockGet: vi.fn(),
+}));
 
 vi.mock('next/navigation', () => ({
-  useSearchParams: () => mockSearchParams,
+  useSearchParams: () => ({
+    get: mockGet,
+    toString: () => '',
+  }),
   useRouter: () => ({
     replace: mockReplace,
   }),
@@ -25,18 +30,17 @@ vi.mock('@/hooks/use-toast', () => ({
   }),
 }));
 
+// Import component after mocks are set up
+import { PermissionErrorHandler } from '../components/shared/permission-error-handler';
+
 describe('PermissionErrorHandler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSearchParams.delete('error');
+    mockGet.mockReturnValue(null);
   });
 
-  it('should show toast when error=Unauthorized is in URL', async () => {
-    mockSearchParams.set('error', 'Unauthorized');
-
-    const { PermissionErrorHandler } = await import(
-      '../components/shared/permission-error-handler'
-    );
+  it('should show toast when error=Unauthorized is in URL', () => {
+    mockGet.mockReturnValue('Unauthorized');
 
     render(<PermissionErrorHandler />);
 
@@ -48,36 +52,24 @@ describe('PermissionErrorHandler', () => {
     });
   });
 
-  it('should clean up URL after showing toast', async () => {
-    mockSearchParams.set('error', 'Unauthorized');
-
-    const { PermissionErrorHandler } = await import(
-      '../components/shared/permission-error-handler'
-    );
+  it('should clean up URL after showing toast', () => {
+    mockGet.mockReturnValue('Unauthorized');
 
     render(<PermissionErrorHandler />);
 
     expect(mockReplace).toHaveBeenCalled();
   });
 
-  it('should not show toast for other errors', async () => {
-    mockSearchParams.set('error', 'OtherError');
-
-    const { PermissionErrorHandler } = await import(
-      '../components/shared/permission-error-handler'
-    );
+  it('should not show toast for other errors', () => {
+    mockGet.mockReturnValue('OtherError');
 
     render(<PermissionErrorHandler />);
 
     expect(mockToast).not.toHaveBeenCalled();
   });
 
-  it('should not show toast when no error param', async () => {
-    // No error param set
-
-    const { PermissionErrorHandler } = await import(
-      '../components/shared/permission-error-handler'
-    );
+  it('should not show toast when no error param', () => {
+    mockGet.mockReturnValue(null);
 
     render(<PermissionErrorHandler />);
 

@@ -2,13 +2,15 @@
  * Performance Table Container Component
  * Story 3.1: Sales Team Performance Table
  * Story 3.2: Conversion Rate Analytics
+ * Story 3.3: Sales Performance Bar Chart
  *
  * AC#1-8: Container component that handles:
  * - Data fetching with useSalesPerformance hook
  * - Loading/error/empty states
  * - Passing data to presentation component
  * - Summary cards integration (Story 3.2)
- * - Filter and highlight callbacks (Story 3.2)
+ * - Bar chart integration (Story 3.3)
+ * - Filter and highlight callbacks (Story 3.2, 3.3)
  */
 'use client';
 
@@ -20,6 +22,8 @@ import { PerformanceTableEmpty } from './performance-table-empty';
 import { PerformanceTableError } from './performance-table-error';
 import { ConversionSummaryCards } from './conversion-summary-cards';
 import { ConversionSummarySkeleton } from './conversion-summary-skeleton';
+import { PerformanceBarChart } from './performance-bar-chart';
+import { PerformanceBarChartSkeleton } from './performance-bar-chart-skeleton';
 import { CONVERSION_THRESHOLDS } from '@/lib/sales-constants';
 
 export function PerformanceTableContainer() {
@@ -61,8 +65,9 @@ export function PerformanceTableContainer() {
   // AC#8: Loading state
   if (isLoading) {
     return (
-      <div>
+      <div className="space-y-6">
         <ConversionSummarySkeleton />
+        <PerformanceBarChartSkeleton />
         <PerformanceTableSkeleton />
       </div>
     );
@@ -92,6 +97,12 @@ export function PerformanceTableContainer() {
         isLoading={false}
         onFilterNeedsImprovement={handleFilterNeedsImprovement}
         onHighlightBestPerformer={handleHighlightBestPerformer}
+      />
+
+      {/* Story 3.3: Performance Bar Chart */}
+      <PerformanceBarChart
+        data={data.teamPerformance}
+        onBarClick={handleHighlightBestPerformer}
       />
 
       {/* Filter indicator */}

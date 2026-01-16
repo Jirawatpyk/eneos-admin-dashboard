@@ -135,3 +135,13 @@ export const STATUS_LABELS: Record<keyof typeof STATUS_COLORS, string> = {
   lost: 'Lost',
   unreachable: 'Unreachable',
 } as const;
+
+// ===========================================
+// Sales Performance Bar Chart (Story 3.3)
+// ===========================================
+
+export const SALES_BAR_COLORS = {
+  claimed: '#3B82F6',    // Blue-500
+  contacted: '#F59E0B',  // Amber-500
+  closed: '#22C55E',     // Green-500
+} as const;
