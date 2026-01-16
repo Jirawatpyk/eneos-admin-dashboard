@@ -49,3 +49,7 @@ src/app/api/debug/
 
 # Windows artifacts
 nul
+
+# Test output files
+test-output.txt
+test-results.json
