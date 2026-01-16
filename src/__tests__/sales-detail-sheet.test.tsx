@@ -1,6 +1,7 @@
 /**
  * Sales Detail Sheet Tests
  * Story 3.1: Sales Team Performance Table
+ * Story 3.5: Individual Performance Trend (integration)
  *
  * Tests for AC#7: Detail Sheet/Dialog panel
  */
@@ -8,6 +9,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SalesDetailSheet } from '@/components/sales/sales-detail-sheet';
 import type { SalesPersonMetrics } from '@/types/sales';
+
+// Mock IndividualTrendChart to avoid Recharts issues in tests
+vi.mock('@/components/sales/individual-trend-chart', () => ({
+  IndividualTrendChart: ({ userId, userName }: { userId: string; userName: string }) => (
+    <div data-testid="individual-trend-chart" data-user-id={userId}>
+      {userName}&apos;s Trend Chart (Mocked)
+    </div>
+  ),
+}));
 
 const mockSalesPerson: SalesPersonMetrics = {
   userId: 'user1',

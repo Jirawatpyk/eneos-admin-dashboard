@@ -46,6 +46,8 @@ import {
   formatResponseTime,
   getConversionRateValue,
   getResponseTimeValue,
+  getResponseTimeStatus,
+  getResponseTimeBgColor,
 } from '@/lib/format-sales';
 import { SalesDetailSheet } from './sales-detail-sheet';
 import { ConversionProgressBar } from './conversion-progress-bar';
@@ -291,11 +293,28 @@ export function PerformanceTable({ data, highlightedUserId }: PerformanceTablePr
             Avg Response
           </SortableHeader>
         ),
-        cell: ({ row }) => (
-          <span className="text-right block">
-            {formatResponseTime(row.original.avgResponseTime)}
-          </span>
-        ),
+        // AC#4 (Story 3.4): Color indicators for response time
+        cell: ({ row }) => {
+          const responseTime = row.original.avgResponseTime;
+          const status = getResponseTimeStatus(responseTime);
+          return (
+            <div className="flex items-center justify-end gap-2">
+              {status && (
+                <span
+                  className={cn(
+                    'h-2 w-2 rounded-full shrink-0',
+                    getResponseTimeBgColor(status)
+                  )}
+                  aria-hidden="true"
+                  data-testid={`response-time-indicator-${status}`}
+                />
+              )}
+              <span className="text-right tabular-nums">
+                {formatResponseTime(responseTime)}
+              </span>
+            </div>
+          );
+        },
         sortingFn: 'basic',
       },
     ],

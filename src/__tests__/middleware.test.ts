@@ -5,7 +5,7 @@ describe('Auth Middleware - AC5: Protected Routes', () => {
   const matcher = config.matcher[0];
 
   // Convert Next.js matcher pattern to actual regex for testing
-  // Next.js pattern: /((?!login|api/auth|_next/static|_next/image|favicon.ico).*)
+  // Next.js pattern: /((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)
   const createMatcherRegex = (pattern: string): RegExp => {
     // Remove leading slash and create regex
     const regexStr = pattern.slice(1);
@@ -47,6 +47,15 @@ describe('Auth Middleware - AC5: Protected Routes', () => {
       expect(matchesMiddleware('/favicon.ico')).toBe(false);
     });
 
+    it('should NOT protect static image files in public folder', () => {
+      expect(matchesMiddleware('/eneos-logo.svg')).toBe(false);
+      expect(matchesMiddleware('/logo.png')).toBe(false);
+      expect(matchesMiddleware('/image.jpg')).toBe(false);
+      expect(matchesMiddleware('/photo.jpeg')).toBe(false);
+      expect(matchesMiddleware('/icon.gif')).toBe(false);
+      expect(matchesMiddleware('/banner.webp')).toBe(false);
+    });
+
     it('should protect other API routes (non-auth)', () => {
       expect(matchesMiddleware('/api/leads')).toBe(true);
       expect(matchesMiddleware('/api/dashboard')).toBe(true);
@@ -60,7 +69,9 @@ describe('Auth Middleware - AC5: Protected Routes', () => {
 
   describe('Matcher Configuration', () => {
     it('should have correct matcher pattern', () => {
-      expect(matcher).toBe('/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)');
+      expect(matcher).toBe(
+        '/((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'
+      );
     });
 
     it('should be a valid regex pattern', () => {

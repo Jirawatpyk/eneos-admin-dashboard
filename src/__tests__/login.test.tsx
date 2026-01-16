@@ -46,7 +46,7 @@ describe('LoginPage', () => {
     it('should render login card with ENEOS branding', () => {
       render(<LoginPage />);
 
-      expect(screen.getByText('ENEOS')).toBeInTheDocument();
+      expect(screen.getByAltText('ENEOS Logo')).toBeInTheDocument();
       expect(screen.getByText('Sales Dashboard')).toBeInTheDocument();
     });
 

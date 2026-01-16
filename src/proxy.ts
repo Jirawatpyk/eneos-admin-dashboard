@@ -120,5 +120,8 @@ export const config = {
   // - /_next/static/* (static files)
   // - /_next/image/* (image optimization)
   // - /favicon.ico
-  matcher: ['/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)'],
+  // - Static files (svg, png, jpg, etc.)
+  matcher: [
+    '/((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 };

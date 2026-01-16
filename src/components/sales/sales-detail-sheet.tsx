@@ -1,10 +1,12 @@
 /**
  * Sales Detail Sheet Component
  * Story 3.1: Sales Team Performance Table
+ * Story 3.5: Individual Performance Trend (integrated)
  *
  * AC#7: Detail Sheet/Dialog panel showing individual metrics
  * - Shows: name, email, all metrics, and period breakdown
  * - Can be closed with X button or Escape key
+ * - Story 3.5: Includes individual trend chart
  */
 'use client';
 
@@ -35,6 +37,7 @@ import {
 } from '@/lib/format-sales';
 import type { SalesPersonMetrics } from '@/types/sales';
 import { cn } from '@/lib/utils';
+import { IndividualTrendChart } from './individual-trend-chart';
 
 interface SalesDetailSheetProps {
   open: boolean;
@@ -101,7 +104,7 @@ export function SalesDetailSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        className="w-full sm:max-w-lg overflow-y-auto"
+        className="w-full sm:max-w-xl overflow-y-auto"
         data-testid="sales-detail-sheet"
       >
         <SheetHeader className="space-y-1 pb-4 border-b">
@@ -175,6 +178,14 @@ export function SalesDetailSheet({
               label="Unreachable"
               value={salesPerson.unreachable}
               icon={<PhoneOff className="h-4 w-4 text-gray-500" />}
+            />
+          </div>
+
+          {/* Story 3.5: Performance Trend Chart */}
+          <div className="pt-4 border-t">
+            <IndividualTrendChart
+              userId={salesPerson.userId}
+              userName={salesPerson.name}
             />
           </div>
 

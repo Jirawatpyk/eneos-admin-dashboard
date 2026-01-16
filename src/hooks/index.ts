@@ -13,3 +13,11 @@ export {
   type UseAutoRefreshOptions,
   type UseAutoRefreshReturn,
 } from './use-auto-refresh';
+export {
+  useSalesPerformance,
+  type UseSalesPerformanceReturn,
+} from './use-sales-performance';
+export {
+  useSalesTrend,
+  type UseSalesTrendReturn,
+} from './use-sales-trend';

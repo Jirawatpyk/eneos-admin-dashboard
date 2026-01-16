@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 
 function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,11 +59,15 @@ function LoginContent() {
   return (
     <>
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        {/* ENEOS Logo Placeholder */}
+        {/* ENEOS Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-32 h-12 bg-eneos-red rounded flex items-center justify-center">
-            <span className="text-white font-bold text-xl">ENEOS</span>
-          </div>
+          <Image
+            src="/eneos-logo.svg"
+            alt="ENEOS Logo"
+            width={120}
+            height={120}
+            priority
+          />
         </div>
 
         {/* Title */}

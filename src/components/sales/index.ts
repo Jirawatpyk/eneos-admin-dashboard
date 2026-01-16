@@ -3,6 +3,8 @@
  * Story 3.1: Sales Team Performance Table
  * Story 3.2: Conversion Rate Analytics
  * Story 3.3: Sales Performance Bar Chart
+ * Story 3.4: Response Time Analytics
+ * Story 3.5: Individual Performance Trend
  */
 
 // Performance Table (Story 3.1)
@@ -31,3 +33,15 @@ export { PerformanceBarChartSkeleton } from './performance-bar-chart-skeleton';
 export { PerformanceBarChartEmpty } from './performance-bar-chart-empty';
 export { PerformanceBarChartTooltip } from './performance-bar-chart-tooltip';
 export { AccessibleLegend } from './accessible-legend';
+
+// Response Time Analytics (Story 3.4 - AC#1-9)
+export { ResponseTimeCard } from './response-time-card';
+export { ResponseTimeCardSkeleton } from './response-time-card-skeleton';
+export { ResponseTimeGauge } from './response-time-gauge';
+
+// Individual Trend Chart (Story 3.5 - AC#1-9)
+export { IndividualTrendChart } from './individual-trend-chart';
+export { TrendChartSkeleton } from './trend-chart-skeleton';
+export { TrendChartEmpty } from './trend-chart-empty';
+export { TrendChartTooltip } from './trend-chart-tooltip';
+export { TrendIndicator, calculateTrendDirection } from './trend-indicator';

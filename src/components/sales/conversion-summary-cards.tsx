@@ -1,15 +1,17 @@
 /**
  * Conversion Summary Cards Container
  * Story 3.2: Conversion Rate Analytics
+ * Story 3.4: Response Time Analytics
  *
  * AC#1: Summary cards display above performance table
- * AC#8: Responsive design (3 cols desktop, 2 tablet, 1 mobile)
+ * AC#8: Responsive design (4 cols desktop, 2 tablet, 1 mobile)
  */
 'use client';
 
 import { TeamAverageCard } from './team-average-card';
 import { BestPerformerCard } from './best-performer-card';
 import { NeedsImprovementCard } from './needs-improvement-card';
+import { ResponseTimeCard } from './response-time-card';
 import { ConversionSummarySkeleton } from './conversion-summary-skeleton';
 import type { SalesPerformanceData } from '@/types/sales';
 
@@ -18,6 +20,8 @@ interface ConversionSummaryCardsProps {
   isLoading: boolean;
   onFilterNeedsImprovement: () => void;
   onHighlightBestPerformer: (userId: string) => void;
+  /** Story 3.4: Filter to show only slow responders */
+  onFilterSlowResponders?: () => void;
 }
 
 export function ConversionSummaryCards({
@@ -25,6 +29,7 @@ export function ConversionSummaryCards({
   isLoading,
   onFilterNeedsImprovement,
   onHighlightBestPerformer,
+  onFilterSlowResponders,
 }: ConversionSummaryCardsProps) {
   if (isLoading || !data) {
     return <ConversionSummarySkeleton />;
@@ -32,7 +37,7 @@ export function ConversionSummaryCards({
 
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
       data-testid="conversion-summary-cards"
     >
       <TeamAverageCard avgConversionRate={data.summary.avgConversionRate} />
@@ -43,6 +48,13 @@ export function ConversionSummaryCards({
       <NeedsImprovementCard
         teamPerformance={data.teamPerformance}
         onClick={onFilterNeedsImprovement}
+      />
+      {/* Story 3.4: Response Time Card */}
+      <ResponseTimeCard
+        teamAverage={data.summary.avgResponseTime}
+        teamPerformance={data.teamPerformance}
+        onHighlight={onHighlightBestPerformer}
+        onFilterSlow={onFilterSlowResponders}
       />
     </div>
   );

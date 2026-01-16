@@ -12,6 +12,10 @@ import {
   getConversionRateColor,
   formatResponseTime,
   getResponseTimeValue,
+  RESPONSE_TIME_THRESHOLDS,
+  getResponseTimeStatus,
+  getResponseTimeColor,
+  getResponseTimeBgColor,
 } from '@/lib/format-sales';
 
 describe('formatConversionRate', () => {
@@ -112,6 +116,12 @@ describe('formatResponseTime', () => {
     expect(formatResponseTime(14.6)).toBe('15 min');
     expect(formatResponseTime(14.4)).toBe('14 min');
   });
+
+  it('handles sub-minute values (rounds to 0)', () => {
+    expect(formatResponseTime(0.4)).toBe('0 min');
+    expect(formatResponseTime(0.5)).toBe('1 min');
+    expect(formatResponseTime(0.1)).toBe('0 min');
+  });
 });
 
 describe('getResponseTimeValue', () => {
@@ -124,5 +134,91 @@ describe('getResponseTimeValue', () => {
     expect(getResponseTimeValue(null)).toBe(Number.MAX_SAFE_INTEGER);
     expect(getResponseTimeValue(undefined)).toBe(Number.MAX_SAFE_INTEGER);
     expect(getResponseTimeValue(-1)).toBe(Number.MAX_SAFE_INTEGER);
+  });
+});
+
+/**
+ * Story 3.4: Response Time Analytics Tests
+ * AC#3, AC#4, AC#6, AC#7
+ */
+describe('RESPONSE_TIME_THRESHOLDS', () => {
+  it('has correct threshold values', () => {
+    expect(RESPONSE_TIME_THRESHOLDS.FAST).toBe(30);
+    expect(RESPONSE_TIME_THRESHOLDS.ACCEPTABLE).toBe(60);
+  });
+});
+
+describe('getResponseTimeStatus', () => {
+  // AC#3, AC#4: Green for < 30 min (fast)
+  it('returns fast for times < 30 minutes', () => {
+    expect(getResponseTimeStatus(0)).toBe('fast');
+    expect(getResponseTimeStatus(15)).toBe('fast');
+    expect(getResponseTimeStatus(29)).toBe('fast');
+    expect(getResponseTimeStatus(29.9)).toBe('fast');
+  });
+
+  // AC#3, AC#4: Amber for 30-60 min (acceptable)
+  it('returns acceptable for times 30-60 minutes', () => {
+    expect(getResponseTimeStatus(30)).toBe('acceptable');
+    expect(getResponseTimeStatus(45)).toBe('acceptable');
+    expect(getResponseTimeStatus(60)).toBe('acceptable'); // exactly 60 is acceptable, NOT slow
+  });
+
+  // AC#3, AC#4, AC#6: Red for > 60 min (slow)
+  it('returns slow for times > 60 minutes', () => {
+    expect(getResponseTimeStatus(61)).toBe('slow');
+    expect(getResponseTimeStatus(90)).toBe('slow');
+    expect(getResponseTimeStatus(120)).toBe('slow');
+    expect(getResponseTimeStatus(1440)).toBe('slow');
+  });
+
+  // AC#6: Exactly 60 is acceptable, NOT slow
+  it('treats exactly 60 minutes as acceptable, not slow', () => {
+    expect(getResponseTimeStatus(60)).toBe('acceptable');
+    expect(getResponseTimeStatus(60)).not.toBe('slow');
+  });
+
+  it('returns null for null, undefined, or negative values', () => {
+    expect(getResponseTimeStatus(null)).toBeNull();
+    expect(getResponseTimeStatus(undefined)).toBeNull();
+    expect(getResponseTimeStatus(-1)).toBeNull();
+  });
+});
+
+describe('getResponseTimeColor', () => {
+  // AC#3, AC#4: Text colors for each status
+  it('returns green text class for fast status', () => {
+    expect(getResponseTimeColor('fast')).toBe('text-green-600');
+  });
+
+  it('returns amber text class for acceptable status', () => {
+    expect(getResponseTimeColor('acceptable')).toBe('text-amber-600');
+  });
+
+  it('returns red text class for slow status', () => {
+    expect(getResponseTimeColor('slow')).toBe('text-red-600');
+  });
+
+  it('returns muted class for null status', () => {
+    expect(getResponseTimeColor(null)).toBe('text-muted-foreground');
+  });
+});
+
+describe('getResponseTimeBgColor', () => {
+  // AC#4: Background colors for indicator dots
+  it('returns green bg class for fast status', () => {
+    expect(getResponseTimeBgColor('fast')).toBe('bg-green-500');
+  });
+
+  it('returns amber bg class for acceptable status', () => {
+    expect(getResponseTimeBgColor('acceptable')).toBe('bg-amber-500');
+  });
+
+  it('returns red bg class for slow status', () => {
+    expect(getResponseTimeBgColor('slow')).toBe('bg-red-500');
+  });
+
+  it('returns muted bg class for null status', () => {
+    expect(getResponseTimeBgColor(null)).toBe('bg-muted');
   });
 });

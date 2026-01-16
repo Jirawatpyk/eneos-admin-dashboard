@@ -3,6 +3,8 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { UserNav } from '@/components/layout/user-nav';
+import { Sidebar } from '@/components/layout/sidebar';
+import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 import { SessionWarning } from '@/components/shared/session-warning';
 import { SessionSync } from '@/components/shared/session-sync';
 import { PermissionErrorHandler } from '@/components/shared/permission-error-handler';
@@ -52,24 +54,31 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-8 bg-eneos-red rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">ENEOS</span>
+      {/* Desktop Sidebar - fixed position */}
+      <Sidebar />
+
+      {/* Main content area - offset by sidebar on desktop */}
+      <div className="md:pl-64">
+        {/* Header */}
+        <header className="sticky top-0 z-40 bg-white border-b">
+          <div className="px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                {/* Mobile hamburger menu */}
+                <MobileSidebar />
               </div>
-              <span className="text-lg font-semibold text-gray-800">
-                Sales Dashboard
-              </span>
+              {session.user && <UserNav user={session.user} />}
             </div>
-            {session.user && <UserNav user={session.user} />}
           </div>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+        </header>
+
+        {/* Main content */}
+        <main className="px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </main>
+      </div>
+
+      {/* Session management components */}
       <SessionWarning />
       <SessionSync />
       <PermissionErrorHandler />

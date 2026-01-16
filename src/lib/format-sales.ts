@@ -81,3 +81,78 @@ export function getResponseTimeValue(minutes: number | null | undefined): number
   if (minutes == null || minutes < 0) return Number.MAX_SAFE_INTEGER;
   return minutes;
 }
+
+/**
+ * Response time thresholds (in minutes)
+ * Story 3.4: Response Time Analytics
+ */
+export const RESPONSE_TIME_THRESHOLDS = {
+  FAST: 30,      // < 30 min = Green (excellent)
+  ACCEPTABLE: 60, // 30-60 min = Amber (acceptable)
+  // > 60 min = Red (needs improvement)
+} as const;
+
+/**
+ * Get response time status category
+ * Story 3.4: AC#3, AC#4, AC#6
+ *
+ * @param minutes - Response time in minutes
+ * @returns Status category: 'fast' | 'acceptable' | 'slow' | null
+ */
+export function getResponseTimeStatus(
+  minutes: number | null | undefined
+): 'fast' | 'acceptable' | 'slow' | null {
+  if (minutes == null || minutes < 0) return null;
+  if (minutes < RESPONSE_TIME_THRESHOLDS.FAST) return 'fast';
+  if (minutes <= RESPONSE_TIME_THRESHOLDS.ACCEPTABLE) return 'acceptable';
+  return 'slow';
+}
+
+/**
+ * Get Tailwind CSS classes for response time color
+ * Story 3.4: AC#3, AC#4
+ *
+ * - fast (< 30 min): Green
+ * - acceptable (30-60 min): Amber
+ * - slow (> 60 min): Red
+ * - null: Muted
+ *
+ * @param status - Response time status from getResponseTimeStatus
+ * @returns Tailwind CSS class string
+ */
+export function getResponseTimeColor(
+  status: ReturnType<typeof getResponseTimeStatus>
+): string {
+  switch (status) {
+    case 'fast':
+      return 'text-green-600';
+    case 'acceptable':
+      return 'text-amber-600';
+    case 'slow':
+      return 'text-red-600';
+    default:
+      return 'text-muted-foreground';
+  }
+}
+
+/**
+ * Get background color class for response time indicator dot
+ * Story 3.4: AC#4 - Table column color indicators
+ *
+ * @param status - Response time status
+ * @returns Tailwind CSS background class
+ */
+export function getResponseTimeBgColor(
+  status: ReturnType<typeof getResponseTimeStatus>
+): string {
+  switch (status) {
+    case 'fast':
+      return 'bg-green-500';
+    case 'acceptable':
+      return 'bg-amber-500';
+    case 'slow':
+      return 'bg-red-500';
+    default:
+      return 'bg-muted';
+  }
+}

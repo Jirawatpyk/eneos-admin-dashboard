@@ -69,3 +69,40 @@ export interface SalesSortingState {
   id: string;
   desc: boolean;
 }
+
+// ===========================================
+// Story 3.5: Individual Performance Trend
+// ===========================================
+
+/**
+ * Daily metrics for a single sales person
+ */
+export interface DailyMetric {
+  date: string; // ISO format: "2026-01-15"
+  claimed: number;
+  contacted: number;
+  closed: number;
+  conversionRate: number;
+}
+
+/**
+ * Trend data for individual sales person
+ * Response from /api/admin/sales-performance/trend
+ */
+export interface SalesTrendData {
+  userId: string;
+  name: string;
+  period: number; // days
+  dailyData: DailyMetric[];
+  teamAverage: DailyMetric[]; // Team avg for same period
+}
+
+/**
+ * Period options for trend chart
+ */
+export type TrendPeriod = 7 | 30 | 90;
+
+/**
+ * Trend direction indicator
+ */
+export type TrendDirection = 'up' | 'down' | 'stable';

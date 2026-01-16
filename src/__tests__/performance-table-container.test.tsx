@@ -2,6 +2,7 @@
  * Performance Table Container Tests
  * Story 3.1: Sales Team Performance Table
  * Story 3.2: Conversion Rate Analytics
+ * Story 3.4: Response Time Analytics
  *
  * Tests for container component data fetching and state management
  * Including filter and highlight integration tests
@@ -69,6 +70,11 @@ const mockSalesData: SalesPerformanceData = {
 describe('PerformanceTableContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Ensure timers are restored even if test fails
+    vi.useRealTimers();
   });
 
   // AC#8: Loading state
@@ -406,6 +412,250 @@ describe('PerformanceTableContainer', () => {
 
       // Highlight should be removed (synchronous check after timers advance)
       expect(row).not.toHaveClass('bg-primary/20');
+    });
+  });
+
+  // Story 3.4: Slow Responder Filter integration tests
+  describe('Filter Slow Responders (Story 3.4)', () => {
+    const mockDataWithSlowResponders: SalesPerformanceData = {
+      teamPerformance: [
+        {
+          userId: 'user1',
+          name: 'Alice',
+          email: 'alice@eneos.co.th',
+          claimed: 50,
+          contacted: 40,
+          closed: 20,
+          lost: 5,
+          unreachable: 5,
+          conversionRate: 40,
+          avgResponseTime: 25, // Fast (< 30 min)
+        },
+        {
+          userId: 'user2',
+          name: 'Bob',
+          email: 'bob@eneos.co.th',
+          claimed: 100,
+          contacted: 80,
+          closed: 30,
+          lost: 40,
+          unreachable: 10,
+          conversionRate: 30,
+          avgResponseTime: 90, // Slow (> 60 min)
+        },
+        {
+          userId: 'user3',
+          name: 'Charlie',
+          email: 'charlie@eneos.co.th',
+          claimed: 80,
+          contacted: 60,
+          closed: 25,
+          lost: 30,
+          unreachable: 5,
+          conversionRate: 31,
+          avgResponseTime: 120, // Slow (> 60 min)
+        },
+      ],
+      summary: {
+        totalClaimed: 230,
+        totalContacted: 180,
+        totalClosed: 75,
+        avgConversionRate: 33.7,
+        avgResponseTime: 78.3,
+      },
+    };
+
+    it('shows slow responders filter indicator when slow badge is clicked', () => {
+      mockUseSalesPerformance.mockReturnValue({
+        data: mockDataWithSlowResponders,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      renderWithProviders(<PerformanceTableContainer />);
+
+      // Click slow responders badge
+      const slowBadge = screen.getByTestId('slow-responders-badge');
+      fireEvent.click(slowBadge);
+
+      // Filter indicator should appear
+      expect(screen.getByTestId('slow-responders-filter-indicator')).toBeInTheDocument();
+      expect(screen.getByText(/Showing 2 slow responders/)).toBeInTheDocument();
+    });
+
+    it('clears slow responders filter when clear button is clicked', () => {
+      mockUseSalesPerformance.mockReturnValue({
+        data: mockDataWithSlowResponders,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      renderWithProviders(<PerformanceTableContainer />);
+
+      // Click slow responders badge to enable filter
+      fireEvent.click(screen.getByTestId('slow-responders-badge'));
+      expect(screen.getByTestId('slow-responders-filter-indicator')).toBeInTheDocument();
+
+      // Click clear filter button
+      fireEvent.click(screen.getByTestId('clear-slow-filter-button'));
+
+      // Filter indicator should be gone
+      expect(screen.queryByTestId('slow-responders-filter-indicator')).not.toBeInTheDocument();
+    });
+
+    it('shows empty filter state when all responders are within 60 minutes', () => {
+      // Mock data where everyone is below 60 min
+      const allFastResponders: SalesPerformanceData = {
+        teamPerformance: [
+          {
+            userId: 'user1',
+            name: 'Alice',
+            email: 'alice@eneos.co.th',
+            claimed: 50,
+            contacted: 40,
+            closed: 20,
+            lost: 5,
+            unreachable: 5,
+            conversionRate: 40,
+            avgResponseTime: 25, // Fast
+          },
+          {
+            userId: 'user2',
+            name: 'Bob',
+            email: 'bob@eneos.co.th',
+            claimed: 100,
+            contacted: 80,
+            closed: 30,
+            lost: 40,
+            unreachable: 10,
+            conversionRate: 30,
+            avgResponseTime: 45, // Acceptable
+          },
+        ],
+        summary: {
+          totalClaimed: 150,
+          totalContacted: 120,
+          totalClosed: 50,
+          avgConversionRate: 35,
+          avgResponseTime: 35,
+        },
+      };
+
+      mockUseSalesPerformance.mockReturnValue({
+        data: allFastResponders,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      renderWithProviders(<PerformanceTableContainer />);
+
+      // Should show "All on track!" badge instead of slow responders badge
+      expect(screen.getByTestId('all-on-track-badge')).toBeInTheDocument();
+      expect(screen.queryByTestId('slow-responders-badge')).not.toBeInTheDocument();
+    });
+
+    it('treats exactly 60 minutes as acceptable (NOT slow)', () => {
+      const exactlyAcceptable: SalesPerformanceData = {
+        teamPerformance: [
+          {
+            userId: 'user1',
+            name: 'Alice',
+            email: 'alice@eneos.co.th',
+            claimed: 50,
+            contacted: 40,
+            closed: 20,
+            lost: 5,
+            unreachable: 5,
+            conversionRate: 40,
+            avgResponseTime: 60, // Exactly 60 = acceptable
+          },
+        ],
+        summary: {
+          totalClaimed: 50,
+          totalContacted: 40,
+          totalClosed: 20,
+          avgConversionRate: 40,
+          avgResponseTime: 60,
+        },
+      };
+
+      mockUseSalesPerformance.mockReturnValue({
+        data: exactlyAcceptable,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      renderWithProviders(<PerformanceTableContainer />);
+
+      // Should show "All on track!" since 60 min is acceptable
+      expect(screen.getByTestId('all-on-track-badge')).toBeInTheDocument();
+    });
+
+    it('clears conversion filter when slow responders filter is enabled', () => {
+      const mixedData: SalesPerformanceData = {
+        teamPerformance: [
+          {
+            userId: 'user1',
+            name: 'Alice',
+            email: 'alice@eneos.co.th',
+            claimed: 100,
+            contacted: 80,
+            closed: 5,
+            lost: 70,
+            unreachable: 10,
+            conversionRate: 5, // Below 10%
+            avgResponseTime: 25,
+          },
+          {
+            userId: 'user2',
+            name: 'Bob',
+            email: 'bob@eneos.co.th',
+            claimed: 50,
+            contacted: 40,
+            closed: 20,
+            lost: 5,
+            unreachable: 5,
+            conversionRate: 40,
+            avgResponseTime: 90, // Slow
+          },
+        ],
+        summary: {
+          totalClaimed: 150,
+          totalContacted: 120,
+          totalClosed: 25,
+          avgConversionRate: 22.5,
+          avgResponseTime: 57.5,
+        },
+      };
+
+      mockUseSalesPerformance.mockReturnValue({
+        data: mixedData,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      renderWithProviders(<PerformanceTableContainer />);
+
+      // First enable conversion rate filter
+      fireEvent.click(screen.getByTestId('needs-improvement-card'));
+      expect(screen.getByTestId('filter-indicator')).toBeInTheDocument();
+
+      // Then enable slow responders filter
+      fireEvent.click(screen.getByTestId('slow-responders-badge'));
+
+      // Conversion filter should be cleared, slow filter should be active
+      expect(screen.queryByTestId('filter-indicator')).not.toBeInTheDocument();
+      expect(screen.getByTestId('slow-responders-filter-indicator')).toBeInTheDocument();
     });
   });
 });
