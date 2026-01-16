@@ -8,7 +8,6 @@
  * AC#6: Visual Feedback - shows selected option, indicator for non-default
  */
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock next/navigation

@@ -29,7 +29,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Import after mocking
-import { DateFilter, type Period, PERIOD_OPTIONS, isValidPeriod } from '@/components/dashboard/date-filter';
+import { DateFilter, PERIOD_OPTIONS, isValidPeriod } from '@/components/dashboard/date-filter';
 
 describe('DateFilter', () => {
   beforeEach(() => {

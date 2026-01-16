@@ -69,8 +69,6 @@ export function ResponseTimeCard({
     return sorted.slice(0, 3);
   }, [teamPerformance]);
 
-  const fastestResponder = topResponders[0] || null;
-
   return (
     <Card data-testid="response-time-card">
       <CardHeader className="pb-2">

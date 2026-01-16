@@ -114,10 +114,14 @@ export function TrendChartTooltip({
         const isTeamAvg = entry.dataKey === 'teamAvgClosed';
         const metricLabel = METRIC_LABELS[entry.dataKey] || entry.name;
 
-        // Get comparison for non-team-avg metrics
+        // Get comparison for non-team-avg metrics (both claimed and closed)
         let comparison: { text: string; colorClass: string } | null = null;
-        if (!isTeamAvg && teamAvgData && entry.dataKey === 'closed') {
-          comparison = formatComparison(entry.value, teamAvgData.closed);
+        if (!isTeamAvg && teamAvgData) {
+          if (entry.dataKey === 'closed') {
+            comparison = formatComparison(entry.value, teamAvgData.closed);
+          } else if (entry.dataKey === 'claimed') {
+            comparison = formatComparison(entry.value, teamAvgData.claimed);
+          }
         }
 
         return (

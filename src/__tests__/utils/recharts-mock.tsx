@@ -25,7 +25,7 @@
  * - BAR_CHART_MOCK: For BarChart tests (future EPIC-03)
  */
 
-import React from 'react';
+// Note: React types referenced in string templates below
 
 /**
  * Area Chart Mock Pattern
@@ -153,9 +153,11 @@ vi.mock('recharts', () => mockRecharts);
 `;
 
 // Export for documentation purposes
-export default {
+const rechartsMocks = {
   AREA_CHART_MOCK,
   PIE_CHART_MOCK,
   BAR_CHART_MOCK,
   FULL_RECHARTS_MOCK,
 };
+
+export default rechartsMocks;

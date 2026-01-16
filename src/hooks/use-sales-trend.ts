@@ -96,7 +96,7 @@ function generateMockTeamAverage(days: number): DailyMetric[] {
 
 /**
  * Fetch sales trend data from API
- * Falls back to mock data if API unavailable
+ * Falls back to mock data only if explicitly in development mode
  */
 async function fetchSalesTrend(userId: string, days: TrendPeriod): Promise<SalesTrendData> {
   const apiUrl = `/api/admin/sales-performance/trend?userId=${userId}&days=${days}`;
@@ -105,21 +105,40 @@ async function fetchSalesTrend(userId: string, days: TrendPeriod): Promise<Sales
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
-      // API not available, use mock data
-      throw new Error('API unavailable');
+      // Check if we should use mock data (development fallback)
+      if (process.env.NODE_ENV === 'development' && response.status === 404) {
+        // Dev mode: API not available, using mock data
+        return {
+          userId,
+          name: 'Mock User',
+          period: days,
+          dailyData: generateMockDailyData(days, userId),
+          teamAverage: generateMockTeamAverage(days),
+        };
+      }
+      throw new Error(`API error: ${response.status}`);
     }
 
     const result = await response.json();
+
+    if (!result.success || !result.data) {
+      throw new Error(result.error?.message || 'Invalid API response');
+    }
+
     return result.data;
-  } catch {
-    // Fallback to mock data for development
-    return {
-      userId,
-      name: 'Mock User',
-      period: days,
-      dailyData: generateMockDailyData(days, userId),
-      teamAverage: generateMockTeamAverage(days),
-    };
+  } catch (error) {
+    // Only fallback to mock data in development
+    if (process.env.NODE_ENV === 'development') {
+      // Dev mode: Error fetching data, using mock data
+      return {
+        userId,
+        name: 'Mock User',
+        period: days,
+        dailyData: generateMockDailyData(days, userId),
+        teamAverage: generateMockTeamAverage(days),
+      };
+    }
+    throw error;
   }
 }
 

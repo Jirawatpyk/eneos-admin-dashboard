@@ -67,6 +67,11 @@ interface VisibleMetrics {
   closed: boolean;
 }
 
+// Recharts onClick callback data type (runtime structure differs from @types)
+interface ChartClickData {
+  activePayload?: Array<{ payload: ChartDataPoint }>;
+}
+
 // ===========================================
 // Constants
 // ===========================================
@@ -149,7 +154,7 @@ export function PerformanceBarChart({
 
   // AC#5: Bar click handler
   const handleChartClick = useCallback(
-    (data: { activePayload?: { payload: ChartDataPoint }[] } | null) => {
+    (data: ChartClickData | null) => {
       if (data?.activePayload?.[0]?.payload && onBarClick) {
         onBarClick(data.activePayload[0].payload.userId);
       }
@@ -203,7 +208,7 @@ export function PerformanceBarChart({
               data={chartData}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-              onClick={handleChartClick}
+              onClick={handleChartClick as (data: unknown) => void}
               style={{ cursor: onBarClick ? 'pointer' : 'default' }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />

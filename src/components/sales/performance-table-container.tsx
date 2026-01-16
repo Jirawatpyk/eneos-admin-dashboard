@@ -3,6 +3,7 @@
  * Story 3.1: Sales Team Performance Table
  * Story 3.2: Conversion Rate Analytics
  * Story 3.3: Sales Performance Bar Chart
+ * Story 3.7: Target vs Actual Comparison
  *
  * AC#1-8: Container component that handles:
  * - Data fetching with useSalesPerformance hook
@@ -11,11 +12,14 @@
  * - Summary cards integration (Story 3.2)
  * - Bar chart integration (Story 3.3)
  * - Filter and highlight callbacks (Story 3.2, 3.3)
+ * - Target calculations and proration (Story 3.7)
  */
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSalesPerformance } from '@/hooks/use-sales-performance';
+import { getTargets } from '@/config/sales-targets';
+import { prorateTarget, getDaysInRange } from '@/lib/target-utils';
 import { PerformanceTable } from './performance-table';
 import { PerformanceTableSkeleton } from './performance-table-skeleton';
 import { PerformanceTableEmpty } from './performance-table-empty';
@@ -28,7 +32,15 @@ import { CONVERSION_THRESHOLDS } from '@/lib/sales-constants';
 import { RESPONSE_TIME_THRESHOLDS } from '@/lib/format-sales';
 
 export function PerformanceTableContainer() {
-  const { data, isLoading, isError, error, refetch } = useSalesPerformance();
+  const { data, isLoading, isError, error, refetch, period, dateRange } = useSalesPerformance();
+
+  // Story 3.7: Calculate prorated target for closed deals
+  const targets = getTargets();
+  const customDays =
+    period === 'custom' && dateRange
+      ? getDaysInRange(dateRange.from, dateRange.to)
+      : undefined;
+  const proratedClosedTarget = prorateTarget(targets.closed, period, customDays);
   const [filterBelowThreshold, setFilterBelowThreshold] = useState(false);
   // Story 3.4: Filter slow responders (avgResponseTime > 60 min)
   const [filterSlowResponders, setFilterSlowResponders] = useState(false);
@@ -126,13 +138,15 @@ export function PerformanceTableContainer() {
   // AC#1-7, 9: Render summary cards and table with data
   return (
     <div className="space-y-6">
-      {/* Story 3.2: Conversion Summary Cards + Story 3.4: Response Time Card */}
+      {/* Story 3.2: Conversion Summary Cards + Story 3.4: Response Time Card + Story 3.7: Target Progress */}
       <ConversionSummaryCards
         data={data}
         isLoading={false}
         onFilterNeedsImprovement={handleFilterNeedsImprovement}
         onHighlightBestPerformer={handleHighlightBestPerformer}
         onFilterSlowResponders={handleFilterSlowResponders}
+        period={period}
+        dateRange={dateRange}
       />
 
       {/* Story 3.3: Performance Bar Chart */}
@@ -183,11 +197,13 @@ export function PerformanceTableContainer() {
         </div>
       )}
 
-      {/* Story 3.1: Performance Table */}
+      {/* Story 3.1: Performance Table + Story 3.7: Target Comparison */}
       {!isFilterEmpty && (
         <PerformanceTable
           data={filteredData || []}
           highlightedUserId={highlightedUserId}
+          closedTarget={proratedClosedTarget}
+          showTargetComparison={true}
         />
       )}
 

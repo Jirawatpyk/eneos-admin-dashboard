@@ -30,6 +30,7 @@ import { TrendChartSkeleton } from './trend-chart-skeleton';
 import { TrendChartEmpty } from './trend-chart-empty';
 import { TrendChartTooltip } from './trend-chart-tooltip';
 import { TrendIndicator, calculateTrendDirection } from './trend-indicator';
+import { ChartErrorBoundary } from '@/components/ui/chart-error-boundary';
 import { CHART_COLORS, CHART_STYLES } from '@/lib/chart-config';
 import { cn } from '@/lib/utils';
 import type { TrendPeriod, DailyMetric } from '@/types/sales';
@@ -264,85 +265,87 @@ export function IndividualTrendChart({
         <PeriodSelector value={period} onChange={setPeriod} />
       </CardHeader>
       <CardContent>
-        {/* AC#9: Responsive chart container */}
-        <div
-          style={{ height: CHART_HEIGHT }}
-          role="img"
-          aria-label={`Line chart showing ${userName}'s performance trend over ${period} days`}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-            >
-              <CartesianGrid
-                strokeDasharray={CHART_STYLES.grid.strokeDasharray}
-                stroke={CHART_COLORS.grid}
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(date) => formatDateLabel(date, period)}
-                tick={{ fontSize: 11, fill: CHART_COLORS.text }}
-                tickLine={false}
-                axisLine={{ stroke: CHART_COLORS.grid }}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: CHART_COLORS.text }}
-                tickLine={false}
-                axisLine={false}
-                width={30}
-                allowDecimals={false}
-              />
-              {/* AC#5: Tooltip with comparison */}
-              <Tooltip
-                content={<TrendChartTooltip teamAverage={data.teamAverage} />}
-              />
-              {/* Hidden native legend - using custom */}
-              <Legend content={() => null} />
-
-              {/* AC#2: Claimed line (blue) */}
-              {visibleMetrics.claimed && (
-                <Line
-                  type="monotone"
-                  dataKey="claimed"
-                  name="Claimed"
-                  stroke={LINE_COLORS.claimed}
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: LINE_COLORS.claimed }}
-                  activeDot={{ r: 5, strokeWidth: 2 }}
+        {/* AC#9: Responsive chart container with Error Boundary */}
+        <ChartErrorBoundary fallbackTitle={`${userName}'s Trend`}>
+          <div
+            style={{ height: CHART_HEIGHT }}
+            role="img"
+            aria-label={`Line chart showing ${userName}'s performance trend over ${period} days`}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray={CHART_STYLES.grid.strokeDasharray}
+                  stroke={CHART_COLORS.grid}
+                  vertical={false}
                 />
-              )}
-
-              {/* AC#2: Closed line (green) */}
-              {visibleMetrics.closed && (
-                <Line
-                  type="monotone"
-                  dataKey="closed"
-                  name="Closed"
-                  stroke={LINE_COLORS.closed}
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: LINE_COLORS.closed }}
-                  activeDot={{ r: 5, strokeWidth: 2 }}
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(date) => formatDateLabel(date, period)}
+                  tick={{ fontSize: 11, fill: CHART_COLORS.text }}
+                  tickLine={false}
+                  axisLine={{ stroke: CHART_COLORS.grid }}
                 />
-              )}
-
-              {/* AC#4: Team Average line (dashed gray) */}
-              {visibleMetrics.teamAvgClosed && (
-                <Line
-                  type="monotone"
-                  dataKey="teamAvgClosed"
-                  name="Team Avg"
-                  stroke={LINE_COLORS.teamAvgClosed}
-                  strokeWidth={1}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  activeDot={false}
+                <YAxis
+                  tick={{ fontSize: 11, fill: CHART_COLORS.text }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={30}
+                  allowDecimals={false}
                 />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                {/* AC#5: Tooltip with comparison */}
+                <Tooltip
+                  content={<TrendChartTooltip teamAverage={data.teamAverage} />}
+                />
+                {/* Hidden native legend - using custom */}
+                <Legend content={() => null} />
+
+                {/* AC#2: Claimed line (blue) */}
+                {visibleMetrics.claimed && (
+                  <Line
+                    type="monotone"
+                    dataKey="claimed"
+                    name="Claimed"
+                    stroke={LINE_COLORS.claimed}
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: LINE_COLORS.claimed }}
+                    activeDot={{ r: 5, strokeWidth: 2 }}
+                  />
+                )}
+
+                {/* AC#2: Closed line (green) */}
+                {visibleMetrics.closed && (
+                  <Line
+                    type="monotone"
+                    dataKey="closed"
+                    name="Closed"
+                    stroke={LINE_COLORS.closed}
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: LINE_COLORS.closed }}
+                    activeDot={{ r: 5, strokeWidth: 2 }}
+                  />
+                )}
+
+                {/* AC#4: Team Average line (dashed gray) */}
+                {visibleMetrics.teamAvgClosed && (
+                  <Line
+                    type="monotone"
+                    dataKey="teamAvgClosed"
+                    name="Team Avg"
+                    stroke={LINE_COLORS.teamAvgClosed}
+                    strokeWidth={1}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    activeDot={false}
+                  />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartErrorBoundary>
 
         {/* AC#2: Custom legend with toggle */}
         <CustomLegend

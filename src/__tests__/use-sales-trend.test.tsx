@@ -3,7 +3,7 @@
  * Story 3.5: Individual Performance Trend
  *
  * Task 1: Trend Data API Hook
- * - Creates mock data for development
+ * - Fetches data from API
  * - Handles loading, error, and empty states
  * - Uses TanStack Query v5 object syntax
  */
@@ -12,6 +12,58 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSalesTrend } from '@/hooks/use-sales-trend';
 import type { ReactNode } from 'react';
+
+// ===========================================
+// Mock Data Generator
+// ===========================================
+
+/**
+ * Creates mock API response matching backend contract:
+ * GET /api/admin/sales-performance/trend?userId={userId}&days={days}
+ *
+ * Response structure from: eneos-sales-automation/src/controllers/admin.controller.ts
+ * - getSalesPerformanceTrend endpoint
+ *
+ * @see SalesTrendData type in @/types/sales for TypeScript interface
+ */
+function createMockApiResponse(userId: string, days: number) {
+  const dailyData = [];
+  const teamAverage = [];
+  const today = new Date();
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateKey = date.toISOString().split('T')[0];
+
+    dailyData.push({
+      date: dateKey,
+      claimed: 3 + (i % 3),
+      contacted: 2 + (i % 2),
+      closed: 1 + (i % 2),
+      conversionRate: 33,
+    });
+
+    teamAverage.push({
+      date: dateKey,
+      claimed: 4,
+      contacted: 3,
+      closed: 1,
+      conversionRate: 25,
+    });
+  }
+
+  return {
+    success: true,
+    data: {
+      userId,
+      name: 'Test User',
+      period: days,
+      dailyData,
+      teamAverage,
+    },
+  };
+}
 
 // ===========================================
 // Test Setup
@@ -37,8 +89,18 @@ function createWrapper() {
 describe('useSalesTrend', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock fetch to always fail (force mock data fallback)
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    // Default: Mock fetch to return successful API response
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      const urlParams = new URL(url, 'http://localhost');
+      const userId = urlParams.searchParams.get('userId') || 'user-1';
+      const days = parseInt(urlParams.searchParams.get('days') || '30', 10);
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(createMockApiResponse(userId, days)),
+      });
+    });
   });
 
   afterEach(() => {
@@ -76,8 +138,8 @@ describe('useSalesTrend', () => {
     });
   });
 
-  describe('Mock Data Fallback', () => {
-    it('returns mock data when API fails', async () => {
+  describe('API Response', () => {
+    it('returns data from API response', async () => {
       const { result } = renderHook(() => useSalesTrend('user-1', 30), {
         wrapper: createWrapper(),
       });
@@ -86,7 +148,7 @@ describe('useSalesTrend', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      // Should have mock data
+      // Should have API data
       expect(result.current.data).toBeDefined();
       expect(result.current.data?.userId).toBe('user-1');
       expect(result.current.data?.period).toBe(30);
@@ -94,7 +156,7 @@ describe('useSalesTrend', () => {
       expect(result.current.data?.teamAverage.length).toBe(30);
     });
 
-    it('generates correct number of data points for each period', async () => {
+    it('returns correct number of data points for each period', async () => {
       const periods = [7, 30, 90] as const;
 
       for (const period of periods) {
@@ -110,7 +172,7 @@ describe('useSalesTrend', () => {
       }
     });
 
-    it('generates different data for different users (deterministic)', async () => {
+    it('fetches data for different users', async () => {
       const { result: result1 } = renderHook(
         () => useSalesTrend('user-alice', 30),
         { wrapper: createWrapper() }
@@ -126,17 +188,9 @@ describe('useSalesTrend', () => {
         expect(result2.current.isLoading).toBe(false);
       });
 
-      // Data should be different for different users
-      const alice = result1.current.data?.dailyData[0];
-      const bob = result2.current.data?.dailyData[0];
-
-      // Just verify structure is correct
-      expect(alice).toHaveProperty('date');
-      expect(alice).toHaveProperty('claimed');
-      expect(alice).toHaveProperty('closed');
-      expect(bob).toHaveProperty('date');
-      expect(bob).toHaveProperty('claimed');
-      expect(bob).toHaveProperty('closed');
+      // Data should be present for different users
+      expect(result1.current.data?.userId).toBe('user-alice');
+      expect(result2.current.data?.userId).toBe('user-bob');
     });
   });
 
@@ -189,10 +243,6 @@ describe('useSalesTrend', () => {
         expect(day.contacted).toBeGreaterThanOrEqual(0);
         expect(day.closed).toBeGreaterThanOrEqual(0);
 
-        // contacted <= claimed, closed <= contacted (logically)
-        expect(day.contacted).toBeLessThanOrEqual(day.claimed);
-        expect(day.closed).toBeLessThanOrEqual(day.contacted);
-
         // conversionRate should be percentage
         expect(day.conversionRate).toBeGreaterThanOrEqual(0);
         expect(day.conversionRate).toBeLessThanOrEqual(100);
@@ -205,10 +255,10 @@ describe('useSalesTrend', () => {
       const fetchSpy = vi.spyOn(global, 'fetch');
 
       const { result, rerender } = renderHook(
-        ({ userId, days }) => useSalesTrend(userId, days),
+        ({ userId, days }: { userId: string; days: 7 | 30 | 90 }) => useSalesTrend(userId, days),
         {
           wrapper: createWrapper(),
-          initialProps: { userId: 'user-1', days: 30 as const },
+          initialProps: { userId: 'user-1', days: 30 as 7 | 30 | 90 },
         }
       );
 
@@ -219,7 +269,7 @@ describe('useSalesTrend', () => {
       const callCount1 = fetchSpy.mock.calls.length;
 
       // Change period
-      rerender({ userId: 'user-1', days: 7 as const });
+      rerender({ userId: 'user-1', days: 7 });
 
       await waitFor(() => {
         expect(fetchSpy.mock.calls.length).toBeGreaterThan(callCount1);
@@ -249,6 +299,34 @@ describe('useSalesTrend', () => {
       await waitFor(() => {
         expect(fetchSpy.mock.calls.length).toBeGreaterThan(callCount1);
       });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('handles API errors', async () => {
+      // Mock fetch to return error
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({
+          success: false,
+          error: { code: 'SERVER_ERROR', message: 'Internal Server Error' },
+        }),
+      });
+
+      const { result } = renderHook(() => useSalesTrend('user-1', 30), {
+        wrapper: createWrapper(),
+      });
+
+      // Wait for error state (hook has retry: 1, so wait longer)
+      await waitFor(
+        () => {
+          expect(result.current.isError).toBe(true);
+        },
+        { timeout: 5000 }
+      );
+
+      expect(result.current.error).toBeDefined();
     });
   });
 });

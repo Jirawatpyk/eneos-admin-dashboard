@@ -212,7 +212,8 @@ describe('PerformanceTable', () => {
 
       renderWithProviders(<PerformanceTable data={dataWithNullTime} />);
 
-      const rows = screen.getAllByRole('button');
+      // Verify rows exist
+      expect(screen.getAllByRole('button').length).toBeGreaterThan(0);
       const naCells = screen.getAllByText('N/A');
       expect(naCells.length).toBeGreaterThanOrEqual(1);
     });

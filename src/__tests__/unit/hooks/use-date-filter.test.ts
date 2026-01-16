@@ -19,7 +19,7 @@ import {
 const MOCK_DATE = new Date('2026-01-15T10:30:00');
 
 // Mock next/navigation
-let mockSearchParamsMap = new Map<string, string>();
+const mockSearchParamsMap = new Map<string, string>();
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => ({

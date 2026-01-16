@@ -54,9 +54,9 @@ describe('NavItem', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('calls onClick when provided', async () => {
+  it('renders link when onClick prop is provided', () => {
     const onClick = vi.fn();
-    const { user } = render(
+    render(
       <NavItem
         href="/sales"
         icon={LayoutDashboard}
@@ -65,8 +65,8 @@ describe('NavItem', () => {
       />
     );
 
-    // Note: This would need userEvent setup for proper click testing
     const link = screen.getByRole('link');
     expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/sales');
   });
 });

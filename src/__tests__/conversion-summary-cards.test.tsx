@@ -99,6 +99,7 @@ describe('ConversionSummaryCards', () => {
   });
 
   // AC#8: Responsive design (3 cols → 2 cols → 1 col based on screen size)
+  // Story 3.7 updated layout: 2 rows (row1: 3 cards, row2: 2 cards)
   describe('AC#8: Responsive Grid Layout', () => {
     it('applies responsive grid classes (1 col mobile, 2 cols tablet, 3 cols desktop)', () => {
       render(
@@ -111,10 +112,12 @@ describe('ConversionSummaryCards', () => {
       );
 
       const container = screen.getByTestId('conversion-summary-cards');
-      expect(container).toHaveClass('grid');
-      expect(container).toHaveClass('grid-cols-1');
-      expect(container).toHaveClass('md:grid-cols-2');
-      expect(container).toHaveClass('lg:grid-cols-3');
+      // Container is now a wrapper with space-y-4, containing inner grid rows
+      expect(container).toHaveClass('space-y-4');
+
+      // First row grid should have responsive classes for 3 cards
+      const firstRowGrid = container.querySelector('.grid.lg\\:grid-cols-3');
+      expect(firstRowGrid).toBeInTheDocument();
     });
   });
 
@@ -200,8 +203,11 @@ describe('ConversionSummaryCards', () => {
       );
 
       // Alice has highest conversion rate (35%)
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-      expect(screen.getByText('35.0%')).toBeInTheDocument();
+      // Use getByTestId to find best performer card specifically, since Alice may appear
+      // in multiple places (e.g., Target Progress breakdown)
+      const bestPerformerCard = screen.getByTestId('best-performer-card');
+      expect(bestPerformerCard).toHaveTextContent('Alice');
+      expect(bestPerformerCard).toHaveTextContent('35.0%');
     });
 
     it('resolves ties alphabetically by name', () => {

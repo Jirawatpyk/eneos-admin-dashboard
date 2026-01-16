@@ -51,3 +51,7 @@ export { TrendIndicator, calculateTrendDirection } from './trend-indicator';
 export { SalesPeriodFilter, SALES_PERIOD_OPTIONS, isValidSalesPeriod } from './sales-period-filter';
 export type { SalesPeriod } from './sales-period-filter';
 export { CustomDateRange } from './custom-date-range';
+
+// Target vs Actual (Story 3.7 - AC#1-10)
+export { TargetProgressCard, TargetProgressCardSkeleton } from './target-progress-card';
+export { TargetProgressCell, TargetAchievementBadge } from './target-progress-cell';

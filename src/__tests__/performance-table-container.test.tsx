@@ -7,8 +7,8 @@
  * Tests for container component data fetching and state management
  * Including filter and highlight integration tests
  */
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PerformanceTableContainer } from '@/components/sales/performance-table-container';
 import type { SalesPerformanceData } from '@/types/sales';
@@ -323,12 +323,8 @@ describe('PerformanceTableContainer', () => {
       renderWithProviders(<PerformanceTableContainer />);
 
       // Needs improvement card should show 0 and not be clickable for filtering
-      // But clicking it should still toggle the filter state
-      // The filter should show empty state message
-      const needsImprovementCard = screen.getByTestId('needs-improvement-card');
-
-      // Note: When count is 0, card is not clickable (hasIssues = false)
-      // So we test that the positive message is shown instead
+      // Note: When count is 0, card shows positive message instead
+      expect(screen.getByTestId('needs-improvement-card')).toBeInTheDocument();
       expect(screen.getByText('Everyone on track!')).toBeInTheDocument();
     });
   });

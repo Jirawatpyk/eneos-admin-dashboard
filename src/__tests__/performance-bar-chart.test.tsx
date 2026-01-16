@@ -15,6 +15,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { PerformanceBarChart } from '@/components/sales/performance-bar-chart';
 import { PerformanceBarChartSkeleton } from '@/components/sales/performance-bar-chart-skeleton';
 import { PerformanceBarChartEmpty } from '@/components/sales/performance-bar-chart-empty';
@@ -23,30 +24,27 @@ import { AccessibleLegend } from '@/components/sales/accessible-legend';
 import type { SalesPersonMetrics } from '@/types/sales';
 
 // Mock Recharts components to render testable content
-vi.mock('recharts', () => {
-  const React = require('react');
-  return {
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-      <div style={{ width: 800, height: 400 }}>{children}</div>
-    ),
-    BarChart: ({ children, data, onClick }: { children: React.ReactNode; data: unknown[]; onClick?: (d: unknown) => void }) => (
-      <div data-testid="recharts-bar-chart" onClick={() => onClick?.({ activePayload: [{ payload: data[0] }] })}>
-        {/* Render Y-axis labels (names) */}
-        {(data as { name: string }[]).map((d, i) => (
-          <span key={i} data-testid={`y-axis-label-${i}`}>{d.name}</span>
-        ))}
-        {children}
-      </div>
-    ),
-    Bar: ({ name, className }: { name: string; className?: string }) => (
-      <div data-testid={`bar-${name?.toLowerCase()}`} className={className}>{name}</div>
-    ),
-    XAxis: () => <div data-testid="x-axis" />,
-    YAxis: () => <div data-testid="y-axis" />,
-    CartesianGrid: () => <div data-testid="cartesian-grid" />,
-    Tooltip: () => <div data-testid="tooltip" />,
-  };
-});
+vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: { children: ReactNode }) => (
+    <div style={{ width: 800, height: 400 }}>{children}</div>
+  ),
+  BarChart: ({ children, data, onClick }: { children: ReactNode; data: unknown[]; onClick?: (d: unknown) => void }) => (
+    <div data-testid="recharts-bar-chart" onClick={() => onClick?.({ activePayload: [{ payload: data[0] }] })}>
+      {/* Render Y-axis labels (names) */}
+      {(data as { name: string }[]).map((d, i) => (
+        <span key={i} data-testid={`y-axis-label-${i}`}>{d.name}</span>
+      ))}
+      {children}
+    </div>
+  ),
+  Bar: ({ name, className }: { name: string; className?: string }) => (
+    <div data-testid={`bar-${name?.toLowerCase()}`} className={className}>{name}</div>
+  ),
+  XAxis: () => <div data-testid="x-axis" />,
+  YAxis: () => <div data-testid="y-axis" />,
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  Tooltip: () => <div data-testid="tooltip" />,
+}));
 
 // Sample test data
 const mockSalesData: SalesPersonMetrics[] = [

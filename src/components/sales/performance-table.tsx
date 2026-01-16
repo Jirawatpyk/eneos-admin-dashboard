@@ -41,8 +41,6 @@ import {
 import { Users, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  formatConversionRate,
-  getConversionRateColor,
   formatResponseTime,
   getConversionRateValue,
   getResponseTimeValue,
@@ -51,6 +49,7 @@ import {
 } from '@/lib/format-sales';
 import { SalesDetailSheet } from './sales-detail-sheet';
 import { ConversionProgressBar } from './conversion-progress-bar';
+import { TargetProgressCell } from './target-progress-cell';
 import type { SalesPersonMetrics } from '@/types/sales';
 
 // ===========================================
@@ -61,6 +60,10 @@ interface PerformanceTableProps {
   data: SalesPersonMetrics[];
   /** User ID to highlight (from summary card click) */
   highlightedUserId?: string | null;
+  /** Story 3.7: Per-person prorated target for closed deals */
+  closedTarget?: number;
+  /** Story 3.7: Enable target comparison in Closed column */
+  showTargetComparison?: boolean;
 }
 
 // ===========================================
@@ -130,7 +133,12 @@ function SortableHeader({ column, children, tooltip, className }: SortableHeader
 // Main Component
 // ===========================================
 
-export function PerformanceTable({ data, highlightedUserId }: PerformanceTableProps) {
+export function PerformanceTable({
+  data,
+  highlightedUserId,
+  closedTarget,
+  showTargetComparison = false,
+}: PerformanceTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedPerson, setSelectedPerson] = useState<SalesPersonMetrics | null>(null);
@@ -216,17 +224,37 @@ export function PerformanceTable({ data, highlightedUserId }: PerformanceTablePr
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            tooltip={COLUMN_TOOLTIPS.closed}
+            tooltip={
+              showTargetComparison && closedTarget
+                ? `Target: ${Math.round(closedTarget)}/person | ${COLUMN_TOOLTIPS.closed}`
+                : COLUMN_TOOLTIPS.closed
+            }
             className="justify-end"
           >
             Closed
           </SortableHeader>
         ),
-        cell: ({ row }) => (
-          <span className="text-right block">
-            {(row.getValue('closed') as number).toLocaleString()}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const closedValue = row.getValue('closed') as number;
+
+          // Story 3.7 AC#3, AC#4: Show target comparison if enabled
+          if (showTargetComparison && closedTarget != null && closedTarget > 0) {
+            return (
+              <TargetProgressCell
+                actual={closedValue}
+                target={closedTarget}
+                metricLabel="closed"
+              />
+            );
+          }
+
+          // Default: just show the number
+          return (
+            <span className="text-right block">
+              {closedValue.toLocaleString()}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'lost',
@@ -318,7 +346,7 @@ export function PerformanceTable({ data, highlightedUserId }: PerformanceTablePr
         sortingFn: 'basic',
       },
     ],
-    []
+    [showTargetComparison, closedTarget]
   );
 
   const table = useReactTable({

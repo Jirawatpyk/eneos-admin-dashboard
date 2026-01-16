@@ -5,7 +5,7 @@
  *
  * Tests for AC#7: Detail Sheet/Dialog panel
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SalesDetailSheet } from '@/components/sales/sales-detail-sheet';
 import type { SalesPersonMetrics } from '@/types/sales';
