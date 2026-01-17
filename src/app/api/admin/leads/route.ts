@@ -2,6 +2,7 @@
  * Leads API Proxy Route
  * Story 4.1: Lead List Table
  * Story 4.3: Search - Passes search query parameter to backend (AC#3)
+ * Story 4.5: Owner Filter - Passes owner query parameter to backend (AC#4)
  *
  * Proxies requests to Backend API with Google ID token authentication
  * Follows pattern from dashboard API route
@@ -48,7 +49,8 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get('page');
     const limit = searchParams.get('limit');
     const status = searchParams.get('status');
-    const salesOwnerId = searchParams.get('salesOwnerId'); // Frontend name
+    const owner = searchParams.get('owner'); // Story 4.5: Multi-value owner filter
+    const salesOwnerId = searchParams.get('salesOwnerId'); // Legacy: Frontend name
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy');
     const sortDir = searchParams.get('sortDir'); // Frontend name
@@ -56,7 +58,12 @@ export async function GET(request: NextRequest) {
     if (page) backendParams.set('page', page);
     if (limit) backendParams.set('limit', limit);
     if (status) backendParams.set('status', status);
-    if (salesOwnerId) backendParams.set('owner', salesOwnerId); // Backend expects 'owner'
+    // Story 4.5: Prefer owner param (supports multi-select), fallback to salesOwnerId
+    if (owner) {
+      backendParams.set('owner', owner); // Already comma-separated
+    } else if (salesOwnerId) {
+      backendParams.set('owner', salesOwnerId); // Legacy single owner support
+    }
     if (search) backendParams.set('search', search);
     if (sortBy) backendParams.set('sortBy', sortBy); // Backend accepts: date, createdAt, company, status
     if (sortDir) backendParams.set('sortOrder', sortDir); // Backend expects 'sortOrder'
@@ -110,6 +117,11 @@ export async function GET(request: NextRequest) {
             campaignId: campaign?.id ?? '',
             campaignName: campaign?.name ?? '',
 
+            // Additional lead fields from backend
+            leadSource: (lead.leadSource as string) ?? null,
+            jobTitle: (lead.jobTitle as string) ?? null,
+            city: (lead.city as string) ?? null,
+
             // Fields not provided in list response (available in detail endpoint)
             emailSubject: null,
             leadId: null,
@@ -117,9 +129,6 @@ export async function GET(request: NextRequest) {
             lostAt: null,
             unreachableAt: null,
             version: 1, // Default version for optimistic locking
-            leadSource: null,
-            jobTitle: null,
-            city: null,
             leadUuid: null,
             createdAt: lead.date as string, // Use date as createdAt (same value)
             updatedAt: null,

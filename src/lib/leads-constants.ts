@@ -1,12 +1,43 @@
 /**
  * Leads Constants
  * Story 4.1: Lead List Table
+ * Story 4.4: Filter by Status - Added LEAD_STATUS_OPTIONS and ALL_LEAD_STATUSES
  *
- * Constants for lead status colors and labels
+ * Constants for lead status colors, labels, and options
  * Matches STATUS_COLORS from project-context.md
  */
 
 import type { LeadStatus } from '@/types/lead';
+
+/**
+ * All valid lead status values - exactly 6 as per project-context.md
+ * Using readonly array for type safety and immutability
+ */
+export const ALL_LEAD_STATUSES: readonly LeadStatus[] = [
+  'new',
+  'claimed',
+  'contacted',
+  'closed',
+  'lost',
+  'unreachable',
+] as const;
+
+/**
+ * Status options for filter dropdown (AC#2)
+ * value: API value, label: English, labelTh: Thai
+ */
+export const LEAD_STATUS_OPTIONS: {
+  value: LeadStatus;
+  label: string;
+  labelTh: string;
+}[] = [
+  { value: 'new', label: 'New', labelTh: 'ใหม่' },
+  { value: 'claimed', label: 'Claimed', labelTh: 'รับแล้ว' },
+  { value: 'contacted', label: 'Contacted', labelTh: 'ติดต่อแล้ว' },
+  { value: 'closed', label: 'Closed', labelTh: 'ปิดสำเร็จ' },
+  { value: 'lost', label: 'Lost', labelTh: 'ปิดไม่สำเร็จ' },
+  { value: 'unreachable', label: 'Unreachable', labelTh: 'ติดต่อไม่ได้' },
+];
 
 /**
  * Status badge colors matching project-context.md

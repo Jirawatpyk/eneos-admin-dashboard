@@ -128,6 +128,65 @@ describe('GET /api/admin/leads', () => {
     );
   });
 
+  // Story 4.4 AC#5: Combined filters test
+  it('forwards combined search and status parameters to backend', async () => {
+    vi.mocked(getToken).mockResolvedValue({
+      email: 'test@eneos.co.th',
+      idToken: 'mock-google-id-token',
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        data: { data: [], pagination: { page: 1, limit: 20, total: 45, totalPages: 3 } },
+      }),
+    });
+
+    // AC#5: Combined search AND status filter
+    const request = new NextRequest(
+      'http://localhost:3001/api/admin/leads?search=ENEOS&status=contacted,closed&page=1&limit=20'
+    );
+    await GET(request);
+
+    // Verify both search and status are forwarded
+    const calledUrl = mockFetch.mock.calls[0][0];
+    expect(calledUrl).toContain('search=ENEOS');
+    expect(calledUrl).toContain('status=contacted%2Cclosed'); // URL encoded comma
+  });
+
+  // Story 4.4 AC#4: Filtered pagination count test
+  it('returns filtered pagination count when status filter active', async () => {
+    vi.mocked(getToken).mockResolvedValue({
+      email: 'test@eneos.co.th',
+      idToken: 'mock-google-id-token',
+    });
+
+    // Mock backend returning filtered results (45 of 200 total)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        data: {
+          data: [{ row: 1, customerName: 'Test', email: 'test@test.com', status: 'closed' }],
+          pagination: { page: 1, limit: 20, total: 45, totalPages: 3 },
+        },
+      }),
+    });
+
+    const request = new NextRequest(
+      'http://localhost:3001/api/admin/leads?status=closed'
+    );
+    const response = await GET(request);
+    const data = await response.json();
+
+    // AC#4: Pagination should reflect filtered count
+    expect(data.pagination.total).toBe(45);
+    expect(data.pagination.totalPages).toBe(3);
+  });
+
   it('returns 500 on fetch error', async () => {
     vi.mocked(getToken).mockResolvedValue({
       email: 'test@eneos.co.th',

@@ -31,13 +31,24 @@ export class LeadsApiError extends Error {
 
 /**
  * Build query string from params object
+ * Story 4.4: status is now array - join with comma (AC#4)
+ * Story 4.5: owner is now array - join with comma (AC#4)
  */
 function buildQueryString(params: LeadsQueryParams): string {
   const searchParams = new URLSearchParams();
 
   if (params.page !== undefined) searchParams.set('page', String(params.page));
   if (params.limit !== undefined) searchParams.set('limit', String(params.limit));
-  if (params.status) searchParams.set('status', params.status);
+  // Story 4.4 AC#4: status array - join with comma for backend
+  if (params.status && params.status.length > 0) {
+    searchParams.set('status', params.status.join(','));
+  }
+  // Story 4.5 AC#4: owner array - join with comma for backend
+  // Supports 'unassigned' special value for leads without owner
+  if (params.owner && params.owner.length > 0) {
+    searchParams.set('owner', params.owner.join(','));
+  }
+  // Deprecated: use owner instead
   if (params.salesOwnerId) searchParams.set('salesOwnerId', params.salesOwnerId);
   if (params.search) searchParams.set('search', params.search);
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);

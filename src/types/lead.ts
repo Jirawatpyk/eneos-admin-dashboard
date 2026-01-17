@@ -121,12 +121,18 @@ export interface LeadDetailResponse {
 
 /**
  * Query parameters for leads API
+ * Story 4.4: status changed to array for multi-select filter (AC#3)
+ * Story 4.5: owner changed to array for multi-select filter (AC#3)
  */
 export interface LeadsQueryParams {
   page?: number;
   limit?: number;
-  status?: LeadStatus;
+  /** Status filter - array for multi-select (AC#3) */
+  status?: LeadStatus[];
+  /** @deprecated Use owner instead */
   salesOwnerId?: string;
+  /** Owner filter - array for multi-select (Story 4.5 AC#3) */
+  owner?: string[];
   search?: string;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';

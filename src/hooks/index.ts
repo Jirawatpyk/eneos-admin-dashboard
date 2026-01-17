@@ -34,3 +34,7 @@ export {
   useLeadSearchParams,
   type UseLeadSearchParamsReturn,
 } from './use-search-params';
+export {
+  useStatusFilterParams,
+  type UseStatusFilterParamsReturn,
+} from './use-status-filter-params';

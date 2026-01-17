@@ -3,6 +3,7 @@
  * Story 4.1: Lead List Table
  * Story 4.2: Pagination - Added keepPreviousData and isFetching
  * Story 4.3: Search - Added search parameter support (AC#3, AC#4)
+ * Story 4.5: Owner Filter - Added owner parameter support (AC#4, AC#6)
  *
  * TanStack Query v5 hook for fetching leads list
  * Uses object syntax per project context requirements
@@ -46,6 +47,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     limit = 20, // Story 4.2 AC#2: Default page size is 20
     status,
     salesOwnerId,
+    owner, // Story 4.5: Owner filter (multi-select)
     search,
     sortBy = 'createdAt',
     sortDir = 'desc',
@@ -56,12 +58,14 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     limit,
     status,
     salesOwnerId,
+    owner, // Story 4.5 AC#4: Pass owner filter to API
     search,
     sortBy,
     sortDir,
   };
 
   const query = useQuery({
+    // Story 4.5 AC#6: Include owner in queryKey for proper cache invalidation
     queryKey: ['leads', queryParams],
     queryFn: () => fetchLeads(queryParams),
     staleTime: 60 * 1000, // 1 minute - rate limit aware
