@@ -52,7 +52,9 @@ const mockRefetch = vi.fn();
 vi.mock('@/hooks/use-leads', () => ({
   useLeads: vi.fn(() => ({
     data: mockLeads,
+    pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
     isLoading: false,
+    isFetching: false,
     isError: false,
     error: null,
     refetch: mockRefetch,
@@ -83,8 +85,9 @@ describe('LeadTableContainer', () => {
     // Reset mock to default state
     vi.mocked(useLeads).mockReturnValue({
       data: mockLeads,
-      pagination: { page: 1, limit: 50, total: 1, totalPages: 1 },
+      pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
       isLoading: false,
+      isFetching: false,
       isError: false,
       error: null,
       refetch: mockRefetch,
@@ -97,6 +100,7 @@ describe('LeadTableContainer', () => {
         data: undefined,
         pagination: undefined,
         isLoading: true,
+        isFetching: true,
         isError: false,
         error: null,
         refetch: mockRefetch,
@@ -115,6 +119,7 @@ describe('LeadTableContainer', () => {
         data: undefined,
         pagination: undefined,
         isLoading: false,
+        isFetching: false,
         isError: true,
         error: mockError,
         refetch: mockRefetch,
@@ -132,6 +137,7 @@ describe('LeadTableContainer', () => {
         data: undefined,
         pagination: undefined,
         isLoading: false,
+        isFetching: false,
         isError: true,
         error: mockError,
         refetch: mockRefetch,
@@ -149,8 +155,9 @@ describe('LeadTableContainer', () => {
     it('shows empty state when no leads', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: [],
-        pagination: { page: 1, limit: 50, total: 0, totalPages: 0 },
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
         isLoading: false,
+        isFetching: false,
         isError: false,
         error: null,
         refetch: mockRefetch,
@@ -166,6 +173,7 @@ describe('LeadTableContainer', () => {
         data: undefined,
         pagination: undefined,
         isLoading: false,
+        isFetching: false,
         isError: false,
         error: null,
         refetch: mockRefetch,
