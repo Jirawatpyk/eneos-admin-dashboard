@@ -309,6 +309,8 @@ export function LeadDateFilter({
                   }
                 }}
                 numberOfMonths={1}
+                disabled={{ after: new Date() }}
+                toDate={new Date()}
                 data-testid="date-calendar"
               />
               <div className="flex justify-end gap-2 pt-2 border-t">

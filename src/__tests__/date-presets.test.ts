@@ -239,5 +239,20 @@ describe('date-presets', () => {
 
       expect(formatted).toBe('2025-12-31');
     });
+
+    it('returns empty string for invalid Date', () => {
+      const invalidDate = new Date('invalid');
+
+      const formatted = formatDateForApi(invalidDate);
+
+      expect(formatted).toBe('');
+    });
+
+    it('returns empty string for null-ish values', () => {
+      // @ts-expect-error - testing invalid input
+      const formatted = formatDateForApi(null);
+
+      expect(formatted).toBe('');
+    });
   });
 });

@@ -140,8 +140,12 @@ export function formatDateRangeLabel(range: DateRange | null): string {
  * AC#3: URL format YYYY-MM-DD
  *
  * @param date - Date to format
- * @returns ISO date string (YYYY-MM-DD)
+ * @returns ISO date string (YYYY-MM-DD), or empty string if invalid date
  */
 export function formatDateForApi(date: Date): string {
+  // Handle invalid Date objects
+  if (!date || isNaN(date.getTime())) {
+    return '';
+  }
   return format(date, 'yyyy-MM-dd');
 }
