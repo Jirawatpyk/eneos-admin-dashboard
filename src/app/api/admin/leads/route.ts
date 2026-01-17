@@ -3,6 +3,7 @@
  * Story 4.1: Lead List Table
  * Story 4.3: Search - Passes search query parameter to backend (AC#3)
  * Story 4.5: Owner Filter - Passes owner query parameter to backend (AC#4)
+ * Story 4.6: Date Filter - Passes from/to query parameters to backend (AC#5)
  *
  * Proxies requests to Backend API with Google ID token authentication
  * Follows pattern from dashboard API route
@@ -54,6 +55,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy');
     const sortDir = searchParams.get('sortDir'); // Frontend name
+    const from = searchParams.get('from'); // Story 4.6: Date filter start (YYYY-MM-DD)
+    const to = searchParams.get('to'); // Story 4.6: Date filter end (YYYY-MM-DD)
 
     if (page) backendParams.set('page', page);
     if (limit) backendParams.set('limit', limit);
@@ -67,6 +70,10 @@ export async function GET(request: NextRequest) {
     if (search) backendParams.set('search', search);
     if (sortBy) backendParams.set('sortBy', sortBy); // Backend accepts: date, createdAt, company, status
     if (sortDir) backendParams.set('sortOrder', sortDir); // Backend expects 'sortOrder'
+    // Story 4.6 AC#5: Date filter params (backend filters by createdAt)
+    // Note: Frontend uses 'from'/'to', Backend expects 'startDate'/'endDate'
+    if (from) backendParams.set('startDate', from);
+    if (to) backendParams.set('endDate', to);
 
     const backendUrl = `${BACKEND_URL}/api/admin/leads?${backendParams.toString()}`;
 
