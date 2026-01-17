@@ -52,4 +52,9 @@ nul
 
 # Test output files
 test-output.txt
+test-output.json
+test-result.json
 test-results.json
+test-results.txt
+vitest-result.json
+run-test.js

@@ -9,6 +9,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
     "test": "vitest",
+    "test:run": "vitest run --reporter=verbose",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "dotenv -e .env.e2e -- playwright test",

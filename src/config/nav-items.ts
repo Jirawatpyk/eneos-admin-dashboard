@@ -34,7 +34,6 @@ export const NAV_ITEMS: NavItemConfig[] = [
     icon: FileText,
     label: 'Leads',
     href: '/leads',
-    disabled: true,
   },
   {
     icon: BarChart3,
