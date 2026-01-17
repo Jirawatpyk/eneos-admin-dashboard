@@ -115,12 +115,15 @@ describe('GET /api/admin/leads', () => {
       expect.stringMatching(/status=new/),
       expect.anything()
     );
+    // Bugfix 2026-01-17: Backend now accepts createdAt directly (added to SORT_OPTIONS.LEADS)
+    // Frontend TanStack Table uses 'createdAt', backend stores as 'date' - both are now valid
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringMatching(/sortBy=createdAt/),
       expect.anything()
     );
+    // Bugfix 2026-01-17: Frontend sends sortDir, API proxy maps to sortOrder for backend
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringMatching(/sortDir=desc/),
+      expect.stringMatching(/sortOrder=desc/),
       expect.anything()
     );
   });
