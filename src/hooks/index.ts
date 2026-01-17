@@ -21,3 +21,7 @@ export {
   useSalesTrend,
   type UseSalesTrendReturn,
 } from './use-sales-trend';
+export {
+  useExportIndividual,
+  type UseExportIndividualReturn,
+} from './use-export-individual';

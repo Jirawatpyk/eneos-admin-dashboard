@@ -2,11 +2,13 @@
  * Sales Detail Sheet Component
  * Story 3.1: Sales Team Performance Table
  * Story 3.5: Individual Performance Trend (integrated)
+ * Story 3.8: Export Individual Performance Report
  *
  * AC#7: Detail Sheet/Dialog panel showing individual metrics
  * - Shows: name, email, all metrics, and period breakdown
  * - Can be closed with X button or Escape key
  * - Story 3.5: Includes individual trend chart
+ * - Story 3.8: Includes export button in header
  */
 'use client';
 
@@ -38,6 +40,7 @@ import {
 import type { SalesPersonMetrics } from '@/types/sales';
 import { cn } from '@/lib/utils';
 import { IndividualTrendChart } from './individual-trend-chart';
+import { ExportDropdown } from './export-dropdown';
 
 interface SalesDetailSheetProps {
   open: boolean;
@@ -107,12 +110,22 @@ export function SalesDetailSheet({
         className="w-full sm:max-w-xl overflow-y-auto"
         data-testid="sales-detail-sheet"
       >
-        <SheetHeader className="space-y-1 pb-4 border-b">
-          <SheetTitle className="text-xl">{salesPerson.name}</SheetTitle>
-          <SheetDescription className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4" aria-hidden="true" />
-            {salesPerson.email}
-          </SheetDescription>
+        <SheetHeader className="pb-4 border-b">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <SheetTitle className="text-xl">{salesPerson.name}</SheetTitle>
+              <SheetDescription className="flex items-center gap-2 text-sm">
+                <Mail className="h-4 w-4" aria-hidden="true" />
+                {salesPerson.email}
+              </SheetDescription>
+            </div>
+            {/* Story 3.8: Export Button */}
+            <ExportDropdown
+              data={salesPerson}
+              disabled={salesPerson.claimed === 0}
+              disabledReason="No data for this period"
+            />
+          </div>
         </SheetHeader>
 
         <div className="mt-6 space-y-6">

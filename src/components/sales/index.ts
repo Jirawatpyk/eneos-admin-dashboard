@@ -6,6 +6,7 @@
  * Story 3.4: Response Time Analytics
  * Story 3.5: Individual Performance Trend
  * Story 3.6: Period Filter for Sales Performance
+ * Story 3.8: Export Individual Performance Report
  */
 
 // Performance Table (Story 3.1)
@@ -55,3 +56,6 @@ export { CustomDateRange } from './custom-date-range';
 // Target vs Actual (Story 3.7 - AC#1-10)
 export { TargetProgressCard, TargetProgressCardSkeleton } from './target-progress-card';
 export { TargetProgressCell, TargetAchievementBadge } from './target-progress-cell';
+
+// Export Individual Report (Story 3.8 - AC#1-10)
+export { ExportDropdown } from './export-dropdown';
