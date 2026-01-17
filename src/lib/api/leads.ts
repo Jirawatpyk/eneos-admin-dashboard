@@ -33,6 +33,7 @@ export class LeadsApiError extends Error {
  * Build query string from params object
  * Story 4.4: status is now array - join with comma (AC#4)
  * Story 4.5: owner is now array - join with comma (AC#4)
+ * Story 4.6: from/to for date filter (AC#5)
  */
 function buildQueryString(params: LeadsQueryParams): string {
   const searchParams = new URLSearchParams();
@@ -53,6 +54,9 @@ function buildQueryString(params: LeadsQueryParams): string {
   if (params.search) searchParams.set('search', params.search);
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortDir) searchParams.set('sortDir', params.sortDir);
+  // Story 4.6 AC#5: Date filter params (YYYY-MM-DD format)
+  if (params.from) searchParams.set('from', params.from);
+  if (params.to) searchParams.set('to', params.to);
 
   return searchParams.toString();
 }

@@ -109,6 +109,19 @@ export {
 export { permissions, usePermissions, type PermissionsResult } from './permissions';
 
 // ===========================================
+// Date Presets (Story 4.6)
+// ===========================================
+export {
+  type DatePreset,
+  type DateRange,
+  type DatePresetOption,
+  DATE_PRESET_OPTIONS,
+  getPresetDateRange,
+  formatDateRangeLabel,
+  formatDateForApi,
+} from './date-presets';
+
+// ===========================================
 // Auth Configuration (Server-side only)
 // Import directly: import { authOptions } from '@/lib/auth';
 // ===========================================

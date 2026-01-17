@@ -4,6 +4,7 @@
  * Story 4.2: Pagination - Added keepPreviousData and isFetching
  * Story 4.3: Search - Added search parameter support (AC#3, AC#4)
  * Story 4.5: Owner Filter - Added owner parameter support (AC#4, AC#6)
+ * Story 4.6: Date Filter - Added from/to parameter support (AC#5, AC#6)
  *
  * TanStack Query v5 hook for fetching leads list
  * Uses object syntax per project context requirements
@@ -51,6 +52,8 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     search,
     sortBy = 'createdAt',
     sortDir = 'desc',
+    from, // Story 4.6: Date filter - start date
+    to, // Story 4.6: Date filter - end date
   } = options;
 
   const queryParams: LeadsQueryParams = {
@@ -62,10 +65,12 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     search,
     sortBy,
     sortDir,
+    from, // Story 4.6 AC#5: Pass date filter to API
+    to, // Story 4.6 AC#5: Pass date filter to API
   };
 
   const query = useQuery({
-    // Story 4.5 AC#6: Include owner in queryKey for proper cache invalidation
+    // Story 4.5 AC#6, Story 4.6 AC#6: Include filters in queryKey for proper cache invalidation
     queryKey: ['leads', queryParams],
     queryFn: () => fetchLeads(queryParams),
     staleTime: 60 * 1000, // 1 minute - rate limit aware

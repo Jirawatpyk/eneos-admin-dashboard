@@ -123,6 +123,7 @@ export interface LeadDetailResponse {
  * Query parameters for leads API
  * Story 4.4: status changed to array for multi-select filter (AC#3)
  * Story 4.5: owner changed to array for multi-select filter (AC#3)
+ * Story 4.6: from/to for date filter (AC#5)
  */
 export interface LeadsQueryParams {
   page?: number;
@@ -136,4 +137,8 @@ export interface LeadsQueryParams {
   search?: string;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
+  /** Date filter - start date YYYY-MM-DD (Story 4.6 AC#5) */
+  from?: string;
+  /** Date filter - end date YYYY-MM-DD (Story 4.6 AC#5) */
+  to?: string;
 }

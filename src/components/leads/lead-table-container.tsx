@@ -5,6 +5,7 @@
  * Story 4.3: Search - Added search functionality (AC#1-7)
  * Story 4.4: Filter by Status - Added status filter (AC#1-9)
  * Story 4.5: Filter by Owner - Added owner filter (AC#1-9)
+ * Story 4.6: Filter by Date - Added date filter (AC#1-9)
  *
  * Container component that handles:
  * - Data fetching with useLeads hook
@@ -12,14 +13,15 @@
  * - Search with debounce and URL sync (Story 4.3)
  * - Status filter with URL sync (Story 4.4 AC#7)
  * - Owner filter with URL sync (Story 4.5 AC#8)
+ * - Date filter with URL sync (Story 4.6 AC#8)
  * - Loading/error/empty states
  * - Passing data to presentation component
  * - Detail sheet open/close state
  * - Default sort (createdAt DESC)
  *
  * @note This component uses usePaginationParams, useLeadSearchParams, useStatusFilterParams,
- *       and useOwnerFilterParams which require useSearchParams. Parent page MUST wrap this
- *       component in a Suspense boundary.
+ *       useOwnerFilterParams, and useDateFilterParams which require useSearchParams. Parent page
+ *       MUST wrap this component in a Suspense boundary.
  *       See: project-context.md → Hydration Safety
  */
 'use client';
@@ -31,6 +33,7 @@ import { usePaginationParams, type ValidLimit } from '@/hooks/use-pagination-par
 import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
 import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
+import { useDateFilterParams } from '@/hooks/use-date-filter-params';
 import { useDebounce } from '@/hooks/use-debounce';
 import { LeadTable } from './lead-table';
 import { LeadTableSkeleton } from './lead-table-skeleton';
@@ -41,6 +44,8 @@ import { LeadPagination } from './lead-pagination';
 import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
 import { LeadOwnerFilter } from './lead-owner-filter';
+import { LeadDateFilter } from './lead-date-filter';
+import { formatDateForApi } from '@/lib/date-presets';
 import type { Lead } from '@/types/lead';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +61,9 @@ export function LeadTableContainer() {
 
   // Story 4.5 AC#8: URL state sync for owner filter
   const { owners, setOwners, hasOwnerFilter } = useOwnerFilterParams();
+
+  // Story 4.6 AC#8: URL state sync for date filter
+  const { dateRange, setDateRange, hasDateFilter } = useDateFilterParams();
 
   // Story 4.3 AC#2: Local search input state (for immediate UI feedback)
   const [searchInput, setSearchInput] = useState(urlSearch);
@@ -104,12 +112,15 @@ export function LeadTableContainer() {
   // Story 4.3 AC#3: Pass search param to useLeads hook
   // Story 4.4 AC#4, AC#5: Pass status filter to useLeads hook
   // Story 4.5 AC#4, AC#6: Pass owner filter to useLeads hook
+  // Story 4.6 AC#5, AC#6: Pass date filter to useLeads hook
   const { data, pagination, isLoading, isFetching, isError, error, refetch } = useLeads({
     page,
     limit,
     search: debouncedSearch || undefined, // Only pass if not empty
     status: statuses.length > 0 ? statuses : undefined, // Story 4.4 AC#4
     owner: owners.length > 0 ? owners : undefined, // Story 4.5 AC#4
+    from: dateRange?.from ? formatDateForApi(dateRange.from) : undefined, // Story 4.6 AC#5
+    to: dateRange?.to ? formatDateForApi(dateRange.to) : undefined, // Story 4.6 AC#5
     sortBy,
     sortDir,
   });
@@ -139,7 +150,7 @@ export function LeadTableContainer() {
     clearSearch();
   }, [clearSearch]);
 
-  // Story 4.4 AC#6, Story 4.5 AC#7: Handle clear when search or any filter is active
+  // Story 4.4 AC#6, Story 4.5 AC#7, Story 4.6 AC#7: Handle clear when search or any filter is active
   const handleClearFilters = useCallback(() => {
     if (debouncedSearch) {
       handleClearSearch();
@@ -150,13 +161,16 @@ export function LeadTableContainer() {
     if (hasOwnerFilter) {
       setOwners([]);
     }
-  }, [debouncedSearch, handleClearSearch, hasStatusFilter, setStatuses, hasOwnerFilter, setOwners]);
+    if (hasDateFilter) {
+      setDateRange(null);
+    }
+  }, [debouncedSearch, handleClearSearch, hasStatusFilter, setStatuses, hasOwnerFilter, setOwners, hasDateFilter, setDateRange]);
 
   // AC#6: Loading state (only on initial load, not during pagination)
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {/* Story 4.3, 4.4, 4.5: Show search and filters even during loading */}
+        {/* Story 4.3, 4.4, 4.5, 4.6: Show search and filters even during loading */}
         <div className="flex flex-wrap items-center gap-4">
           <LeadSearch
             value={searchInput}
@@ -166,6 +180,7 @@ export function LeadTableContainer() {
           />
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
+          <LeadDateFilter value={dateRange} onChange={setDateRange} />
         </div>
         <LeadTableSkeleton />
       </div>
@@ -185,6 +200,7 @@ export function LeadTableContainer() {
           />
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
+          <LeadDateFilter value={dateRange} onChange={setDateRange} />
         </div>
         <LeadTableError
           message={error?.message || 'Failed to load leads data'}
@@ -194,9 +210,9 @@ export function LeadTableContainer() {
     );
   }
 
-  // Story 4.3 AC#6, Story 4.4, 4.5: Empty state with search/filter context
+  // Story 4.3 AC#6, Story 4.4, 4.5, 4.6: Empty state with search/filter context
   if (!data || data.length === 0) {
-    const hasAnyFilter = hasStatusFilter || hasOwnerFilter;
+    const hasAnyFilter = hasStatusFilter || hasOwnerFilter || hasDateFilter;
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-4">
@@ -208,6 +224,7 @@ export function LeadTableContainer() {
           />
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
+          <LeadDateFilter value={dateRange} onChange={setDateRange} />
         </div>
         <LeadTableEmpty
           searchTerm={debouncedSearch}
@@ -221,7 +238,7 @@ export function LeadTableContainer() {
   // Render table with data and pagination
   return (
     <div className="space-y-4">
-      {/* Story 4.3 AC#1, Story 4.4 AC#1, Story 4.5 AC#1: Filter toolbar */}
+      {/* Story 4.3 AC#1, Story 4.4 AC#1, Story 4.5 AC#1, Story 4.6 AC#1: Filter toolbar */}
       <div className="flex flex-wrap items-center gap-4">
         <LeadSearch
           value={searchInput}
@@ -240,6 +257,12 @@ export function LeadTableContainer() {
         <LeadOwnerFilter
           value={owners}
           onChange={setOwners}
+          disabled={isFetching}
+        />
+        {/* Story 4.6 AC#1: Date filter next to owner filter */}
+        <LeadDateFilter
+          value={dateRange}
+          onChange={setDateRange}
           disabled={isFetching}
         />
       </div>
