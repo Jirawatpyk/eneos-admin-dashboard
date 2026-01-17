@@ -1,8 +1,10 @@
 /**
  * Lead Table States Tests
  * Story 4.1: Lead List Table
+ * Story 4.3: Search - AC#6 Empty Search Results
  *
  * Tests for AC#6: Loading, Empty, and Error states
+ * Story 4.3 tests: Empty state with search term
  */
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -76,6 +78,65 @@ describe('LeadTableEmpty', () => {
     expect(
       screen.getByText(/Leads will appear here once they are created from campaigns/i)
     ).toBeInTheDocument();
+  });
+
+  // ==========================================================================
+  // Story 4.3 AC#6: Empty Search Results
+  // ==========================================================================
+  describe('Story 4.3 AC#6: Empty Search Results', () => {
+    it('displays search term in message when provided', () => {
+      render(<LeadTableEmpty searchTerm="xyznonexistent123" />);
+
+      expect(
+        screen.getByTestId('empty-search-title')
+      ).toHaveTextContent('No leads found for "xyznonexistent123"');
+    });
+
+    it('shows suggestion to try different keywords', () => {
+      render(<LeadTableEmpty searchTerm="test" />);
+
+      expect(
+        screen.getByText(/Try a different search term or clear the search/i)
+      ).toBeInTheDocument();
+    });
+
+    it('shows clear search button when onClearSearch is provided', () => {
+      const mockClearSearch = vi.fn();
+      render(
+        <LeadTableEmpty searchTerm="test" onClearSearch={mockClearSearch} />
+      );
+
+      expect(screen.getByTestId('clear-search-button')).toBeInTheDocument();
+      expect(screen.getByText('Clear search')).toBeInTheDocument();
+    });
+
+    it('calls onClearSearch when clear button is clicked', () => {
+      const mockClearSearch = vi.fn();
+      render(
+        <LeadTableEmpty searchTerm="test" onClearSearch={mockClearSearch} />
+      );
+
+      fireEvent.click(screen.getByTestId('clear-search-button'));
+
+      expect(mockClearSearch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show clear button when onClearSearch is not provided', () => {
+      render(<LeadTableEmpty searchTerm="test" />);
+
+      expect(
+        screen.queryByTestId('clear-search-button')
+      ).not.toBeInTheDocument();
+    });
+
+    it('uses SearchX icon instead of Inbox when search term is provided', () => {
+      render(<LeadTableEmpty searchTerm="test" />);
+
+      // Should NOT show the campaign description when searching
+      expect(
+        screen.queryByText(/Leads will appear here once they are created from campaigns/i)
+      ).not.toBeInTheDocument();
+    });
   });
 });
 

@@ -2,6 +2,7 @@
  * Leads Components Barrel Exports
  * Story 4.1: Lead List Table
  * Story 4.2: Pagination
+ * Story 4.3: Search
  */
 
 export { LeadTable } from './lead-table';
@@ -12,3 +13,4 @@ export { LeadTableError } from './lead-table-error';
 export { LeadStatusBadge } from './lead-status-badge';
 export { LeadDetailSheet } from './lead-detail-sheet';
 export { LeadPagination } from './lead-pagination';
+export { LeadSearch, type LeadSearchProps } from './lead-search';

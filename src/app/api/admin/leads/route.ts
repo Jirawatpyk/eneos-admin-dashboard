@@ -1,6 +1,7 @@
 /**
  * Leads API Proxy Route
  * Story 4.1: Lead List Table
+ * Story 4.3: Search - Passes search query parameter to backend (AC#3)
  *
  * Proxies requests to Backend API with Google ID token authentication
  * Follows pattern from dashboard API route

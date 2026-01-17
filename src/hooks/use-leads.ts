@@ -2,6 +2,7 @@
  * Leads Hook
  * Story 4.1: Lead List Table
  * Story 4.2: Pagination - Added keepPreviousData and isFetching
+ * Story 4.3: Search - Added search parameter support (AC#3, AC#4)
  *
  * TanStack Query v5 hook for fetching leads list
  * Uses object syntax per project context requirements

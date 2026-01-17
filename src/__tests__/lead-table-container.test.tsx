@@ -1,12 +1,14 @@
 /**
  * Lead Table Container Tests
  * Story 4.1: Lead List Table
+ * Story 4.3: Search - Added search integration tests
  *
  * Tests for container component integration
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadTableContainer } from '@/components/leads/lead-table-container';
 import type { Lead } from '@/types/lead';
 
@@ -46,8 +48,12 @@ const mockLeads: Lead[] = [
   },
 ];
 
-// Mock the useLeads hook
+// Mock the hooks
 const mockRefetch = vi.fn();
+const mockSetSearch = vi.fn();
+const mockClearSearch = vi.fn();
+const mockSetPage = vi.fn();
+const mockSetLimit = vi.fn();
 
 vi.mock('@/hooks/use-leads', () => ({
   useLeads: vi.fn(() => ({
@@ -58,6 +64,28 @@ vi.mock('@/hooks/use-leads', () => ({
     isError: false,
     error: null,
     refetch: mockRefetch,
+  })),
+}));
+
+// Story 4.3: Mock search-related hooks
+vi.mock('@/hooks/use-search-params', () => ({
+  useLeadSearchParams: vi.fn(() => ({
+    search: '',
+    setSearch: mockSetSearch,
+    clearSearch: mockClearSearch,
+  })),
+}));
+
+vi.mock('@/hooks/use-debounce', () => ({
+  useDebounce: vi.fn((value: string) => value),
+}));
+
+vi.mock('@/hooks/use-pagination-params', () => ({
+  usePaginationParams: vi.fn(() => ({
+    page: 1,
+    limit: 20,
+    setPage: mockSetPage,
+    setLimit: mockSetLimit,
   })),
 }));
 
@@ -72,10 +100,15 @@ const createTestQueryClient = () =>
     },
   });
 
+// Story 4.3: Added TooltipProvider for LeadSearch component
 const renderWithProviders = (ui: React.ReactElement) => {
   const queryClient = createTestQueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {ui}
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
