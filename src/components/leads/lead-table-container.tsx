@@ -6,6 +6,7 @@
  * Story 4.4: Filter by Status - Added status filter (AC#1-9)
  * Story 4.5: Filter by Owner - Added owner filter (AC#1-9)
  * Story 4.6: Filter by Date - Added date filter (AC#1-9)
+ * Story 4.7: Sort Columns - Added URL-synced sorting (AC#1-9)
  *
  * Container component that handles:
  * - Data fetching with useLeads hook
@@ -14,19 +15,19 @@
  * - Status filter with URL sync (Story 4.4 AC#7)
  * - Owner filter with URL sync (Story 4.5 AC#8)
  * - Date filter with URL sync (Story 4.6 AC#8)
+ * - Sort with URL sync (Story 4.7 AC#5)
  * - Loading/error/empty states
  * - Passing data to presentation component
  * - Detail sheet open/close state
- * - Default sort (createdAt DESC)
  *
  * @note This component uses usePaginationParams, useLeadSearchParams, useStatusFilterParams,
- *       useOwnerFilterParams, and useDateFilterParams which require useSearchParams. Parent page
- *       MUST wrap this component in a Suspense boundary.
+ *       useOwnerFilterParams, useDateFilterParams, and useSortParams which require useSearchParams.
+ *       Parent page MUST wrap this component in a Suspense boundary.
  *       See: project-context.md → Hydration Safety
  */
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { type SortingState } from '@tanstack/react-table';
 import { useLeads } from '@/hooks/use-leads';
 import { usePaginationParams, type ValidLimit } from '@/hooks/use-pagination-params';
@@ -34,6 +35,7 @@ import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
 import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
 import { useDateFilterParams } from '@/hooks/use-date-filter-params';
+import { useSortParams } from '@/hooks/use-sort-params';
 import { useDebounce } from '@/hooks/use-debounce';
 import { LeadTable } from './lead-table';
 import { LeadTableSkeleton } from './lead-table-skeleton';
@@ -64,6 +66,9 @@ export function LeadTableContainer() {
 
   // Story 4.6 AC#8: URL state sync for date filter
   const { dateRange, setDateRange, hasDateFilter } = useDateFilterParams();
+
+  // Story 4.7 AC#5: URL state sync for sorting
+  const { sortBy, sortOrder, toggleSort } = useSortParams();
 
   // Story 4.3 AC#2: Local search input state (for immediate UI feedback)
   const [searchInput, setSearchInput] = useState(urlSearch);
@@ -96,23 +101,21 @@ export function LeadTableContainer() {
     });
   }, [urlSearch]);
 
-  // AC#8: Default sort - createdAt DESC (newest first)
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'createdAt', desc: true },
-  ]);
+  // Story 4.7 AC#5: Convert URL sort params to TanStack Table SortingState
+  const sorting: SortingState = useMemo(
+    () => [{ id: sortBy, desc: sortOrder === 'desc' }],
+    [sortBy, sortOrder]
+  );
 
   // Detail sheet state
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Fetch leads with current sorting and pagination
-  const sortBy = sorting.length > 0 ? sorting[0].id : 'createdAt';
-  const sortDir = sorting.length > 0 && sorting[0].desc ? 'desc' : 'asc';
-
   // Story 4.3 AC#3: Pass search param to useLeads hook
   // Story 4.4 AC#4, AC#5: Pass status filter to useLeads hook
   // Story 4.5 AC#4, AC#6: Pass owner filter to useLeads hook
   // Story 4.6 AC#5, AC#6: Pass date filter to useLeads hook
+  // Story 4.7 AC#8: Pass sort params to useLeads hook
   const { data, pagination, isLoading, isFetching, isError, error, refetch } = useLeads({
     page,
     limit,
@@ -121,8 +124,8 @@ export function LeadTableContainer() {
     owner: owners.length > 0 ? owners : undefined, // Story 4.5 AC#4
     from: dateRange?.from ? formatDateForApi(dateRange.from) : undefined, // Story 4.6 AC#5
     to: dateRange?.to ? formatDateForApi(dateRange.to) : undefined, // Story 4.6 AC#5
-    sortBy,
-    sortDir,
+    sortBy, // Story 4.7 AC#8
+    sortDir: sortOrder, // Story 4.7 AC#8
   });
 
   // Story 4.3 AC#2: isPending when debounce in progress
@@ -132,11 +135,6 @@ export function LeadTableContainer() {
   const handleRowClick = useCallback((lead: Lead) => {
     setSelectedLead(lead);
     setSheetOpen(true);
-  }, []);
-
-  // Handle sorting change
-  const handleSortingChange = useCallback((newSorting: SortingState) => {
-    setSorting(newSorting);
   }, []);
 
   // Story 4.2 AC#2: Reset to page 1 when limit changes (handled in hook)
@@ -277,7 +275,7 @@ export function LeadTableContainer() {
         <LeadTable
           data={data}
           sorting={sorting}
-          onSortingChange={handleSortingChange}
+          onSortingChange={toggleSort}
           onRowClick={handleRowClick}
         />
       </div>

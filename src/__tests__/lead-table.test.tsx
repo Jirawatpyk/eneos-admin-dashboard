@@ -436,10 +436,12 @@ describe('LeadTable', () => {
       const companyHeader = screen.getByRole('button', { name: /Sort by Company/i });
       fireEvent.click(companyHeader);
 
-      expect(mockOnSortingChange).toHaveBeenCalled();
+      // Story 4.7: onSortingChange is now called with column ID
+      expect(mockOnSortingChange).toHaveBeenCalledWith('company');
     });
 
-    it('shows sort indicators on headers', () => {
+    // Story 4.7 AC#1: Only 4 columns are sortable (company, status, salesOwnerName, createdAt)
+    it('shows sort indicators only on sortable columns', () => {
       renderWithProviders(
         <LeadTable
           data={mockLeadsData}
@@ -449,10 +451,201 @@ describe('LeadTable', () => {
         />
       );
 
-      // All headers should have a sort button
+      // Sortable columns HAVE sort buttons
       expect(screen.getByRole('button', { name: /Sort by Company/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Sort by Contact Name/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Sort by Email/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sort by Status/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sort by Sales Owner/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sort by Created Date/i })).toBeInTheDocument();
+
+      // Non-sortable columns do NOT have sort buttons (they are plain text)
+      expect(screen.queryByRole('button', { name: /Sort by Contact Name/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Sort by Email/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Sort by Phone/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Sort by Campaign/i })).not.toBeInTheDocument();
+    });
+  });
+
+  // Story 4.7: Sort Columns
+  describe('Story 4.7: Sort Columns', () => {
+    // AC#1: Sortable Column Headers
+    it('sortable headers have pointer cursor style', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const companyHeader = screen.getByTestId('sort-header-company');
+      expect(companyHeader).toHaveClass('cursor-pointer');
+    });
+
+    // AC#3: Sort Indicator Display - shows descending indicator when sorted desc
+    it('shows descending indicator for sorted column', () => {
+      const descSorting: SortingState = [{ id: 'createdAt', desc: true }];
+
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={descSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const createdAtHeader = screen.getByTestId('sort-header-createdAt');
+      // Should have text-primary class when sorted
+      expect(createdAtHeader).toHaveClass('text-primary');
+      // Issue #3 Fix: Verify ArrowDown icon is rendered (not ArrowUp or ArrowUpDown)
+      const arrowDownIcon = createdAtHeader.querySelector('.lucide-arrow-down');
+      expect(arrowDownIcon).toBeInTheDocument();
+    });
+
+    // AC#3: Sort Indicator Display - shows ascending indicator when sorted asc
+    it('shows ascending indicator for sorted column', () => {
+      const ascSorting: SortingState = [{ id: 'company', desc: false }];
+
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={ascSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const companyHeader = screen.getByTestId('sort-header-company');
+      // Should have text-primary class when sorted
+      expect(companyHeader).toHaveClass('text-primary');
+      // Issue #3 Fix: Verify ArrowUp icon is rendered (not ArrowDown or ArrowUpDown)
+      const arrowUpIcon = companyHeader.querySelector('.lucide-arrow-up');
+      expect(arrowUpIcon).toBeInTheDocument();
+    });
+
+    // AC#3: Sort Indicator Display - shows neutral indicator when not sorted
+    it('shows neutral indicator for unsorted column', () => {
+      const descSorting: SortingState = [{ id: 'createdAt', desc: true }];
+
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={descSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      // Company is NOT sorted (createdAt is sorted)
+      const companyHeader = screen.getByTestId('sort-header-company');
+      // Should NOT have text-primary class
+      expect(companyHeader).not.toHaveClass('text-primary');
+      // Verify ArrowUpDown icon is rendered (neutral state)
+      const arrowUpDownIcon = companyHeader.querySelector('.lucide-arrow-up-down');
+      expect(arrowUpDownIcon).toBeInTheDocument();
+    });
+
+    // AC#9: Accessibility - aria-sort attribute
+    it('sets aria-sort attribute on sorted column', () => {
+      const descSorting: SortingState = [{ id: 'createdAt', desc: true }];
+
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={descSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const createdAtHeader = screen.getByTestId('sort-header-createdAt');
+      expect(createdAtHeader).toHaveAttribute('aria-sort', 'descending');
+
+      // Unsorted columns should have aria-sort="none"
+      const companyHeader = screen.getByTestId('sort-header-company');
+      expect(companyHeader).toHaveAttribute('aria-sort', 'none');
+    });
+
+    // AC#9: Accessibility - keyboard support (Enter key)
+    it('responds to Enter key on sortable header', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const companyHeader = screen.getByTestId('sort-header-company');
+      fireEvent.keyDown(companyHeader, { key: 'Enter' });
+
+      expect(mockOnSortingChange).toHaveBeenCalledWith('company');
+    });
+
+    // AC#9: Accessibility - keyboard support (Space key)
+    it('responds to Space key on sortable header', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const statusHeader = screen.getByTestId('sort-header-status');
+      fireEvent.keyDown(statusHeader, { key: ' ' });
+
+      expect(mockOnSortingChange).toHaveBeenCalledWith('status');
+    });
+
+    // AC#9: Accessibility - tabIndex for keyboard navigation
+    it('sortable headers have tabIndex for keyboard navigation', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const companyHeader = screen.getByTestId('sort-header-company');
+      expect(companyHeader).toHaveAttribute('tabIndex', '0');
+    });
+
+    // AC#2: Single Column Sort - clicking toggles sort
+    it('calls onSortingChange with column ID when clicked', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const salesOwnerHeader = screen.getByTestId('sort-header-salesOwnerName');
+      fireEvent.click(salesOwnerHeader);
+
+      expect(mockOnSortingChange).toHaveBeenCalledWith('salesOwnerName');
+    });
+
+    // AC#1: Sortable columns have hover state
+    it('sortable headers have hover state class', () => {
+      renderWithProviders(
+        <LeadTable
+          data={mockLeadsData}
+          sorting={defaultSorting}
+          onSortingChange={mockOnSortingChange}
+          onRowClick={mockOnRowClick}
+        />
+      );
+
+      const companyHeader = screen.getByTestId('sort-header-company');
+      expect(companyHeader).toHaveClass('hover:bg-muted/50');
     });
   });
 });

@@ -1,6 +1,7 @@
 /**
  * Lead Table Component
  * Story 4.1: Lead List Table
+ * Story 4.7: Sort Columns - AC#1-9
  *
  * AC#2: Table Columns - Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date
  * AC#3: Data Display - Proper formatting for each column
@@ -8,6 +9,13 @@
  * AC#7: Responsive Design - horizontal scroll with sticky first column
  * AC#8: Default Sort - Created Date descending
  * AC#9: TanStack Table Integration
+ *
+ * Story 4.7:
+ * AC#1: Sortable columns with indicators (Company, Status, Sales Owner, Created Date)
+ * AC#2: Click to toggle ascending/descending
+ * AC#3: Sort indicator display (▲/▼/↕)
+ * AC#8: Server-side sorting (manualSorting: true)
+ * AC#9: Accessibility (aria-sort, keyboard support)
  */
 'use client';
 
@@ -15,7 +23,6 @@ import { useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
   flexRender,
   type SortingState,
   type ColumnDef,
@@ -50,7 +57,8 @@ import type { Lead } from '@/types/lead';
 interface LeadTableProps {
   data: Lead[];
   sorting: SortingState;
-  onSortingChange: (sorting: SortingState) => void;
+  /** Story 4.7 AC#2: Called with column ID when sort header is clicked */
+  onSortingChange: (columnId: string) => void;
   onRowClick: (lead: Lead) => void;
 }
 
@@ -58,41 +66,109 @@ interface LeadTableProps {
 // Helper Components
 // ===========================================
 
+/**
+ * Story 4.7 AC#1, AC#3, AC#9: Sortable Header Component
+ * - Shows sort indicators (▲/▼/↕)
+ * - Clickable with pointer cursor and hover state
+ * - Keyboard accessible (Enter/Space)
+ * - aria-sort attribute for screen readers
+ */
 interface SortableHeaderProps {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc';
-    toggleSorting: (desc?: boolean) => void;
-  };
+  columnId: string;
+  sorting: SortingState;
+  onSort: (columnId: string) => void;
   children: React.ReactNode;
   tooltip: string;
   className?: string;
 }
 
-function SortableHeader({ column, children, tooltip, className }: SortableHeaderProps) {
-  const sorted = column.getIsSorted();
+function SortableHeader({ columnId, sorting, onSort, children, tooltip, className }: SortableHeaderProps) {
+  // Check if this column is currently sorted
+  const sortState = sorting.find(s => s.id === columnId);
+  const isSorted = !!sortState;
+  const isAsc = sortState?.desc === false;
+  const isDesc = sortState?.desc === true;
+
+  // AC#9: aria-sort attribute
+  const ariaSort = isSorted ? (isAsc ? 'ascending' : 'descending') : 'none';
+
+  // AC#3: Handle keyboard events
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSort(columnId);
+    }
+  };
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
+            type="button"
             className={cn(
-              'flex items-center gap-1 font-medium hover:text-foreground transition-colors',
+              'flex items-center gap-1 font-medium transition-colors',
+              'hover:bg-muted/50 hover:text-foreground px-3 py-2 -mx-3 rounded',
+              'cursor-pointer',
+              // Issue #1: Focus visible state for accessibility (project-context.md)
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              // Issue #2: Touch target minimum 44x44px (px-3 py-2 ensures adequate size)
+              'min-h-[44px]',
+              isSorted && 'text-primary',
               className
             )}
-            onClick={() => column.toggleSorting(sorted === 'asc')}
-            aria-label={`Sort by ${children}`}
+            onClick={() => onSort(columnId)}
+            onKeyDown={handleKeyDown}
+            aria-sort={ariaSort}
+            aria-label={`Sort by ${children}${isSorted ? (isAsc ? ', currently ascending' : ', currently descending') : ''}`}
+            tabIndex={0}
+            // Issue #4: Removed redundant role="button" - implicit on <button>
+            data-testid={`sort-header-${columnId}`}
           >
             {children}
-            {sorted === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : sorted === 'desc' ? (
-              <ArrowDown className="h-4 w-4" />
+            {/* AC#3: Sort indicator */}
+            {isAsc ? (
+              <ArrowUp className="h-4 w-4" aria-hidden="true" />
+            ) : isDesc ? (
+              <ArrowDown className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className="h-4 w-4 opacity-50" aria-hidden="true" />
             )}
-            <HelpCircle className="h-3 w-3 opacity-40" />
+            <HelpCircle className="h-3 w-3 opacity-40" aria-hidden="true" />
           </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+/**
+ * Story 4.7 AC#1: Non-sortable Header Component
+ * - Displays column name with tooltip
+ * - No sort functionality or indicators
+ * - Used for columns: customerName, email, phone, campaignName
+ */
+interface PlainHeaderProps {
+  /** Column header text */
+  children: React.ReactNode;
+  /** Tooltip description for the column */
+  tooltip: string;
+  /** Additional CSS classes */
+  className?: string;
+}
+
+function PlainHeader({ children, tooltip, className }: PlainHeaderProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn('flex items-center gap-1 font-medium', className)}>
+            {children}
+            <HelpCircle className="h-3 w-3 opacity-40" aria-hidden="true" />
+          </span>
         </TooltipTrigger>
         <TooltipContent side="top">
           <p>{tooltip}</p>
@@ -108,12 +184,20 @@ function SortableHeader({ column, children, tooltip, className }: SortableHeader
 
 export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTableProps) {
   // Define columns (AC#2)
+  // Story 4.7 AC#1: Only company, status, salesOwnerName, createdAt are sortable
   const columns = useMemo<ColumnDef<Lead>[]>(
     () => [
       {
         accessorKey: 'company',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.company}>
+        // Story 4.7 AC#1: Sortable column
+        enableSorting: true,
+        header: () => (
+          <SortableHeader
+            columnId="company"
+            sorting={sorting}
+            onSort={onSortingChange}
+            tooltip={LEAD_COLUMN_TOOLTIPS.company}
+          >
             Company
           </SortableHeader>
         ),
@@ -130,10 +214,12 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'customerName',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.customerName}>
+        // Story 4.7 AC#1: Non-sortable column
+        enableSorting: false,
+        header: () => (
+          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.customerName}>
             Contact Name
-          </SortableHeader>
+          </PlainHeader>
         ),
         cell: ({ getValue }) => (
           <span className="whitespace-nowrap">{getValue() as string}</span>
@@ -141,10 +227,12 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'email',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.email}>
+        // Story 4.7 AC#1: Non-sortable column
+        enableSorting: false,
+        header: () => (
+          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.email}>
             Email
-          </SortableHeader>
+          </PlainHeader>
         ),
         cell: ({ getValue }) => {
           const email = getValue() as string;
@@ -163,10 +251,12 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'phone',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.phone}>
+        // Story 4.7 AC#1: Non-sortable column
+        enableSorting: false,
+        header: () => (
+          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.phone}>
             Phone
-          </SortableHeader>
+          </PlainHeader>
         ),
         cell: ({ getValue }) => (
           <span className="whitespace-nowrap tabular-nums">
@@ -176,8 +266,15 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'status',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.status}>
+        // Story 4.7 AC#1: Sortable column
+        enableSorting: true,
+        header: () => (
+          <SortableHeader
+            columnId="status"
+            sorting={sorting}
+            onSort={onSortingChange}
+            tooltip={LEAD_COLUMN_TOOLTIPS.status}
+          >
             Status
           </SortableHeader>
         ),
@@ -185,8 +282,15 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'salesOwnerName',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.salesOwnerName}>
+        // Story 4.7 AC#1: Sortable column
+        enableSorting: true,
+        header: () => (
+          <SortableHeader
+            columnId="salesOwnerName"
+            sorting={sorting}
+            onSort={onSortingChange}
+            tooltip={LEAD_COLUMN_TOOLTIPS.salesOwnerName}
+          >
             Sales Owner
           </SortableHeader>
         ),
@@ -198,10 +302,12 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'campaignName',
-        header: ({ column }) => (
-          <SortableHeader column={column} tooltip={LEAD_COLUMN_TOOLTIPS.campaignName}>
+        // Story 4.7 AC#1: Non-sortable column
+        enableSorting: false,
+        header: () => (
+          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.campaignName}>
             Campaign
-          </SortableHeader>
+          </PlainHeader>
         ),
         cell: ({ getValue }) => (
           <span className="whitespace-nowrap">{getValue() as string}</span>
@@ -209,9 +315,13 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
       },
       {
         accessorKey: 'createdAt',
-        header: ({ column }) => (
+        // Story 4.7 AC#1: Sortable column
+        enableSorting: true,
+        header: () => (
           <SortableHeader
-            column={column}
+            columnId="createdAt"
+            sorting={sorting}
+            onSort={onSortingChange}
             tooltip={LEAD_COLUMN_TOOLTIPS.createdAt}
             className="justify-end"
           >
@@ -225,19 +335,16 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
         ),
       },
     ],
-    []
+    [sorting, onSortingChange]
   );
 
   const table = useReactTable({
     data,
     columns,
     state: { sorting },
-    onSortingChange: (updater) => {
-      const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
-      onSortingChange(newSorting);
-    },
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    // Story 4.7 AC#8: Server-side sorting - don't use client-side sorting
+    manualSorting: true,
   });
 
   return (

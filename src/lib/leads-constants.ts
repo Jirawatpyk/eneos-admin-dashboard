@@ -2,8 +2,9 @@
  * Leads Constants
  * Story 4.1: Lead List Table
  * Story 4.4: Filter by Status - Added LEAD_STATUS_OPTIONS and ALL_LEAD_STATUSES
+ * Story 4.7: Sort Columns - Added SORTABLE_COLUMNS, VALID_SORT_COLUMNS, DEFAULT_SORT
  *
- * Constants for lead status colors, labels, and options
+ * Constants for lead status colors, labels, options, and sorting configuration
  * Matches STATUS_COLORS from project-context.md
  */
 
@@ -75,4 +76,30 @@ export const LEAD_COLUMN_TOOLTIPS: Record<string, string> = {
   salesOwnerName: 'Assigned sales team member',
   campaignName: 'Marketing campaign that generated this lead',
   createdAt: 'Date and time when the lead was created',
+} as const;
+
+/**
+ * Story 4.7: Sortable columns (AC#1)
+ * Only these columns support server-side sorting
+ * Maps frontend column ID to backend sortBy value
+ */
+export const SORTABLE_COLUMNS: Record<string, string> = {
+  company: 'company',
+  status: 'status',
+  salesOwnerName: 'salesOwnerName',
+  createdAt: 'createdAt',
+} as const;
+
+/**
+ * Valid sortable column IDs for validation
+ */
+export const VALID_SORT_COLUMNS = Object.keys(SORTABLE_COLUMNS);
+
+/**
+ * Default sort configuration (AC#4)
+ * createdAt DESC (newest first) - not shown in URL
+ */
+export const DEFAULT_SORT = {
+  sortBy: 'createdAt',
+  sortOrder: 'desc' as const,
 } as const;
