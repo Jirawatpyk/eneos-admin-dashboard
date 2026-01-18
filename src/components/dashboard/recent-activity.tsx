@@ -61,11 +61,12 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
         </ScrollArea>
       </CardContent>
       {/* AC#5: View All Link - L-03 Fix: improved accessibility */}
+      {/* Temporary: Link to /leads until dedicated /activity page is built (see backlog) */}
       <CardFooter className="pt-3 border-t">
         <Link
-          href="/activity"
+          href="/leads?sort=updatedAt&order=desc"
           className="text-sm text-primary hover:underline flex items-center gap-1 transition-colors"
-          aria-label="View all sales activity history"
+          aria-label="View all recent leads activity"
         >
           View All Activity
           <ArrowRight className="h-4 w-4" aria-hidden="true" />

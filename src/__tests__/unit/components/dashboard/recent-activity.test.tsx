@@ -138,14 +138,15 @@ describe('RecentActivity', () => {
     it('navigates to /activity page', () => {
       renderWithProvider(<RecentActivity activities={mockActivities} />);
       const link = screen.getByRole('link', { name: /view all/i });
-      expect(link).toHaveAttribute('href', '/activity');
+      // Temporary: links to /leads until dedicated /activity page is built
+      expect(link).toHaveAttribute('href', '/leads?sort=updatedAt&order=desc');
     });
 
     // L-03 Fix verification: Check aria-label exists
     it('has accessible aria-label on link', () => {
       renderWithProvider(<RecentActivity activities={mockActivities} />);
       const link = screen.getByRole('link', { name: /view all/i });
-      expect(link).toHaveAttribute('aria-label', 'View all sales activity history');
+      expect(link).toHaveAttribute('aria-label', 'View all recent leads activity');
     });
   });
 
