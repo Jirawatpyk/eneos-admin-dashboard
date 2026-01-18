@@ -14,6 +14,7 @@ import type {
   LeadsResponse,
   LeadDetailResponse,
   LeadsQueryParams,
+  LeadsAvailableFilters,
 } from '@/types/lead';
 import type { LeadDetail } from '@/types/lead-detail';
 
@@ -36,6 +37,7 @@ export class LeadsApiError extends Error {
  * Story 4.4: status is now array - join with comma (AC#4)
  * Story 4.5: owner is now array - join with comma (AC#4)
  * Story 4.6: from/to for date filter (AC#5)
+ * Story 4.14: leadSource for single-select filter (AC#4)
  */
 function buildQueryString(params: LeadsQueryParams): string {
   const searchParams = new URLSearchParams();
@@ -59,6 +61,8 @@ function buildQueryString(params: LeadsQueryParams): string {
   // Story 4.6 AC#5: Date filter params (YYYY-MM-DD format)
   if (params.from) searchParams.set('from', params.from);
   if (params.to) searchParams.set('to', params.to);
+  // Story 4.14 AC#4: Lead source filter (single-select)
+  if (params.leadSource) searchParams.set('leadSource', params.leadSource);
 
   return searchParams.toString();
 }
@@ -66,12 +70,17 @@ function buildQueryString(params: LeadsQueryParams): string {
 /**
  * Fetch leads list from API
  * @param params - Query parameters for filtering/pagination
- * @returns Leads data with pagination info
+ * @returns Leads data with pagination info and available filters
  * @throws LeadsApiError on failure
+ * Story 4.14: Added availableFilters to return type
  */
 export async function fetchLeads(
   params: LeadsQueryParams = {}
-): Promise<{ leads: Lead[]; pagination: LeadsResponse['pagination'] }> {
+): Promise<{
+  leads: Lead[];
+  pagination: LeadsResponse['pagination'];
+  availableFilters?: LeadsAvailableFilters;
+}> {
   const queryString = buildQueryString(params);
   const url = `${API_BASE_URL}/api/admin/leads${queryString ? `?${queryString}` : ''}`;
 
@@ -113,6 +122,8 @@ export async function fetchLeads(
   return {
     leads: result.data,
     pagination: result.pagination,
+    // Story 4.14: Include available filters for LeadSourceFilter
+    availableFilters: result.filters?.available,
   };
 }
 

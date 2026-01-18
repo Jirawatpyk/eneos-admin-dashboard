@@ -4,6 +4,7 @@
  * Story 4.3: Search - Passes search query parameter to backend (AC#3)
  * Story 4.5: Owner Filter - Passes owner query parameter to backend (AC#4)
  * Story 4.6: Date Filter - Passes from/to query parameters to backend (AC#5)
+ * Story 4.14: Lead Source Filter - Passes leadSource parameter to backend (AC#4)
  *
  * Proxies requests to Backend API with Google ID token authentication
  * Follows pattern from dashboard API route
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const owner = searchParams.get('owner'); // Story 4.5: Multi-value owner filter
     const salesOwnerId = searchParams.get('salesOwnerId'); // Legacy: Frontend name
+    const leadSource = searchParams.get('leadSource'); // Story 4.14: Lead source filter
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy');
     const sortDir = searchParams.get('sortDir'); // Frontend name
@@ -74,6 +76,8 @@ export async function GET(request: NextRequest) {
     // Note: Frontend uses 'from'/'to', Backend expects 'startDate'/'endDate'
     if (from) backendParams.set('startDate', from);
     if (to) backendParams.set('endDate', to);
+    // Story 4.14: Lead source filter (AC#4)
+    if (leadSource) backendParams.set('leadSource', leadSource);
 
     const backendUrl = `${BACKEND_URL}/api/admin/leads?${backendParams.toString()}`;
 
@@ -146,6 +150,8 @@ export async function GET(request: NextRequest) {
           success: true,
           data: transformedLeads,
           pagination: data.data.pagination,
+          // Story 4.14: Include available filters for Lead Source dropdown
+          filters: data.data.filters,
         };
         return NextResponse.json(transformedData, { status: response.status });
       } catch (transformError) {

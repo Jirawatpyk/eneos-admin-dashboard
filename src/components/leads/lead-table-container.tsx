@@ -9,6 +9,7 @@
  * Story 4.7: Sort Columns - Added URL-synced sorting (AC#1-9)
  * Story 4.9: Bulk Select - Added selection state management (AC#4, AC#7)
  * Story 4.10: Quick Export - Added export functionality (AC#1-10)
+ * Story 4.14: Lead Source Filter - Added lead source filter (AC#1-9)
  *
  * Container component that handles:
  * - Data fetching with useLeads hook
@@ -39,6 +40,7 @@ import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
 import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
 import { useDateFilterParams } from '@/hooks/use-date-filter-params';
+import { useLeadSourceFilterParams } from '@/hooks/use-lead-source-filter-params';
 import { useSortParams } from '@/hooks/use-sort-params';
 import { useDebounce } from '@/hooks/use-debounce';
 import { LeadTable } from './lead-table';
@@ -51,6 +53,7 @@ import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
 import { LeadOwnerFilter } from './lead-owner-filter';
 import { LeadDateFilter } from './lead-date-filter';
+import { LeadSourceFilter } from './lead-source-filter';
 import { SelectionToolbar } from './selection-toolbar';
 import { formatDateForApi } from '@/lib/date-presets';
 import type { Lead } from '@/types/lead';
@@ -71,6 +74,9 @@ export function LeadTableContainer() {
 
   // Story 4.6 AC#8: URL state sync for date filter
   const { dateRange, setDateRange, hasDateFilter } = useDateFilterParams();
+
+  // Story 4.14 AC#5: URL state sync for lead source filter
+  const { leadSource, setLeadSource, hasLeadSourceFilter } = useLeadSourceFilterParams();
 
   // Story 4.7 AC#5: URL state sync for sorting
   const { sortBy, sortOrder, toggleSort } = useSortParams();
@@ -124,7 +130,7 @@ export function LeadTableContainer() {
   } = useLeadSelection();
 
   // Story 4.9 AC#7: Track previous filter values to detect changes
-  const prevFiltersRef = useRef({ status: statuses, owner: owners, search: debouncedSearch, dateRange });
+  const prevFiltersRef = useRef({ status: statuses, owner: owners, search: debouncedSearch, dateRange, leadSource });
 
   // Story 4.9 AC#7: Clear selection when filters/search change
   useEffect(() => {
@@ -134,7 +140,8 @@ export function LeadTableContainer() {
       JSON.stringify(prev.owner) !== JSON.stringify(owners) ||
       prev.search !== debouncedSearch ||
       prev.dateRange?.from !== dateRange?.from ||
-      prev.dateRange?.to !== dateRange?.to;
+      prev.dateRange?.to !== dateRange?.to ||
+      prev.leadSource !== leadSource; // Story 4.14
 
     if (filtersChanged && selectedCount > 0) {
       clearSelection();
@@ -144,8 +151,8 @@ export function LeadTableContainer() {
       });
     }
 
-    prevFiltersRef.current = { status: statuses, owner: owners, search: debouncedSearch, dateRange };
-  }, [statuses, owners, debouncedSearch, dateRange, selectedCount, clearSelection]);
+    prevFiltersRef.current = { status: statuses, owner: owners, search: debouncedSearch, dateRange, leadSource };
+  }, [statuses, owners, debouncedSearch, dateRange, leadSource, selectedCount, clearSelection]);
 
   // Detail sheet state
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -156,7 +163,8 @@ export function LeadTableContainer() {
   // Story 4.5 AC#4, AC#6: Pass owner filter to useLeads hook
   // Story 4.6 AC#5, AC#6: Pass date filter to useLeads hook
   // Story 4.7 AC#8: Pass sort params to useLeads hook
-  const { data, pagination, isLoading, isFetching, isError, error, refetch } = useLeads({
+  // Story 4.14 AC#4: Pass lead source filter to useLeads hook
+  const { data, pagination, availableFilters, isLoading, isFetching, isError, error, refetch } = useLeads({
     page,
     limit,
     search: debouncedSearch || undefined, // Only pass if not empty
@@ -164,6 +172,7 @@ export function LeadTableContainer() {
     owner: owners.length > 0 ? owners : undefined, // Story 4.5 AC#4
     from: dateRange?.from ? formatDateForApi(dateRange.from) : undefined, // Story 4.6 AC#5
     to: dateRange?.to ? formatDateForApi(dateRange.to) : undefined, // Story 4.6 AC#5
+    leadSource: leadSource || undefined, // Story 4.14 AC#4
     sortBy, // Story 4.7 AC#8
     sortDir: sortOrder, // Story 4.7 AC#8
   });
@@ -197,7 +206,7 @@ export function LeadTableContainer() {
     clearSearch();
   }, [clearSearch]);
 
-  // Story 4.4 AC#6, Story 4.5 AC#7, Story 4.6 AC#7: Handle clear when search or any filter is active
+  // Story 4.4 AC#6, Story 4.5 AC#7, Story 4.6 AC#7, Story 4.14 AC#7: Handle clear when search or any filter is active
   const handleClearFilters = useCallback(() => {
     if (debouncedSearch) {
       handleClearSearch();
@@ -211,13 +220,19 @@ export function LeadTableContainer() {
     if (hasDateFilter) {
       setDateRange(null);
     }
-  }, [debouncedSearch, handleClearSearch, hasStatusFilter, setStatuses, hasOwnerFilter, setOwners, hasDateFilter, setDateRange]);
+    if (hasLeadSourceFilter) {
+      setLeadSource(null);
+    }
+  }, [debouncedSearch, handleClearSearch, hasStatusFilter, setStatuses, hasOwnerFilter, setOwners, hasDateFilter, setDateRange, hasLeadSourceFilter, setLeadSource]);
+
+  // Story 4.14: Get available lead sources from API
+  const availableLeadSources = availableFilters?.leadSources ?? [];
 
   // AC#6: Loading state (only on initial load, not during pagination)
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {/* Story 4.3, 4.4, 4.5, 4.6: Show search and filters even during loading */}
+        {/* Story 4.3, 4.4, 4.5, 4.6, 4.14: Show search and filters even during loading */}
         <div className="flex flex-wrap items-center gap-4">
           <LeadSearch
             value={searchInput}
@@ -228,6 +243,12 @@ export function LeadTableContainer() {
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
           <LeadDateFilter value={dateRange} onChange={setDateRange} />
+          <LeadSourceFilter
+            value={leadSource}
+            sources={availableLeadSources}
+            onChange={setLeadSource}
+            isLoading={true}
+          />
         </div>
         <LeadTableSkeleton />
       </div>
@@ -248,6 +269,11 @@ export function LeadTableContainer() {
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
           <LeadDateFilter value={dateRange} onChange={setDateRange} />
+          <LeadSourceFilter
+            value={leadSource}
+            sources={availableLeadSources}
+            onChange={setLeadSource}
+          />
         </div>
         <LeadTableError
           message={error?.message || 'Failed to load leads data'}
@@ -257,9 +283,9 @@ export function LeadTableContainer() {
     );
   }
 
-  // Story 4.3 AC#6, Story 4.4, 4.5, 4.6: Empty state with search/filter context
+  // Story 4.3 AC#6, Story 4.4, 4.5, 4.6, 4.14: Empty state with search/filter context
   if (!data || data.length === 0) {
-    const hasAnyFilter = hasStatusFilter || hasOwnerFilter || hasDateFilter;
+    const hasAnyFilter = hasStatusFilter || hasOwnerFilter || hasDateFilter || hasLeadSourceFilter;
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-4">
@@ -272,6 +298,11 @@ export function LeadTableContainer() {
           <LeadStatusFilter value={statuses} onChange={setStatuses} />
           <LeadOwnerFilter value={owners} onChange={setOwners} />
           <LeadDateFilter value={dateRange} onChange={setDateRange} />
+          <LeadSourceFilter
+            value={leadSource}
+            sources={availableLeadSources}
+            onChange={setLeadSource}
+          />
         </div>
         <LeadTableEmpty
           searchTerm={debouncedSearch}
@@ -310,6 +341,13 @@ export function LeadTableContainer() {
         <LeadDateFilter
           value={dateRange}
           onChange={setDateRange}
+          disabled={isFetching}
+        />
+        {/* Story 4.14 AC#1: Lead source filter next to date filter */}
+        <LeadSourceFilter
+          value={leadSource}
+          sources={availableLeadSources}
+          onChange={setLeadSource}
           disabled={isFetching}
         />
       </div>

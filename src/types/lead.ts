@@ -98,12 +98,27 @@ export interface LeadsPagination {
 }
 
 /**
+ * Available filters from backend API
+ * Story 4.14: Added leadSources for Lead Source filter
+ */
+export interface LeadsAvailableFilters {
+  statuses: LeadStatus[];
+  owners: { id: string; name: string }[];
+  campaigns: { id: string; name: string }[];
+  leadSources: string[]; // Story 4.14: Available lead sources
+}
+
+/**
  * Backend API response for leads list
+ * Story 4.14: Added filters for available filter options
  */
 export interface LeadsResponse {
   success: boolean;
   data: Lead[];
   pagination: LeadsPagination;
+  filters?: {
+    available: LeadsAvailableFilters;
+  };
   error?: {
     code: string;
     message: string;
@@ -145,4 +160,6 @@ export interface LeadsQueryParams {
   from?: string;
   /** Date filter - end date YYYY-MM-DD (Story 4.6 AC#5) */
   to?: string;
+  /** Lead source filter - single value (Story 4.14 AC#4) */
+  leadSource?: string | null;
 }

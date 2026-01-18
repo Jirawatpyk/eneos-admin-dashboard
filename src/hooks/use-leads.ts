@@ -5,6 +5,7 @@
  * Story 4.3: Search - Added search parameter support (AC#3, AC#4)
  * Story 4.5: Owner Filter - Added owner parameter support (AC#4, AC#6)
  * Story 4.6: Date Filter - Added from/to parameter support (AC#5, AC#6)
+ * Story 4.14: Lead Source Filter - Added leadSource parameter support (AC#4, AC#6)
  *
  * TanStack Query v5 hook for fetching leads list
  * Uses object syntax per project context requirements
@@ -12,7 +13,7 @@
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchLeads, LeadsApiError } from '@/lib/api/leads';
-import type { Lead, LeadsQueryParams, LeadsPagination } from '@/types/lead';
+import type { Lead, LeadsQueryParams, LeadsPagination, LeadsAvailableFilters } from '@/types/lead';
 
 export interface UseLeadsOptions extends LeadsQueryParams {
   enabled?: boolean;
@@ -21,6 +22,8 @@ export interface UseLeadsOptions extends LeadsQueryParams {
 export interface UseLeadsReturn {
   data: Lead[] | undefined;
   pagination: LeadsPagination | undefined;
+  /** Story 4.14: Available filter options from backend */
+  availableFilters: LeadsAvailableFilters | undefined;
   isLoading: boolean;
   /** Use isFetching (not isLoading) for pagination transitions - AC#5 */
   isFetching: boolean;
@@ -54,6 +57,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     sortDir = 'desc',
     from, // Story 4.6: Date filter - start date
     to, // Story 4.6: Date filter - end date
+    leadSource, // Story 4.14: Lead source filter
   } = options;
 
   const queryParams: LeadsQueryParams = {
@@ -67,6 +71,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     sortDir,
     from, // Story 4.6 AC#5: Pass date filter to API
     to, // Story 4.6 AC#5: Pass date filter to API
+    leadSource, // Story 4.14 AC#4: Pass lead source filter to API
   };
 
   const query = useQuery({
@@ -84,6 +89,8 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   return {
     data: query.data?.leads,
     pagination: query.data?.pagination,
+    // Story 4.14: Available filters for LeadSourceFilter
+    availableFilters: query.data?.availableFilters,
     isLoading: query.isLoading,
     // Story 4.2 AC#5: Use isFetching (not isLoading) for pagination transitions
     isFetching: query.isFetching,

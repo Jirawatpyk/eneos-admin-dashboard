@@ -94,6 +94,7 @@ vi.mock('@/hooks/use-leads', () => ({
   useLeads: vi.fn(() => ({
     data: mockLeads,
     pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+    availableFilters: { statuses: [], owners: [], campaigns: [], leadSources: ['Email', 'Website', 'Referral'] },
     isLoading: false,
     isFetching: false,
     isError: false,
@@ -168,6 +169,19 @@ vi.mock('@/hooks/use-sort-params', () => ({
   })),
 }));
 
+// Story 4.14: Mock lead source filter hook
+const mockSetLeadSource = vi.fn();
+const mockClearLeadSource = vi.fn();
+vi.mock('@/hooks/use-lead-source-filter-params', () => ({
+  useLeadSourceFilterParams: vi.fn(() => ({
+    leadSource: null,
+    setLeadSource: mockSetLeadSource,
+    clearLeadSource: mockClearLeadSource,
+    hasLeadSourceFilter: false,
+  })),
+  UNKNOWN_SOURCE: '__unknown__',
+}));
+
 import { useLeads } from '@/hooks/use-leads';
 import { useLeadSelection } from '@/hooks/use-lead-selection';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
@@ -203,6 +217,7 @@ describe('LeadTableContainer', () => {
     vi.mocked(useLeads).mockReturnValue({
       data: mockLeads,
       pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      availableFilters: { statuses: [], owners: [], campaigns: [], leadSources: ['Email', 'Website', 'Referral'] },
       isLoading: false,
       isFetching: false,
       isError: false,
@@ -251,6 +266,7 @@ describe('LeadTableContainer', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: undefined,
         pagination: undefined,
+        availableFilters: undefined,
         isLoading: true,
         isFetching: true,
         isError: false,
@@ -270,6 +286,7 @@ describe('LeadTableContainer', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: undefined,
         pagination: undefined,
+        availableFilters: undefined,
         isLoading: false,
         isFetching: false,
         isError: true,
@@ -288,6 +305,7 @@ describe('LeadTableContainer', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: undefined,
         pagination: undefined,
+        availableFilters: undefined,
         isLoading: false,
         isFetching: false,
         isError: true,
@@ -308,6 +326,7 @@ describe('LeadTableContainer', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: [],
         pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+        availableFilters: { statuses: [], owners: [], campaigns: [], leadSources: [] },
         isLoading: false,
         isFetching: false,
         isError: false,
@@ -324,6 +343,7 @@ describe('LeadTableContainer', () => {
       vi.mocked(useLeads).mockReturnValue({
         data: undefined,
         pagination: undefined,
+        availableFilters: undefined,
         isLoading: false,
         isFetching: false,
         isError: false,
