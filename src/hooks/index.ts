@@ -42,3 +42,8 @@ export {
   useLeadSelection,
   type UseLeadSelectionReturn,
 } from './use-lead-selection';
+export {
+  useExportLeads,
+  type ExportFormat,
+  type UseExportLeadsReturn,
+} from './use-export-leads';

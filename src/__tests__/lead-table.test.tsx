@@ -587,7 +587,7 @@ describe('LeadTable', () => {
     });
 
     // AC#9: Accessibility - aria-sort attribute
-    it('sets aria-sort attribute on sorted column', () => {
+    it('sets aria-sort attribute on sorted column header (th element)', () => {
       const descSorting: SortingState = [{ id: 'createdAt', desc: true }];
 
       renderWithProviders(
@@ -600,12 +600,13 @@ describe('LeadTable', () => {
         />
       );
 
-      const createdAtHeader = screen.getByTestId('sort-header-createdAt');
-      expect(createdAtHeader).toHaveAttribute('aria-sort', 'descending');
+      // AC#9: aria-sort should be on th element (columnheader), not on button
+      const createdAtColumnHeader = screen.getByTestId('column-header-createdAt');
+      expect(createdAtColumnHeader).toHaveAttribute('aria-sort', 'descending');
 
       // Unsorted columns should have aria-sort="none"
-      const companyHeader = screen.getByTestId('sort-header-company');
-      expect(companyHeader).toHaveAttribute('aria-sort', 'none');
+      const companyColumnHeader = screen.getByTestId('column-header-company');
+      expect(companyColumnHeader).toHaveAttribute('aria-sort', 'none');
     });
 
     // AC#9: Accessibility - keyboard support (Enter key)

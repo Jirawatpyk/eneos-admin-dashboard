@@ -1,20 +1,65 @@
 /**
  * Selection Toolbar Tests
  * Story 4.9: Bulk Select - AC#4, AC#5
+ * Story 4.10: Quick Export - AC#1
  *
  * Tests:
  * - AC#4: Display selection count "{count} leads selected"
  * - AC#4: Show "Clear selection" button
  * - AC#5: Clear all selections when button clicked
+ * - Story 4.10 AC#1: Export button in toolbar
  * - Accessibility attributes
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SelectionToolbar } from '@/components/leads/selection-toolbar';
+import type { Lead } from '@/types/lead';
+
+// Mock LeadExportDropdown to avoid complex mocking
+vi.mock('@/components/leads/lead-export-dropdown', () => ({
+  LeadExportDropdown: ({ leads }: { leads: Lead[] }) => (
+    <button data-testid="lead-export-dropdown-mock">Export ({leads.length})</button>
+  ),
+}));
+
+// Sample lead data
+const createMockLead = (row: number): Lead => ({
+  row,
+  date: '2026-01-15',
+  customerName: 'John Smith',
+  email: 'john@example.com',
+  phone: '0812345678',
+  company: 'Test Company',
+  industryAI: 'Manufacturing',
+  website: 'https://test.com',
+  capital: '10M',
+  status: 'contacted',
+  salesOwnerId: 'user-1',
+  salesOwnerName: 'Sales Person',
+  campaignId: 'camp-1',
+  campaignName: 'Test Campaign',
+  emailSubject: 'Test Subject',
+  source: 'Brevo',
+  leadId: 'lead-1',
+  eventId: 'event-1',
+  clickedAt: '2026-01-15T10:00:00Z',
+  talkingPoint: 'Test talking point',
+  closedAt: null,
+  lostAt: null,
+  unreachableAt: null,
+  version: 1,
+  leadSource: 'Brevo',
+  jobTitle: 'Manager',
+  city: 'Bangkok',
+  leadUuid: `lead_${row}`,
+  createdAt: '2026-01-15T09:00:00Z',
+  updatedAt: null,
+});
 
 describe('SelectionToolbar', () => {
   const mockOnClearSelection = vi.fn();
+  const mockSelectedLeads: Lead[] = [createMockLead(1), createMockLead(2)];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -26,6 +71,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={1}
+          selectedLeads={[createMockLead(1)]}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -37,6 +83,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={5}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -48,6 +95,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={10}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -62,6 +110,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -78,6 +127,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={5}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -94,6 +144,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={0}
+          selectedLeads={[]}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -105,6 +156,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={1}
+          selectedLeads={[createMockLead(1)]}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -119,6 +171,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -130,6 +183,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -142,6 +196,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -157,6 +212,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -169,6 +225,7 @@ describe('SelectionToolbar', () => {
       render(
         <SelectionToolbar
           selectedCount={3}
+          selectedLeads={mockSelectedLeads}
           onClearSelection={mockOnClearSelection}
         />
       );
@@ -176,6 +233,36 @@ describe('SelectionToolbar', () => {
       const toolbar = screen.getByTestId('selection-toolbar');
       expect(toolbar).toHaveClass('animate-in');
       expect(toolbar).toHaveClass('slide-in-from-top-2');
+    });
+  });
+
+  // Story 4.10 AC#1: Export button in toolbar
+  describe('Story 4.10: Export functionality', () => {
+    it('renders export dropdown with selected leads', () => {
+      render(
+        <SelectionToolbar
+          selectedCount={2}
+          selectedLeads={mockSelectedLeads}
+          onClearSelection={mockOnClearSelection}
+        />
+      );
+
+      // The mocked dropdown should show the count
+      expect(screen.getByTestId('lead-export-dropdown-mock')).toBeInTheDocument();
+      expect(screen.getByText('Export (2)')).toBeInTheDocument();
+    });
+
+    it('passes correct leads to export dropdown', () => {
+      const leads = [createMockLead(1), createMockLead(2), createMockLead(3)];
+      render(
+        <SelectionToolbar
+          selectedCount={3}
+          selectedLeads={leads}
+          onClearSelection={mockOnClearSelection}
+        />
+      );
+
+      expect(screen.getByText('Export (3)')).toBeInTheDocument();
     });
   });
 });

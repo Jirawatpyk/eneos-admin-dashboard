@@ -8,6 +8,7 @@
  * Story 4.6: Filter by Date - Added date filter (AC#1-9)
  * Story 4.7: Sort Columns - Added URL-synced sorting (AC#1-9)
  * Story 4.9: Bulk Select - Added selection state management (AC#4, AC#7)
+ * Story 4.10: Quick Export - Added export functionality (AC#1-10)
  *
  * Container component that handles:
  * - Data fetching with useLeads hook
@@ -173,6 +174,12 @@ export function LeadTableContainer() {
   // Story 4.9: Compute visible row IDs for select all functionality
   const visibleRowIds = useMemo(() => data?.map((lead) => lead.row) ?? [], [data]);
 
+  // Story 4.10: Get actual lead data for selected IDs (for export)
+  const selectedLeads = useMemo(
+    () => data?.filter((lead) => selectedIds.has(lead.row)) ?? [],
+    [data, selectedIds]
+  );
+
   // AC#5: Row click handler
   const handleRowClick = useCallback((lead: Lead) => {
     setSelectedLead(lead);
@@ -308,8 +315,10 @@ export function LeadTableContainer() {
       </div>
 
       {/* Story 4.9 AC#4: Selection toolbar (conditionally rendered) */}
+      {/* Story 4.10: Pass selectedLeads for export functionality */}
       <SelectionToolbar
         selectedCount={selectedCount}
+        selectedLeads={selectedLeads}
         onClearSelection={clearSelection}
       />
 

@@ -24,3 +24,7 @@ export { LeadDetailError } from './lead-detail-error';
 
 // Story 4.9: Bulk Select
 export { SelectionToolbar } from './selection-toolbar';
+
+// Story 4.10: Quick Export
+export { LeadExportDropdown } from './lead-export-dropdown';
+export { ExportConfirmationDialog } from './export-confirmation-dialog';

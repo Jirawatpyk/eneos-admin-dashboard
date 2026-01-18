@@ -3,6 +3,7 @@
  * Story 4.1: Lead List Table
  * Story 4.3: Search - Added search integration tests
  * Story 4.9: Bulk Select - Added selection integration tests (AC#7)
+ * Story 4.10: Quick Export - Added export mock
  *
  * Tests for container component integration
  */
@@ -12,6 +13,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadTableContainer } from '@/components/leads/lead-table-container';
 import type { Lead } from '@/types/lead';
+
+// Story 4.10: Mock LeadExportDropdown to avoid hook issues in tests
+vi.mock('@/components/leads/lead-export-dropdown', () => ({
+  LeadExportDropdown: ({ leads }: { leads: Lead[] }) => (
+    <button data-testid="lead-export-dropdown-mock">Export ({leads.length})</button>
+  ),
+}));
 
 // Mock data
 const mockLeads: Lead[] = [

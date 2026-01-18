@@ -119,9 +119,6 @@ function SortableHeader({ columnId, sorting, onSort, children, tooltip, classNam
   const isAsc = sortState?.desc === false;
   const isDesc = sortState?.desc === true;
 
-  // AC#9: aria-sort attribute
-  const ariaSort = isSorted ? (isAsc ? 'ascending' : 'descending') : 'none';
-
   // AC#3: Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -149,7 +146,7 @@ function SortableHeader({ columnId, sorting, onSort, children, tooltip, classNam
             )}
             onClick={() => onSort(columnId)}
             onKeyDown={handleKeyDown}
-            aria-sort={ariaSort}
+            // Note: aria-sort moved to parent th via aria-label (aria-sort only valid on columnheader role)
             aria-label={`Sort by ${children}${isSorted ? (isAsc ? ', currently ascending' : ', currently descending') : ''}`}
             tabIndex={0}
             // Issue #4: Removed redundant role="button" - implicit on <button>
@@ -450,22 +447,37 @@ export function LeadTable({
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header, index) => (
-                    <TableHead
-                      key={header.id}
-                      className={cn(
-                        // Story 4.9 AC#1: Checkbox column sticky (40px width)
-                        index === 0 && 'sticky left-0 z-10 bg-background w-10',
-                        // AC#7: Sticky second column (Company) - positioned after checkbox
-                        index === 1 && 'sticky left-10 z-10 bg-background',
-                        index === header.getContext().table.getAllColumns().length - 1 && 'text-right'
-                      )}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
+                  {headerGroup.headers.map((header, index) => {
+                    // Story 4.7 AC#9: aria-sort on columnheader for accessibility
+                    const isSortable = header.column.getCanSort();
+                    const sortDirection = header.column.getIsSorted();
+                    const ariaSort = isSortable
+                      ? sortDirection === 'asc'
+                        ? 'ascending'
+                        : sortDirection === 'desc'
+                          ? 'descending'
+                          : 'none'
+                      : undefined;
+
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          // Story 4.9 AC#1: Checkbox column sticky (40px width)
+                          index === 0 && 'sticky left-0 z-10 bg-background w-10',
+                          // AC#7: Sticky second column (Company) - positioned after checkbox
+                          index === 1 && 'sticky left-10 z-10 bg-background',
+                          index === header.getContext().table.getAllColumns().length - 1 && 'text-right'
+                        )}
+                        aria-sort={ariaSort}
+                        data-testid={isSortable ? `column-header-${header.id}` : undefined}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
