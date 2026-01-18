@@ -38,3 +38,7 @@ export {
   useStatusFilterParams,
   type UseStatusFilterParamsReturn,
 } from './use-status-filter-params';
+export {
+  useLeadSelection,
+  type UseLeadSelectionReturn,
+} from './use-lead-selection';

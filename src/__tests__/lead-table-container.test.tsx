@@ -2,6 +2,7 @@
  * Lead Table Container Tests
  * Story 4.1: Lead List Table
  * Story 4.3: Search - Added search integration tests
+ * Story 4.9: Bulk Select - Added selection integration tests (AC#7)
  *
  * Tests for container component integration
  */
@@ -55,6 +56,32 @@ const mockClearSearch = vi.fn();
 const mockSetPage = vi.fn();
 const mockSetLimit = vi.fn();
 
+// Story 4.9: Mock selection hooks
+const mockClearSelection = vi.fn();
+const mockToggleSelection = vi.fn();
+const mockSelectAll = vi.fn();
+
+// Story 4.9: Mock toast
+const mockToast = vi.fn();
+vi.mock('@/hooks/use-toast', () => ({
+  toast: (args: unknown) => mockToast(args),
+}));
+
+// Story 4.9: Mock lead selection hook
+const mockIsSelected = vi.fn(() => false);
+vi.mock('@/hooks/use-lead-selection', () => ({
+  useLeadSelection: vi.fn(() => ({
+    selectedIds: new Set<number>(),
+    selectedCount: 0,
+    isSelected: mockIsSelected,
+    toggleSelection: mockToggleSelection,
+    selectAll: mockSelectAll,
+    clearSelection: mockClearSelection,
+    isAllSelected: () => false,
+    isSomeSelected: () => false,
+  })),
+}));
+
 vi.mock('@/hooks/use-leads', () => ({
   useLeads: vi.fn(() => ({
     data: mockLeads,
@@ -89,7 +116,56 @@ vi.mock('@/hooks/use-pagination-params', () => ({
   })),
 }));
 
+// Story 4.9: Mock filter hooks for filter change tests
+const mockSetStatuses = vi.fn();
+const mockClearStatuses = vi.fn();
+const mockSetOwners = vi.fn();
+const mockClearOwners = vi.fn();
+const mockSetDateRange = vi.fn();
+const mockClearDateRange = vi.fn();
+
+vi.mock('@/hooks/use-status-filter-params', () => ({
+  useStatusFilterParams: vi.fn(() => ({
+    statuses: [],
+    setStatuses: mockSetStatuses,
+    clearStatuses: mockClearStatuses,
+    hasStatusFilter: false,
+  })),
+}));
+
+vi.mock('@/hooks/use-owner-filter-params', () => ({
+  useOwnerFilterParams: vi.fn(() => ({
+    owners: [],
+    setOwners: mockSetOwners,
+    clearOwners: mockClearOwners,
+    hasOwnerFilter: false,
+  })),
+  UNASSIGNED_VALUE: 'unassigned',
+}));
+
+vi.mock('@/hooks/use-date-filter-params', () => ({
+  useDateFilterParams: vi.fn(() => ({
+    dateRange: null,
+    setDateRange: mockSetDateRange,
+    clearDateRange: mockClearDateRange,
+    hasDateFilter: false,
+  })),
+}));
+
+vi.mock('@/hooks/use-sort-params', () => ({
+  useSortParams: vi.fn(() => ({
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    toggleSort: vi.fn(),
+  })),
+}));
+
 import { useLeads } from '@/hooks/use-leads';
+import { useLeadSelection } from '@/hooks/use-lead-selection';
+import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
+import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
+import { useDateFilterParams } from '@/hooks/use-date-filter-params';
+import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { LeadsApiError } from '@/lib/api/leads';
 
 const createTestQueryClient = () =>
@@ -124,6 +200,41 @@ describe('LeadTableContainer', () => {
       isError: false,
       error: null,
       refetch: mockRefetch,
+    });
+    // Story 4.9: Reset selection hook mock
+    vi.mocked(useLeadSelection).mockReturnValue({
+      selectedIds: new Set<number>(),
+      selectedCount: 0,
+      isSelected: mockIsSelected,
+      toggleSelection: mockToggleSelection,
+      selectAll: mockSelectAll,
+      clearSelection: mockClearSelection,
+      isAllSelected: () => false,
+      isSomeSelected: () => false,
+    });
+    // Reset filter hooks
+    vi.mocked(useStatusFilterParams).mockReturnValue({
+      statuses: [],
+      setStatuses: mockSetStatuses,
+      clearStatuses: mockClearStatuses,
+      hasStatusFilter: false,
+    });
+    vi.mocked(useOwnerFilterParams).mockReturnValue({
+      owners: [],
+      setOwners: mockSetOwners,
+      clearOwners: mockClearOwners,
+      hasOwnerFilter: false,
+    });
+    vi.mocked(useDateFilterParams).mockReturnValue({
+      dateRange: null,
+      setDateRange: mockSetDateRange,
+      clearDateRange: mockClearDateRange,
+      hasDateFilter: false,
+    });
+    vi.mocked(useLeadSearchParams).mockReturnValue({
+      search: '',
+      setSearch: mockSetSearch,
+      clearSearch: mockClearSearch,
     });
   });
 
@@ -260,6 +371,233 @@ describe('LeadTableContainer', () => {
           sortDir: 'desc',
         })
       );
+    });
+  });
+
+  // ===========================================
+  // Story 4.9: Bulk Select Tests
+  // ===========================================
+  describe('Story 4.9: Bulk Select', () => {
+    // Task 7.10: Test checkbox click doesn't open detail sheet
+    describe('checkbox click isolation', () => {
+      it('does not open detail sheet when checkbox is clicked', async () => {
+        renderWithProviders(<LeadTableContainer />);
+
+        // Find the checkbox for row 1
+        const checkbox = screen.getByTestId('select-checkbox-1');
+        fireEvent.click(checkbox);
+
+        // Wait a tick to ensure any async operations complete
+        await waitFor(() => {
+          // Detail sheet should NOT be present
+          expect(screen.queryByTestId('lead-detail-sheet')).not.toBeInTheDocument();
+        });
+      });
+
+      it('calls toggleSelection when checkbox is clicked', () => {
+        renderWithProviders(<LeadTableContainer />);
+
+        const checkbox = screen.getByTestId('select-checkbox-1');
+        fireEvent.click(checkbox);
+
+        expect(mockToggleSelection).toHaveBeenCalledWith(1);
+      });
+    });
+
+    // Task 8.2: Test filter change clears selection
+    describe('AC#7: filter change clears selection', () => {
+      it('clears selection when status filter changes', async () => {
+        // Start with some selections
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1]),
+          selectedCount: 1,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => false,
+        });
+
+        const { rerender } = renderWithProviders(<LeadTableContainer />);
+
+        // Now simulate status filter change
+        vi.mocked(useStatusFilterParams).mockReturnValue({
+          statuses: ['contacted'],
+          setStatuses: mockSetStatuses,
+          clearStatuses: mockClearStatuses,
+          hasStatusFilter: true,
+        });
+
+        // Rerender to trigger the useEffect
+        rerender(
+          <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+            <TooltipProvider>
+              <LeadTableContainer />
+            </TooltipProvider>
+          </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+          expect(mockClearSelection).toHaveBeenCalled();
+        });
+      });
+
+      it('clears selection when owner filter changes', async () => {
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1, 2]),
+          selectedCount: 2,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => false,
+        });
+
+        const { rerender } = renderWithProviders(<LeadTableContainer />);
+
+        vi.mocked(useOwnerFilterParams).mockReturnValue({
+          owners: ['John'],
+          setOwners: mockSetOwners,
+          clearOwners: mockClearOwners,
+          hasOwnerFilter: true,
+        });
+
+        rerender(
+          <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+            <TooltipProvider>
+              <LeadTableContainer />
+            </TooltipProvider>
+          </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+          expect(mockClearSelection).toHaveBeenCalled();
+        });
+      });
+
+      it('shows toast notification when selection is cleared due to filter change', async () => {
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1]),
+          selectedCount: 1,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => false,
+        });
+
+        const { rerender } = renderWithProviders(<LeadTableContainer />);
+
+        vi.mocked(useStatusFilterParams).mockReturnValue({
+          statuses: ['new'],
+          setStatuses: mockSetStatuses,
+          clearStatuses: mockClearStatuses,
+          hasStatusFilter: true,
+        });
+
+        rerender(
+          <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+            <TooltipProvider>
+              <LeadTableContainer />
+            </TooltipProvider>
+          </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+          expect(mockToast).toHaveBeenCalledWith(
+            expect.objectContaining({
+              description: 'Selection cleared due to filter change',
+            })
+          );
+        });
+      });
+    });
+
+    // Task 8.3: Test search change clears selection
+    describe('AC#7: search change clears selection', () => {
+      it('clears selection when search term changes', async () => {
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1]),
+          selectedCount: 1,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => false,
+        });
+
+        const { rerender } = renderWithProviders(<LeadTableContainer />);
+
+        // Simulate search change via debounced value
+        vi.mocked(useLeadSearchParams).mockReturnValue({
+          search: 'test search',
+          setSearch: mockSetSearch,
+          clearSearch: mockClearSearch,
+        });
+
+        rerender(
+          <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+            <TooltipProvider>
+              <LeadTableContainer />
+            </TooltipProvider>
+          </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+          expect(mockClearSelection).toHaveBeenCalled();
+        });
+      });
+    });
+
+    // Selection toolbar rendering
+    describe('selection toolbar', () => {
+      it('renders selection toolbar when items are selected', () => {
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1, 2]),
+          selectedCount: 2,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => true,
+        });
+
+        renderWithProviders(<LeadTableContainer />);
+
+        expect(screen.getByTestId('selection-toolbar')).toBeInTheDocument();
+        expect(screen.getByText('2 leads selected')).toBeInTheDocument();
+      });
+
+      it('does not render selection toolbar when no items are selected', () => {
+        renderWithProviders(<LeadTableContainer />);
+
+        expect(screen.queryByTestId('selection-toolbar')).not.toBeInTheDocument();
+      });
+
+      it('calls clearSelection when clear button is clicked', () => {
+        vi.mocked(useLeadSelection).mockReturnValue({
+          selectedIds: new Set([1]),
+          selectedCount: 1,
+          isSelected: mockIsSelected,
+          toggleSelection: mockToggleSelection,
+          selectAll: mockSelectAll,
+          clearSelection: mockClearSelection,
+          isAllSelected: () => false,
+          isSomeSelected: () => false,
+        });
+
+        renderWithProviders(<LeadTableContainer />);
+
+        const clearButton = screen.getByTestId('clear-selection-button');
+        fireEvent.click(clearButton);
+
+        expect(mockClearSelection).toHaveBeenCalled();
+      });
     });
   });
 });

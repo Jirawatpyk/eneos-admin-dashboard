@@ -7,6 +7,7 @@
  * Story 4.5: Filter by Owner - Added owner filter (AC#1-9)
  * Story 4.6: Filter by Date - Added date filter (AC#1-9)
  * Story 4.7: Sort Columns - Added URL-synced sorting (AC#1-9)
+ * Story 4.9: Bulk Select - Added selection state management (AC#4, AC#7)
  *
  * Container component that handles:
  * - Data fetching with useLeads hook
@@ -27,9 +28,11 @@
  */
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { type SortingState } from '@tanstack/react-table';
 import { useLeads } from '@/hooks/use-leads';
+import { useLeadSelection } from '@/hooks/use-lead-selection';
+import { toast } from '@/hooks/use-toast';
 import { usePaginationParams, type ValidLimit } from '@/hooks/use-pagination-params';
 import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
@@ -47,6 +50,7 @@ import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
 import { LeadOwnerFilter } from './lead-owner-filter';
 import { LeadDateFilter } from './lead-date-filter';
+import { SelectionToolbar } from './selection-toolbar';
 import { formatDateForApi } from '@/lib/date-presets';
 import type { Lead } from '@/types/lead';
 import { cn } from '@/lib/utils';
@@ -107,6 +111,41 @@ export function LeadTableContainer() {
     [sortBy, sortOrder]
   );
 
+  // Story 4.9: Selection state management
+  const {
+    selectedIds,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isAllSelected,
+    isSomeSelected,
+  } = useLeadSelection();
+
+  // Story 4.9 AC#7: Track previous filter values to detect changes
+  const prevFiltersRef = useRef({ status: statuses, owner: owners, search: debouncedSearch, dateRange });
+
+  // Story 4.9 AC#7: Clear selection when filters/search change
+  useEffect(() => {
+    const prev = prevFiltersRef.current;
+    const filtersChanged =
+      JSON.stringify(prev.status) !== JSON.stringify(statuses) ||
+      JSON.stringify(prev.owner) !== JSON.stringify(owners) ||
+      prev.search !== debouncedSearch ||
+      prev.dateRange?.from !== dateRange?.from ||
+      prev.dateRange?.to !== dateRange?.to;
+
+    if (filtersChanged && selectedCount > 0) {
+      clearSelection();
+      toast({
+        title: 'Selection cleared',
+        description: 'Selection cleared due to filter change',
+      });
+    }
+
+    prevFiltersRef.current = { status: statuses, owner: owners, search: debouncedSearch, dateRange };
+  }, [statuses, owners, debouncedSearch, dateRange, selectedCount, clearSelection]);
+
   // Detail sheet state
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -130,6 +169,9 @@ export function LeadTableContainer() {
 
   // Story 4.3 AC#2: isPending when debounce in progress
   const isSearchPending = searchInput !== debouncedSearch;
+
+  // Story 4.9: Compute visible row IDs for select all functionality
+  const visibleRowIds = useMemo(() => data?.map((lead) => lead.row) ?? [], [data]);
 
   // AC#5: Row click handler
   const handleRowClick = useCallback((lead: Lead) => {
@@ -265,6 +307,12 @@ export function LeadTableContainer() {
         />
       </div>
 
+      {/* Story 4.9 AC#4: Selection toolbar (conditionally rendered) */}
+      <SelectionToolbar
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
+      />
+
       {/* Story 4.2 AC#5: Table with subtle loading state during pagination/search */}
       <div
         className={cn(
@@ -277,6 +325,12 @@ export function LeadTableContainer() {
           sorting={sorting}
           onSortingChange={toggleSort}
           onRowClick={handleRowClick}
+          // Story 4.9: Selection props
+          selectedIds={selectedIds}
+          onToggleSelection={toggleSelection}
+          onSelectAll={() => selectAll(visibleRowIds)}
+          isAllSelected={isAllSelected(visibleRowIds)}
+          isSomeSelected={isSomeSelected(visibleRowIds)}
         />
       </div>
 

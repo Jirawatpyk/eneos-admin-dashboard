@@ -21,3 +21,6 @@ export { StatusHistory } from './status-history';
 export { LeadMetrics } from './lead-metrics';
 export { LeadDetailSkeleton } from './lead-detail-skeleton';
 export { LeadDetailError } from './lead-detail-error';
+
+// Story 4.9: Bulk Select
+export { SelectionToolbar } from './selection-toolbar';

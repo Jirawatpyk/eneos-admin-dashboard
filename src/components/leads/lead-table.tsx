@@ -2,6 +2,7 @@
  * Lead Table Component
  * Story 4.1: Lead List Table
  * Story 4.7: Sort Columns - AC#1-9
+ * Story 4.9: Bulk Select - AC#1, AC#2, AC#3
  *
  * AC#2: Table Columns - Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date
  * AC#3: Data Display - Proper formatting for each column
@@ -16,6 +17,11 @@
  * AC#3: Sort indicator display (▲/▼/↕)
  * AC#8: Server-side sorting (manualSorting: true)
  * AC#9: Accessibility (aria-sort, keyboard support)
+ *
+ * Story 4.9:
+ * AC#1: Selection checkbox column as first column (40px, sticky)
+ * AC#2: Individual row selection with visual highlight
+ * AC#3: Select all checkbox in header with indeterminate state
  */
 'use client';
 
@@ -43,6 +49,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FileText, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatThaiPhone, formatLeadDate } from '@/lib/format-lead';
@@ -60,6 +67,29 @@ interface LeadTableProps {
   /** Story 4.7 AC#2: Called with column ID when sort header is clicked */
   onSortingChange: (columnId: string) => void;
   onRowClick: (lead: Lead) => void;
+  // Story 4.9: Selection props
+  /** Set of selected row IDs */
+  selectedIds: Set<number>;
+  /** Called when a row checkbox is toggled */
+  onToggleSelection: (rowId: number) => void;
+  /** Called when header checkbox is clicked */
+  onSelectAll: (rowIds: number[]) => void;
+  /** True if all visible rows are selected */
+  isAllSelected: boolean;
+  /** True if some (but not all) visible rows are selected */
+  isSomeSelected: boolean;
+}
+
+/**
+ * Story 4.9: Table meta type for accessing selection state in column definitions
+ * TanStack Table uses meta to pass arbitrary data to columns
+ */
+interface TableMeta {
+  selectedIds: Set<number>;
+  onToggleSelection: (rowId: number) => void;
+  onSelectAll: (rowIds: number[]) => void;
+  isAllSelected: boolean;
+  isSomeSelected: boolean;
 }
 
 // ===========================================
@@ -182,11 +212,61 @@ function PlainHeader({ children, tooltip, className }: PlainHeaderProps) {
 // Main Component
 // ===========================================
 
-export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTableProps) {
+export function LeadTable({
+  data,
+  sorting,
+  onSortingChange,
+  onRowClick,
+  selectedIds,
+  onToggleSelection,
+  onSelectAll,
+  isAllSelected,
+  isSomeSelected,
+}: LeadTableProps) {
   // Define columns (AC#2)
   // Story 4.7 AC#1: Only company, status, salesOwnerName, createdAt are sortable
+  // Story 4.9 AC#1: Checkbox column as first column
   const columns = useMemo<ColumnDef<Lead>[]>(
     () => [
+      // Story 4.9 AC#1: Selection checkbox column (first position)
+      {
+        id: 'select',
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          const allRowIds = table.getRowModel().rows.map((row) => row.original.row);
+
+          // AC#3: Determine checked state: true | false | 'indeterminate'
+          const checkedState = meta.isAllSelected
+            ? true
+            : meta.isSomeSelected
+              ? 'indeterminate'
+              : false;
+
+          return (
+            <Checkbox
+              checked={checkedState}
+              onCheckedChange={() => meta.onSelectAll(allRowIds)}
+              aria-label="Select all leads on this page"
+              onClick={(e) => e.stopPropagation()}
+              data-testid="select-all-checkbox"
+            />
+          );
+        },
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TableMeta;
+          return (
+            <Checkbox
+              checked={meta.selectedIds.has(row.original.row)}
+              onCheckedChange={() => meta.onToggleSelection(row.original.row)}
+              aria-label={`Select ${row.original.company}`}
+              onClick={(e) => e.stopPropagation()}
+              data-testid={`select-checkbox-${row.original.row}`}
+            />
+          );
+        },
+        enableSorting: false,
+        size: 40,
+      },
       {
         accessorKey: 'company',
         // Story 4.7 AC#1: Sortable column
@@ -345,6 +425,14 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
     getCoreRowModel: getCoreRowModel(),
     // Story 4.7 AC#8: Server-side sorting - don't use client-side sorting
     manualSorting: true,
+    // Story 4.9: Pass selection state to columns via meta
+    meta: {
+      selectedIds,
+      onToggleSelection,
+      onSelectAll,
+      isAllSelected,
+      isSomeSelected,
+    } as TableMeta,
   });
 
   return (
@@ -366,8 +454,10 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
                     <TableHead
                       key={header.id}
                       className={cn(
-                        // AC#7: Sticky first column (Company)
-                        index === 0 && 'sticky left-0 z-10 bg-background',
+                        // Story 4.9 AC#1: Checkbox column sticky (40px width)
+                        index === 0 && 'sticky left-0 z-10 bg-background w-10',
+                        // AC#7: Sticky second column (Company) - positioned after checkbox
+                        index === 1 && 'sticky left-10 z-10 bg-background',
                         index === header.getContext().table.getAllColumns().length - 1 && 'text-right'
                       )}
                     >
@@ -383,7 +473,11 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
               {table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  className={cn(
+                    'cursor-pointer hover:bg-muted/50 transition-colors',
+                    // Story 4.9 AC#2: Visual highlight for selected rows
+                    selectedIds.has(row.original.row) && 'bg-blue-50 dark:bg-blue-950/50'
+                  )}
                   onClick={() => onRowClick(row.original)}
                   role="button"
                   tabIndex={0}
@@ -394,13 +488,16 @@ export function LeadTable({ data, sorting, onSortingChange, onRowClick }: LeadTa
                     }
                   }}
                   data-testid={`lead-row-${row.original.row}`}
+                  data-selected={selectedIds.has(row.original.row)}
                 >
                   {row.getVisibleCells().map((cell, index) => (
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        // AC#7: Sticky first column
-                        index === 0 && 'sticky left-0 z-10 bg-background'
+                        // Story 4.9 AC#1: Checkbox column sticky (40px width)
+                        index === 0 && 'sticky left-0 z-10 bg-inherit w-10',
+                        // AC#7: Sticky second column (Company)
+                        index === 1 && 'sticky left-10 z-10 bg-inherit'
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

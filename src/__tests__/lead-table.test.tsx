@@ -129,7 +129,18 @@ const renderWithProviders = (ui: React.ReactElement) => {
 describe('LeadTable', () => {
   const mockOnSortingChange = vi.fn();
   const mockOnRowClick = vi.fn();
+  const mockOnToggleSelection = vi.fn();
+  const mockOnSelectAll = vi.fn();
   const defaultSorting: SortingState = [{ id: 'createdAt', desc: true }];
+
+  // Story 4.9: Default selection props
+  const defaultSelectionProps = {
+    selectedIds: new Set<number>(),
+    onToggleSelection: mockOnToggleSelection,
+    onSelectAll: mockOnSelectAll,
+    isAllSelected: false,
+    isSomeSelected: false,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -144,6 +155,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -158,6 +170,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -175,6 +188,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -195,6 +209,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -213,6 +228,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -227,6 +243,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -241,6 +258,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -254,6 +272,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -267,6 +286,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -285,6 +305,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -301,6 +322,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -317,6 +339,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -333,6 +356,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -347,6 +371,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -361,6 +386,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -375,6 +401,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -392,6 +419,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -400,24 +428,30 @@ describe('LeadTable', () => {
       expect(table.parentElement).toHaveClass('overflow-auto');
     });
 
-    it('has sticky first column (Company)', () => {
+    it('has sticky checkbox column (first) and Company column (second)', () => {
       renderWithProviders(
         <LeadTable
           data={mockLeadsData}
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
-      // Check header has sticky class
+      // Story 4.9: Check checkbox header is sticky at left-0
+      const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
+      const checkboxHeader = selectAllCheckbox.closest('th');
+      expect(checkboxHeader).toHaveClass('sticky', 'left-0');
+
+      // Check Company header has sticky class at left-10 (after checkbox column)
       const companyHeader = screen.getByText('Company').closest('th');
-      expect(companyHeader).toHaveClass('sticky', 'left-0');
+      expect(companyHeader).toHaveClass('sticky', 'left-10');
 
       // Check cells have sticky class
       const row = screen.getByTestId('lead-row-1');
       const companyCell = within(row).getByText('ABC Corp').closest('td');
-      expect(companyCell).toHaveClass('sticky', 'left-0');
+      expect(companyCell).toHaveClass('sticky', 'left-10');
     });
   });
 
@@ -430,6 +464,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -448,6 +483,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -475,6 +511,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -492,6 +529,7 @@ describe('LeadTable', () => {
           sorting={descSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -513,6 +551,7 @@ describe('LeadTable', () => {
           sorting={ascSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -534,6 +573,7 @@ describe('LeadTable', () => {
           sorting={descSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -556,6 +596,7 @@ describe('LeadTable', () => {
           sorting={descSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -575,6 +616,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -592,6 +634,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -609,6 +652,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -624,6 +668,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
@@ -641,6 +686,7 @@ describe('LeadTable', () => {
           sorting={defaultSorting}
           onSortingChange={mockOnSortingChange}
           onRowClick={mockOnRowClick}
+          {...defaultSelectionProps}
         />
       );
 
