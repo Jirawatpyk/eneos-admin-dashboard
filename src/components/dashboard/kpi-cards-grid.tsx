@@ -45,13 +45,12 @@ export function KPICardsGrid({ period = 'month' }: KPICardsGridProps) {
   // Prevent division by zero
   const total = summary.totalLeads || 1;
 
-  // AC#3: Calculate % change vs previous period for Total Leads
-  // Handle edge case: if both current and previous are 0, show 0% change
-  const previousTotal = summary.previousPeriodLeads ?? total;
-  const totalChange =
+  // AC#3: Use % change from API (Story 0-13) or fallback to manual calculation
+  const totalChange = summary.changes?.totalLeads ?? (
     summary.totalLeads === 0 && (summary.previousPeriodLeads === 0 || summary.previousPeriodLeads === undefined)
       ? 0
-      : ((summary.totalLeads - previousTotal) / (previousTotal || 1)) * 100;
+      : ((summary.totalLeads - (summary.previousPeriodLeads ?? total)) / ((summary.previousPeriodLeads ?? total) || 1)) * 100
+  );
 
   // AC#3: Calculate rates for other metrics
   const claimRate = (summary.claimed / total) * 100;

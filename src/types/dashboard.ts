@@ -41,6 +41,12 @@ export interface DashboardSummary {
   unreachable: number;
   conversionRate: number;
   previousPeriodLeads?: number;
+  /** Period comparison changes from API (Story 0-13) */
+  changes?: {
+    totalLeads: number;  // % change vs previous period
+    claimed: number;
+    closed: number;
+  };
 }
 
 export interface DailyTrend {

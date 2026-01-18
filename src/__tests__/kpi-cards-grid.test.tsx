@@ -391,6 +391,78 @@ describe('KPICardsGrid', () => {
       // Should show 0% change, not -100% or NaN
       expect(screen.getByTestId('kpi-change-leads')).toHaveTextContent('0.0%');
     });
+
+    // Story 0-13: Use changes object from API
+    it('should use changes.totalLeads from API when available', () => {
+      mockUseDashboardData.mockReturnValue({
+        data: {
+          summary: {
+            totalLeads: 100,
+            claimed: 50,
+            contacted: 30,
+            closed: 10,
+            lost: 5,
+            unreachable: 5,
+            conversionRate: 10,
+            previousPeriodLeads: 80, // Old way (25% calculated)
+            changes: {
+              totalLeads: 50, // New way from API - should use this
+              claimed: 20,
+              closed: 15,
+            },
+          },
+          trends: { daily: [] },
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <KPICardsGrid />
+        </TestWrapper>
+      );
+
+      // Should use changes.totalLeads (50%) not calculated from previousPeriodLeads (25%)
+      expect(screen.getByTestId('kpi-change-leads')).toHaveTextContent('50.0%');
+    });
+
+    it('should show negative change from API correctly', () => {
+      mockUseDashboardData.mockReturnValue({
+        data: {
+          summary: {
+            totalLeads: 50,
+            claimed: 25,
+            contacted: 15,
+            closed: 5,
+            lost: 3,
+            unreachable: 2,
+            conversionRate: 10,
+            changes: {
+              totalLeads: -25, // Negative change
+              claimed: -10,
+              closed: -5,
+            },
+          },
+          trends: { daily: [] },
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <KPICardsGrid />
+        </TestWrapper>
+      );
+
+      // Should show negative change
+      expect(screen.getByTestId('kpi-change-leads')).toHaveTextContent('-25.0%');
+    });
   });
 
   // AC#7: Responsive layout
