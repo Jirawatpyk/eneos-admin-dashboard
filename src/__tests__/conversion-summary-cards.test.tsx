@@ -339,6 +339,8 @@ describe('ConversionSummaryCards', () => {
 
       expect(screen.getByText('0.0%')).toBeInTheDocument(); // Team average
       expect(screen.getByText('No data')).toBeInTheDocument(); // Best performer
+      expect(screen.getByText('-')).toBeInTheDocument(); // Needs Improvement shows "-" instead of 0
+      expect(screen.getByText('No sales data in period')).toBeInTheDocument(); // Clear message
     });
 
     it('shows positive message when everyone above threshold', () => {

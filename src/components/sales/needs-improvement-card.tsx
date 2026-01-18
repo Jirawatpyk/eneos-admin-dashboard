@@ -25,6 +25,7 @@ export function NeedsImprovementCard({
   teamPerformance,
   onClick,
 }: NeedsImprovementCardProps) {
+  const hasNoData = teamPerformance.length === 0;
   const needsImprovementCount = teamPerformance.filter(
     (p) => p.conversionRate < CONVERSION_THRESHOLDS.NEEDS_IMPROVEMENT
   ).length;
@@ -65,7 +66,12 @@ export function NeedsImprovementCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Needs Improvement
         </CardTitle>
-        {hasIssues ? (
+        {hasNoData ? (
+          <AlertTriangle
+            className="h-4 w-4 text-gray-400"
+            aria-hidden="true"
+          />
+        ) : hasIssues ? (
           <AlertTriangle
             className="h-4 w-4 text-amber-500"
             aria-hidden="true"
@@ -81,13 +87,17 @@ export function NeedsImprovementCard({
         <div
           className={cn(
             'text-2xl font-bold',
-            hasIssues ? 'text-amber-600' : 'text-green-600'
+            hasNoData ? 'text-gray-400' : hasIssues ? 'text-amber-600' : 'text-green-600'
           )}
         >
-          {needsImprovementCount}
+          {hasNoData ? '-' : needsImprovementCount}
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {hasIssues ? 'Below 10% threshold' : 'Everyone on track!'}
+          {hasNoData
+            ? 'No sales data in period'
+            : hasIssues
+              ? 'Below 10% threshold'
+              : 'Everyone on track!'}
         </p>
       </CardContent>
     </Card>
