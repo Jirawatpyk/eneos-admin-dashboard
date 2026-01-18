@@ -7,6 +7,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { ReactNode } from 'react';
+import { permissions } from '../lib/permissions';
 
 // Mock next-auth/react
 const mockUseSession = vi.fn();
@@ -17,67 +18,56 @@ vi.mock('next-auth/react', () => ({
 
 describe('Permission Utilities', () => {
   beforeEach(() => {
-    vi.resetModules();
     mockUseSession.mockReset();
   });
 
   describe('permissions object', () => {
     describe('canExport', () => {
-      it('should return true for admin role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return true for admin role', () => {
         expect(permissions.canExport('admin')).toBe(true);
       });
 
-      it('should return false for viewer role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return false for viewer role', () => {
         expect(permissions.canExport('viewer')).toBe(false);
       });
     });
 
     describe('canAccessSettings', () => {
-      it('should return true for admin role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return true for admin role', () => {
         expect(permissions.canAccessSettings('admin')).toBe(true);
       });
 
-      it('should return false for viewer role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return false for viewer role', () => {
         expect(permissions.canAccessSettings('viewer')).toBe(false);
       });
     });
 
     describe('canManageUsers', () => {
-      it('should return true for admin role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return true for admin role', () => {
         expect(permissions.canManageUsers('admin')).toBe(true);
       });
 
-      it('should return false for viewer role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return false for viewer role', () => {
         expect(permissions.canManageUsers('viewer')).toBe(false);
       });
     });
 
     describe('isAdmin', () => {
-      it('should return true for admin role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return true for admin role', () => {
         expect(permissions.isAdmin('admin')).toBe(true);
       });
 
-      it('should return false for viewer role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return false for viewer role', () => {
         expect(permissions.isAdmin('viewer')).toBe(false);
       });
     });
 
     describe('isViewer', () => {
-      it('should return true for viewer role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return true for viewer role', () => {
         expect(permissions.isViewer('viewer')).toBe(true);
       });
 
-      it('should return false for admin role', async () => {
-        const { permissions } = await import('../lib/permissions');
+      it('should return false for admin role', () => {
         expect(permissions.isViewer('admin')).toBe(false);
       });
     });

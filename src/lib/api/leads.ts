@@ -1,6 +1,7 @@
 /**
  * Leads API Functions
  * Story 4.1: Lead List Table
+ * Story 4.8: Lead Detail Modal (Enhanced)
  *
  * Fetches leads data from Next.js API proxy route
  * Follows project context rules:
@@ -14,6 +15,7 @@ import type {
   LeadDetailResponse,
   LeadsQueryParams,
 } from '@/types/lead';
+import type { LeadDetail } from '@/types/lead-detail';
 
 // Use Next.js API route as proxy to Backend
 const API_BASE_URL = '';
@@ -116,11 +118,12 @@ export async function fetchLeads(
 
 /**
  * Fetch single lead by ID (row number)
+ * Story 4.8: Returns LeadDetail with history and metrics
  * @param id - Lead row number
- * @returns Lead details
+ * @returns Lead details with history and metrics
  * @throws LeadsApiError on failure
  */
-export async function fetchLeadById(id: number): Promise<Lead> {
+export async function fetchLeadById(id: number): Promise<LeadDetail> {
   const url = `${API_BASE_URL}/api/admin/leads/${id}`;
 
   const response = await fetch(url, {

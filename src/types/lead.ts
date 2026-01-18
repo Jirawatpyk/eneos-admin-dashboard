@@ -1,10 +1,13 @@
 /**
  * Lead Types
  * Story 4.1: Lead List Table
+ * Story 4.8: Lead Detail Modal (Enhanced)
  *
  * TypeScript interfaces for lead data from backend API
  * Matches backend response format from EPIC-00 deliverables
  */
+
+import type { LeadDetail } from './lead-detail';
 
 /**
  * Lead Status - Exactly 6 values as defined in project-context.md
@@ -108,11 +111,12 @@ export interface LeadsResponse {
 }
 
 /**
- * Backend API response for single lead
+ * Backend API response for single lead (enhanced)
+ * Story 4.8: Updated to use LeadDetail with history and metrics
  */
 export interface LeadDetailResponse {
   success: boolean;
-  data: Lead;
+  data: LeadDetail;
   error?: {
     code: string;
     message: string;

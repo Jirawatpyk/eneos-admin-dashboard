@@ -3,6 +3,7 @@
  * Story 4.1: Lead List Table
  * Story 4.2: Pagination
  * Story 4.3: Search
+ * Story 4.8: Lead Detail Modal (Enhanced)
  */
 
 export { LeadTable } from './lead-table';
@@ -14,3 +15,9 @@ export { LeadStatusBadge } from './lead-status-badge';
 export { LeadDetailSheet } from './lead-detail-sheet';
 export { LeadPagination } from './lead-pagination';
 export { LeadSearch, type LeadSearchProps } from './lead-search';
+
+// Story 4.8: Lead Detail Modal (Enhanced) components
+export { StatusHistory } from './status-history';
+export { LeadMetrics } from './lead-metrics';
+export { LeadDetailSkeleton } from './lead-detail-skeleton';
+export { LeadDetailError } from './lead-detail-error';

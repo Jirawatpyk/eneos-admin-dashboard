@@ -1,6 +1,7 @@
 /**
  * Single Lead Hook
  * Story 4.1: Lead List Table
+ * Story 4.8: Lead Detail Modal (Enhanced)
  *
  * TanStack Query v5 hook for fetching single lead details
  * Used by LeadDetailSheet component
@@ -8,17 +9,22 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { fetchLeadById, LeadsApiError } from '@/lib/api/leads';
-import type { Lead } from '@/types/lead';
+import type { LeadDetail } from '@/types/lead-detail';
 
 export interface UseLeadOptions {
   enabled?: boolean;
 }
 
 export interface UseLeadReturn {
-  data: Lead | undefined;
+  /** Lead detail data with history and metrics */
+  data: LeadDetail | undefined;
+  /** True while fetching data */
   isLoading: boolean;
+  /** True if fetch failed */
   isError: boolean;
+  /** Error object if fetch failed */
   error: LeadsApiError | null;
+  /** Function to manually refetch data */
   refetch: () => void;
 }
 
@@ -30,10 +36,12 @@ function isLeadsApiError(error: unknown): error is LeadsApiError {
 }
 
 /**
- * Custom hook for single lead data
+ * Custom hook for single lead data with enhanced details
+ * Story 4.8: AC#1, AC#5, AC#9
+ *
  * @param id - Lead row number (undefined to skip query)
  * @param options - Query options
- * @returns Query result with lead data, loading, error states
+ * @returns Query result with lead detail data, loading, error states
  */
 export function useLead(
   id: number | undefined,
@@ -44,9 +52,13 @@ export function useLead(
   const query = useQuery({
     queryKey: ['lead', id],
     queryFn: () => fetchLeadById(id!),
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    // AC#9: staleTime 30 seconds for cache invalidation
+    staleTime: 30 * 1000,
+    // Keep in cache for 5 minutes
+    gcTime: 5 * 60 * 1000,
+    // AC#5: Retry logic (2 retries for transient failures)
     retry: 2,
+    // AC#1: Only fetch when id is defined and enabled
     enabled: enabled && id !== undefined,
   });
 
