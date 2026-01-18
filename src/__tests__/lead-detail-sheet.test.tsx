@@ -1,6 +1,7 @@
 /**
  * Lead Detail Sheet Tests
  * Story 4.8: Lead Detail Modal (Enhanced)
+ * Story 4.11: Additional Lead Details (leadSource, jobTitle, city)
  *
  * AC#1: Enhanced Detail Sheet - Fetches from API
  * AC#4: Owner Contact Details
@@ -8,6 +9,7 @@
  * AC#6: Error Handling - Graceful degradation
  * AC#7: Campaign Details
  * AC#8: Keyboard & Accessibility
+ * Story 4.11: Lead Source, Job Title, City fields in detail sheet
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -389,6 +391,163 @@ describe('LeadDetailSheet', () => {
       const emailLinks = sheetContent.querySelectorAll('a[href^="mailto:"]');
       emailLinks.forEach((link) => {
         expect(link).toHaveAttribute('aria-label');
+      });
+    });
+  });
+
+  describe('Story 4.11: Additional Lead Details', () => {
+    describe('AC#1: Lead Source in Detail Sheet', () => {
+      it('displays leadSource when value exists', () => {
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+        );
+
+        expect(screen.getByText('Lead Source')).toBeInTheDocument();
+        expect(screen.getByText('Brevo')).toBeInTheDocument();
+      });
+
+      it('hides leadSource when value is null', () => {
+        const leadWithoutLeadSource = { ...mockLead, leadSource: null };
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet
+            open={true}
+            onOpenChange={() => {}}
+            lead={leadWithoutLeadSource}
+          />
+        );
+
+        expect(screen.queryByText('Lead Source')).not.toBeInTheDocument();
+      });
+
+      it('hides leadSource when value is empty string', () => {
+        const leadWithEmptyLeadSource = { ...mockLead, leadSource: '' };
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet
+            open={true}
+            onOpenChange={() => {}}
+            lead={leadWithEmptyLeadSource}
+          />
+        );
+
+        expect(screen.queryByText('Lead Source')).not.toBeInTheDocument();
+      });
+
+      it('hides leadSource when value is whitespace only', () => {
+        const leadWithWhitespaceLeadSource = { ...mockLead, leadSource: '   ' };
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet
+            open={true}
+            onOpenChange={() => {}}
+            lead={leadWithWhitespaceLeadSource}
+          />
+        );
+
+        // Whitespace-only should not display the label
+        expect(screen.queryByText('Lead Source')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('AC#2 & AC#3: Job Title and City (already implemented)', () => {
+      it('displays jobTitle when value exists', () => {
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+        );
+
+        expect(screen.getByText('Job Title')).toBeInTheDocument();
+        expect(screen.getByText('Manager')).toBeInTheDocument();
+      });
+
+      it('displays city when value exists', () => {
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+        );
+
+        expect(screen.getByText('City')).toBeInTheDocument();
+        expect(screen.getByText('Bangkok')).toBeInTheDocument();
+      });
+    });
+
+    describe('AC#4: Consistent Styling', () => {
+      it('leadSource uses Tag icon with correct styling', () => {
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+        );
+
+        // Find the Lead Source section and verify icon exists with aria-hidden
+        const leadSourceLabel = screen.getByText('Lead Source');
+        const parentContainer = leadSourceLabel.closest('.flex.items-start');
+        expect(parentContainer).toBeInTheDocument();
+        // Icon wrapper has aria-hidden="true"
+        const iconWrapper = parentContainer?.querySelector('[aria-hidden="true"]');
+        expect(iconWrapper).toBeInTheDocument();
+      });
+    });
+
+    describe('AC#5: Accessibility', () => {
+      it('leadSource label is readable by screen readers', () => {
+        mockUseLead.mockReturnValue({
+          data: mockLeadDetail,
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        });
+
+        render(
+          <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+        );
+
+        // The label should be in a paragraph element for screen reader accessibility
+        const leadSourceLabel = screen.getByText('Lead Source');
+        expect(leadSourceLabel.tagName.toLowerCase()).toBe('p');
       });
     });
   });

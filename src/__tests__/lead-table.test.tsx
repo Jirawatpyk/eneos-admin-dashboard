@@ -193,13 +193,13 @@ describe('LeadTable', () => {
       );
 
       expect(screen.getByText('Company')).toBeInTheDocument();
-      expect(screen.getByText('Contact Name')).toBeInTheDocument();
+      expect(screen.getByText('Name')).toBeInTheDocument();
       expect(screen.getByText('Email')).toBeInTheDocument();
       expect(screen.getByText('Phone')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
       expect(screen.getByText('Sales Owner')).toBeInTheDocument();
       expect(screen.getByText('Campaign')).toBeInTheDocument();
-      expect(screen.getByText('Created Date')).toBeInTheDocument();
+      expect(screen.getByText('Date')).toBeInTheDocument();
     });
 
     it('displays data for each lead', () => {
@@ -491,10 +491,10 @@ describe('LeadTable', () => {
       expect(screen.getByRole('button', { name: /Sort by Company/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Sort by Status/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Sort by Sales Owner/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Sort by Created Date/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sort by Date/i })).toBeInTheDocument();
 
       // Non-sortable columns do NOT have sort buttons (they are plain text)
-      expect(screen.queryByRole('button', { name: /Sort by Contact Name/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Sort by Name/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Sort by Email/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Sort by Phone/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Sort by Campaign/i })).not.toBeInTheDocument();

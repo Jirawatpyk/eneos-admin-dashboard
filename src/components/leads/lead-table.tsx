@@ -4,7 +4,7 @@
  * Story 4.7: Sort Columns - AC#1-9
  * Story 4.9: Bulk Select - AC#1, AC#2, AC#3
  *
- * AC#2: Table Columns - Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date
+ * AC#2: Table Columns - Company, Name, Email, Phone, Status, Sales Owner, Campaign, Date
  * AC#3: Data Display - Proper formatting for each column
  * AC#4: Status Badge Colors
  * AC#7: Responsive Design - horizontal scroll with sticky first column
@@ -295,7 +295,7 @@ export function LeadTable({
         enableSorting: false,
         header: () => (
           <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.customerName}>
-            Contact Name
+            Name
           </PlainHeader>
         ),
         cell: ({ getValue }) => (
@@ -402,7 +402,7 @@ export function LeadTable({
             tooltip={LEAD_COLUMN_TOOLTIPS.createdAt}
             className="justify-end"
           >
-            Created Date
+            Date
           </SortableHeader>
         ),
         cell: ({ getValue }) => (

@@ -2,6 +2,7 @@
  * Lead Detail Sheet Component
  * Story 4.1: Lead List Table
  * Story 4.8: Lead Detail Modal (Enhanced)
+ * Story 4.11: Additional Lead Details (leadSource, jobTitle, city)
  *
  * AC#1: Enhanced Detail Sheet - Fetches full lead details from API
  * AC#2: Status History Section - Timeline of status changes
@@ -11,6 +12,7 @@
  * AC#6: Error Handling - Error message with retry button
  * AC#7: Campaign Details - Campaign name, ID, subject
  * AC#8: Keyboard & Accessibility - Escape closes, proper headings
+ * Story 4.11 AC#1: Lead Source field in Campaign Information section
  */
 'use client';
 
@@ -36,6 +38,7 @@ import {
   MessageSquare,
   ExternalLink,
   Target,
+  Tag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatThaiPhone, formatLeadDateTime } from '@/lib/format-lead';
@@ -61,7 +64,9 @@ interface DetailItemProps {
 }
 
 function DetailItem({ label, value, icon, className }: DetailItemProps) {
+  // Handle empty, null, undefined, '-', and whitespace-only string values
   if (!value || value === '-') return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
 
   return (
     <div className={cn('flex items-start gap-3', className)}>
@@ -323,6 +328,14 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
                     label="Source"
                     icon={<Globe className="h-4 w-4 text-gray-500" />}
                     value={lead.source}
+                  />
+                )}
+                {/* Story 4.11 AC#1: Lead Source field */}
+                {lead.leadSource && (
+                  <DetailItem
+                    label="Lead Source"
+                    icon={<Tag className="h-4 w-4 text-orange-500" />}
+                    value={lead.leadSource}
                   />
                 )}
               </CardContent>

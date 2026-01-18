@@ -36,16 +36,17 @@ export const LEAD_EXPORT_COLUMNS = [
 
 /**
  * Column widths for Excel export (character width)
+ * Note: Export headers use full names for clarity outside the app
  */
 const EXCEL_COLUMN_WIDTHS = [
   { wch: 25 }, // Company
-  { wch: 20 }, // Contact Name
+  { wch: 20 }, // Contact Name (full name for export)
   { wch: 30 }, // Email
   { wch: 15 }, // Phone
   { wch: 12 }, // Status
   { wch: 18 }, // Sales Owner
   { wch: 25 }, // Campaign
-  { wch: 15 }, // Created Date
+  { wch: 15 }, // Created Date (full name for export)
   { wch: 20 }, // Industry
 ];
 

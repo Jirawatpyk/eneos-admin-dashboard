@@ -24,13 +24,13 @@ const SKELETON_ROWS = 10;
 // Column widths matching the actual table structure
 const COLUMN_WIDTHS = [
   'w-[200px]', // Company
-  'w-[120px]', // Contact Name
+  'w-[120px]', // Name
   'w-[180px]', // Email
   'w-[100px]', // Phone
   'w-[80px]',  // Status
   'w-[100px]', // Sales Owner
   'w-[120px]', // Campaign
-  'w-[100px]', // Created Date
+  'w-[100px]', // Date
 ];
 
 export function LeadTableSkeleton() {
