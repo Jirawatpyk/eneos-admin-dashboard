@@ -82,4 +82,26 @@ describe('StatusHistory', () => {
     expect(screen.getByText('ใหม่')).toBeInTheDocument();
     expect(screen.queryByText(/^by /)).not.toBeInTheDocument();
   });
+
+  // Filter duplicate statuses - keep only first (newest) occurrence of each status
+  it('filters out duplicate statuses, keeping only newest occurrence', () => {
+    const historyWithDuplicates: StatusHistoryItem[] = [
+      { status: 'new', by: 'System', timestamp: '2026-01-15T08:30:00.000Z' },
+      { status: 'contacted', by: 'สมหญิง', timestamp: '2026-01-15T09:00:00.000Z' },
+      { status: 'closed', by: 'สมหญิง', timestamp: '2026-01-15T10:00:00.000Z' },
+      { status: 'contacted', by: 'สมหญิง', timestamp: '2026-01-15T11:00:00.000Z' }, // duplicate (older)
+      { status: 'closed', by: 'สมหญิง', timestamp: '2026-01-15T12:00:00.000Z' }, // newest closed
+    ];
+
+    render(<StatusHistory history={historyWithDuplicates} />);
+    const items = screen.getAllByTestId('status-history-item');
+
+    // Should show only 3 unique statuses: closed, contacted, new
+    expect(items).toHaveLength(3);
+
+    // Verify order (newest first): closed (12:00) → contacted (11:00) → new (08:30)
+    expect(items[0]).toHaveTextContent('ปิดสำเร็จ');
+    expect(items[1]).toHaveTextContent('ติดต่อแล้ว');
+    expect(items[2]).toHaveTextContent('ใหม่');
+  });
 });

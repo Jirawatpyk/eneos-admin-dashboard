@@ -36,6 +36,17 @@ export function StatusHistory({ history }: StatusHistoryProps) {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
+  // Filter duplicates - keep only the FIRST (newest) occurrence of each status
+  // Example: [closed, contacted, closed, contacted, new] → [closed, contacted, new]
+  const seenStatuses = new Set<string>();
+  const filteredHistory = sortedHistory.filter((item) => {
+    if (seenStatuses.has(item.status)) {
+      return false; // Already seen this status, skip
+    }
+    seenStatuses.add(item.status);
+    return true;
+  });
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -46,7 +57,7 @@ export function StatusHistory({ history }: StatusHistoryProps) {
             aria-hidden="true"
           />
 
-          {sortedHistory.map((item) => (
+          {filteredHistory.map((item) => (
             <div
               key={`${item.status}-${item.timestamp}`}
               className="relative pl-10"
