@@ -103,9 +103,7 @@ export function LeadPagination({
       <div className="flex flex-col sm:flex-row items-center gap-4">
         {/* AC#2: Page size selector */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground hidden sm:inline">
-            Per page:
-          </span>
+          <span className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">Per page:</span>
           <Select
             value={String(limit)}
             onValueChange={(value) => onLimitChange(Number(value))}
