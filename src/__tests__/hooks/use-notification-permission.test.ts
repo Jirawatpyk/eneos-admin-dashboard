@@ -195,6 +195,37 @@ describe('useNotificationPermission', () => {
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
+
+    it('should set up permission change listener when navigator.permissions is available', async () => {
+      const mockQuery = vi.fn().mockResolvedValue({
+        onchange: null,
+      });
+
+      Object.defineProperty(global, 'navigator', {
+        value: {
+          permissions: {
+            query: mockQuery,
+          },
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      Object.defineProperty(global, 'Notification', {
+        value: {
+          permission: 'default',
+          requestPermission: vi.fn(),
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      renderHook(() => useNotificationPermission());
+
+      await waitFor(() => {
+        expect(mockQuery).toHaveBeenCalledWith({ name: 'notifications' });
+      });
+    });
   });
 
   describe('when browser does not support Notification API', () => {

@@ -370,7 +370,8 @@ describe('NotificationSettingsCard', () => {
 
       renderWithProviders(<NotificationSettingsCard />);
 
-      expect(screen.getByText(/browser doesn't support notifications/i)).toBeInTheDocument();
+      expect(screen.getByText(/browser notifications not supported/i)).toBeInTheDocument();
+      expect(screen.getByText(/try using chrome, firefox, or edge/i)).toBeInTheDocument();
     });
 
     it('does not show preference toggles when not supported', () => {
@@ -386,6 +387,59 @@ describe('NotificationSettingsCard', () => {
       renderWithProviders(<NotificationSettingsCard />);
 
       expect(screen.queryByTestId('preference-toggles-section')).not.toBeInTheDocument();
+    });
+
+    it('shows card with warning styling when not supported', () => {
+      vi.mocked(useNotificationPermission).mockReturnValue({
+        permission: 'default',
+        isSupported: false,
+        isGranted: false,
+        isDenied: false,
+        isDefault: true,
+        requestPermission: mockRequestPermission,
+      });
+
+      renderWithProviders(<NotificationSettingsCard />);
+
+      // Card should still have testid
+      expect(screen.getByTestId('notification-settings-card')).toBeInTheDocument();
+      // Should have card description
+      expect(screen.getByText('Configure how you receive alerts and reminders.')).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('switches have aria-describedby linking to descriptions', () => {
+      setupGrantedPermission();
+
+      renderWithProviders(<NotificationSettingsCard />);
+
+      const newLeadSwitch = screen.getByTestId('switch-newLeadAlerts');
+      expect(newLeadSwitch).toHaveAttribute('aria-describedby', 'newLeadAlerts-description');
+
+      // Verify description element exists
+      expect(document.getElementById('newLeadAlerts-description')).toBeInTheDocument();
+    });
+  });
+
+  describe('loading state', () => {
+    it('does not show preference toggles when preferences not loaded', () => {
+      setupGrantedPermission();
+
+      vi.mocked(useNotificationPreferences).mockReturnValue({
+        preferences: {
+          newLeadAlerts: true,
+          staleLeadReminders: true,
+          performanceAlerts: true,
+        },
+        isLoaded: false,
+        updatePreference: mockUpdatePreference,
+      });
+
+      renderWithProviders(<NotificationSettingsCard />);
+
+      // Preference toggles should not render when isLoaded is false
+      expect(screen.queryByTestId('switch-newLeadAlerts')).not.toBeInTheDocument();
     });
   });
 });

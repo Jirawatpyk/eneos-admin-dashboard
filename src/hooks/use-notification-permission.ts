@@ -46,10 +46,44 @@ export function useNotificationPermission(): UseNotificationPermissionReturn {
 
   useEffect(() => {
     // Check if browser supports Notification API (client-side only)
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setIsSupported(true);
-      setPermission(Notification.permission as NotificationPermissionStatus);
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return;
     }
+
+    setIsSupported(true);
+    setPermission(Notification.permission as NotificationPermissionStatus);
+
+    // Listen for permission changes (supported in some browsers)
+    // This allows the UI to update if user changes permission via browser settings
+    const handlePermissionChange = () => {
+      setPermission(Notification.permission as NotificationPermissionStatus);
+    };
+
+    // navigator.permissions API for reactive updates (Chrome, Edge)
+    if ('permissions' in navigator) {
+      navigator.permissions
+        .query({ name: 'notifications' as PermissionName })
+        .then((permissionStatus) => {
+          permissionStatus.onchange = handlePermissionChange;
+        })
+        .catch(() => {
+          // Permission query not supported, ignore
+        });
+    }
+
+    return () => {
+      // Cleanup: try to remove listener if possible
+      if ('permissions' in navigator) {
+        navigator.permissions
+          .query({ name: 'notifications' as PermissionName })
+          .then((permissionStatus) => {
+            permissionStatus.onchange = null;
+          })
+          .catch(() => {
+            // Ignore cleanup errors
+          });
+      }
+    };
   }, []);
 
   const requestPermission = useCallback(async (): Promise<NotificationPermissionStatus> => {

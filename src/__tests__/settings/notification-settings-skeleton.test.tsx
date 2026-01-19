@@ -18,8 +18,8 @@ describe('NotificationSettingsSkeleton', () => {
   it('renders skeleton elements for loading state', () => {
     const { container } = render(<NotificationSettingsSkeleton />);
 
-    // Should have multiple skeleton elements
-    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    // Should have multiple skeleton elements (using Tailwind class pattern)
+    const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

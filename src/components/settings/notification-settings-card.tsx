@@ -15,7 +15,7 @@
  */
 'use client';
 
-import { Bell, BellOff, Info } from 'lucide-react';
+import { Bell, BellOff, Info, AlertCircle } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +36,9 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { useNotificationPermission } from '@/hooks/use-notification-permission';
 import { useNotificationPreferences, type NotificationPreferences } from '@/hooks/use-notification-preferences';
+
+/** Debounce delay for toast feedback (ms) */
+const TOAST_DEBOUNCE_MS = 500;
 
 /**
  * Notification preference options configuration
@@ -112,13 +115,13 @@ export function NotificationSettingsCard() {
       clearTimeout(toastTimeoutRef.current);
     }
 
-    // Show toast after 500ms of no changes
+    // Show toast after debounce delay
     toastTimeoutRef.current = setTimeout(() => {
       toast({
         title: 'Notification settings saved',
         description: 'Your preferences have been updated.',
       });
-    }, 500);
+    }, TOAST_DEBOUNCE_MS);
   };
 
   /**
@@ -174,9 +177,23 @@ export function NotificationSettingsCard() {
             Notifications
           </CardTitle>
           <CardDescription>
-            Your browser doesn&apos;t support notifications.
+            Configure how you receive alerts and reminders.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-3 rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950">
+            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Browser notifications not supported
+              </p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                Your browser doesn&apos;t support the Notification API.
+                Try using Chrome, Firefox, or Edge for notification features.
+              </p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     );
   }
@@ -260,7 +277,10 @@ export function NotificationSettingsCard() {
                   >
                     {option.label}
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p
+                    id={`${option.key}-description`}
+                    className="text-sm text-muted-foreground"
+                  >
                     {option.description}
                   </p>
                 </div>
@@ -269,6 +289,7 @@ export function NotificationSettingsCard() {
                   checked={preferences[option.key]}
                   onCheckedChange={(checked) => handleToggle(option.key, checked)}
                   disabled={!isGranted}
+                  aria-describedby={`${option.key}-description`}
                   data-testid={`switch-${option.key}`}
                 />
               </div>

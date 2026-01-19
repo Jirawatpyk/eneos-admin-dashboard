@@ -54,9 +54,12 @@ export function useNotificationPreferences(): UseNotificationPreferencesReturn {
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (client-side only)
   useEffect(() => {
+    // SSR: window doesn't exist, but we still need to mark as loaded
+    // so the UI doesn't stay in loading state forever
     if (typeof window === 'undefined') {
+      setIsLoaded(true);
       return;
     }
 
