@@ -19,10 +19,10 @@ export default async function DashboardPage() {
     <Suspense
       fallback={
         <div className="space-y-6 animate-pulse">
-          <div className="h-16 bg-gray-100 rounded" />
+          <div className="h-16 bg-muted rounded" />
           <div className="grid gap-6 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-100 rounded" />
+              <div key={i} className="h-32 bg-muted rounded" />
             ))}
           </div>
         </div>

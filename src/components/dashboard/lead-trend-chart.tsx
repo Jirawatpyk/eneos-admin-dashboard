@@ -29,12 +29,12 @@ import { LeadTrendChartSkeleton } from './lead-trend-chart-skeleton';
 import { LeadTrendChartEmpty } from './lead-trend-chart-empty';
 import type { DailyTrend } from '@/types/dashboard';
 import {
-  CHART_COLORS,
   CHART_STYLES,
   LEAD_TREND_COLORS,
   createGradientId,
   getGradientUrl,
 } from '@/lib/chart-config';
+import { useChartTheme } from '@/hooks/use-chart-theme';
 
 // ===========================================
 // Types
@@ -172,6 +172,9 @@ function transformData(apiData: DailyTrend[]): ChartData[] {
  * Enterprise-grade implementation using Recharts
  */
 export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
+  // Theme-aware chart colors (Story 7.2: AC#7)
+  const { colors: themeColors } = useChartTheme();
+
   // AC#6: Show skeleton while loading
   if (isLoading) {
     return <LeadTrendChartSkeleton />;
@@ -217,22 +220,22 @@ export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
             {/* Grid */}
             <CartesianGrid
               strokeDasharray={CHART_STYLES.grid.strokeDasharray}
-              stroke={CHART_COLORS.grid}
+              stroke={themeColors.grid}
               vertical={CHART_STYLES.grid.vertical}
             />
 
             {/* X Axis */}
             <XAxis
               dataKey="displayDate"
-              tick={{ fontSize: CHART_STYLES.axis.fontSize, fill: CHART_COLORS.text }}
+              tick={{ fontSize: CHART_STYLES.axis.fontSize, fill: themeColors.textMuted }}
               tickLine={CHART_STYLES.axis.tickLine}
-              axisLine={{ stroke: CHART_COLORS.grid }}
+              axisLine={{ stroke: themeColors.grid }}
               dy={10}
             />
 
             {/* Y Axis */}
             <YAxis
-              tick={{ fontSize: CHART_STYLES.axis.fontSize, fill: CHART_COLORS.text }}
+              tick={{ fontSize: CHART_STYLES.axis.fontSize, fill: themeColors.textMuted }}
               tickLine={CHART_STYLES.axis.tickLine}
               axisLine={false}
               width={40}
@@ -254,7 +257,7 @@ export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
               strokeWidth={CHART_STYLES.area.strokeWidth}
               fill={getGradientUrl('newLeads')}
               dot={CHART_STYLES.area.dot}
-              activeDot={{ ...CHART_STYLES.area.activeDot, stroke: CHART_COLORS.background }}
+              activeDot={{ ...CHART_STYLES.area.activeDot, stroke: themeColors.cardBackground }}
             />
             <Area
               type="monotone"
@@ -264,7 +267,7 @@ export function LeadTrendChart({ data, isLoading }: LeadTrendChartProps) {
               strokeWidth={CHART_STYLES.area.strokeWidth}
               fill={getGradientUrl('closed')}
               dot={CHART_STYLES.area.dot}
-              activeDot={{ ...CHART_STYLES.area.activeDot, stroke: CHART_COLORS.background }}
+              activeDot={{ ...CHART_STYLES.area.activeDot, stroke: themeColors.cardBackground }}
             />
           </AreaChart>
           </ResponsiveContainer>

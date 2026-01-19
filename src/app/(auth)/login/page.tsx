@@ -58,7 +58,7 @@ function LoginContent() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+      <div className="bg-card rounded-lg shadow-lg p-8 w-full max-w-md">
         {/* ENEOS Logo */}
         <div className="flex justify-center mb-6">
           <Image
@@ -71,12 +71,12 @@ function LoginContent() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-semibold text-center text-gray-800 mb-2">
+        <h1 className="text-2xl font-semibold text-center text-foreground mb-2">
           Sales Dashboard
         </h1>
 
         {/* Domain Restriction Message */}
-        <p className="text-sm text-gray-500 text-center mb-6">
+        <p className="text-sm text-muted-foreground text-center mb-6">
           Only authorized company accounts are allowed
         </p>
 
@@ -106,12 +106,12 @@ function LoginContent() {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-3 bg-card border border-border rounded-lg px-4 py-3 text-foreground font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eneos-red disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? (
             <>
               <svg
-                className="animate-spin h-5 w-5 text-gray-600"
+                className="animate-spin h-5 w-5 text-muted-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -163,7 +163,7 @@ function LoginContent() {
       </div>
 
       {/* Footer */}
-      <p className="mt-8 text-sm text-gray-400">
+      <p className="mt-8 text-sm text-muted-foreground">
         &copy; {currentYear} ENEOS Thailand
       </p>
     </>
@@ -174,11 +174,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md animate-pulse">
-          <div className="h-12 bg-gray-200 rounded mb-6 mx-auto w-32" />
-          <div className="h-8 bg-gray-200 rounded mb-2" />
-          <div className="h-4 bg-gray-200 rounded mb-6 w-3/4 mx-auto" />
-          <div className="h-12 bg-gray-200 rounded" />
+        <div className="bg-card rounded-lg shadow-lg p-8 w-full max-w-md animate-pulse">
+          <div className="h-12 bg-muted rounded mb-6 mx-auto w-32" />
+          <div className="h-8 bg-muted rounded mb-2" />
+          <div className="h-4 bg-muted rounded mb-6 w-3/4 mx-auto" />
+          <div className="h-12 bg-muted rounded" />
         </div>
       }
     >

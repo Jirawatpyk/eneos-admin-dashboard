@@ -38,14 +38,14 @@ export function NavItem({ href, icon: Icon, label, disabled, onClick }: NavItemP
           <div
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium',
-              'text-gray-400 cursor-not-allowed',
+              'text-muted-foreground cursor-not-allowed',
               'transition-all duration-200'
             )}
             aria-disabled="true"
           >
             <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
             <span>{label}</span>
-            <span className="ml-auto text-xs bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded">
+            <span className="ml-auto text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
               Soon
             </span>
           </div>
@@ -67,7 +67,7 @@ export function NavItem({ href, icon: Icon, label, disabled, onClick }: NavItemP
         'outline-none focus-visible:ring-2 focus-visible:ring-eneos-red focus-visible:ring-offset-1',
         isActive
           ? 'bg-eneos-red/10 text-eneos-red border-l-4 border-eneos-red rounded-r-md'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-md'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground rounded-md'
       )}
       aria-current={isActive ? 'page' : undefined}
     >

@@ -17,7 +17,7 @@ export function Logo({ onClick }: LogoProps) {
       <div className="w-10 h-10 bg-eneos-red rounded-lg flex items-center justify-center">
         <span className="text-white font-bold text-sm">E</span>
       </div>
-      <span className="text-lg font-semibold text-gray-800">ENEOS</span>
+      <span className="text-lg font-semibold text-foreground">ENEOS</span>
     </Link>
   );
 }

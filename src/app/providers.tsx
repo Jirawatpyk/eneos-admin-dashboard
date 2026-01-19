@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { ReactNode, useState } from 'react';
 
 interface ProvidersProps {
@@ -12,6 +13,7 @@ interface ProvidersProps {
 /**
  * Application providers wrapper
  * Configures:
+ * - ThemeProvider for light/dark mode (Story 7.2)
  * - SessionProvider for authentication
  * - QueryClientProvider for TanStack Query v5
  * - TooltipProvider for Radix UI tooltips
@@ -32,16 +34,23 @@ export function Providers({ children }: ProvidersProps) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionProvider
-        refetchInterval={5 * 60} // Check session every 5 minutes
-        refetchOnWindowFocus={true} // Sync across tabs
-        refetchWhenOffline={false} // Don't try to refresh when offline
-      >
-        <TooltipProvider delayDuration={300}>
-          {children}
-        </TooltipProvider>
-      </SessionProvider>
-    </QueryClientProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider
+          refetchInterval={5 * 60} // Check session every 5 minutes
+          refetchOnWindowFocus={true} // Sync across tabs
+          refetchWhenOffline={false} // Don't try to refresh when offline
+        >
+          <TooltipProvider delayDuration={300}>
+            {children}
+          </TooltipProvider>
+        </SessionProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

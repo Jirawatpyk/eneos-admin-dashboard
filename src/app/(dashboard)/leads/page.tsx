@@ -35,8 +35,8 @@ export default function LeadsPage() {
       <Suspense
         fallback={
           <div className="space-y-4 animate-pulse">
-            <div className="h-12 bg-gray-100 rounded" />
-            <div className="h-96 bg-gray-100 rounded" />
+            <div className="h-12 bg-muted rounded" />
+            <div className="h-96 bg-muted rounded" />
           </div>
         }
       >

@@ -11,19 +11,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
-// Mock next-auth/jwt
-const mockGetToken = vi.fn();
+// Hoist mock functions for proper vitest mock hoisting
+const { mockGetToken, mockFetch } = vi.hoisted(() => ({
+  mockGetToken: vi.fn(),
+  mockFetch: vi.fn(),
+}));
+
+// Mock next-auth/jwt with hoisted mock
 vi.mock('next-auth/jwt', () => ({
-  getToken: (...args: unknown[]) => mockGetToken(...args),
+  getToken: mockGetToken,
 }));
 
 // Mock global fetch
-const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
+
+// Import the route after mocks are set up
+import { GET } from '../app/api/admin/me/route';
 
 describe('/api/admin/me Route', () => {
   beforeEach(() => {
-    vi.resetModules();
     mockGetToken.mockReset();
     mockFetch.mockReset();
     vi.stubEnv('NEXTAUTH_SECRET', 'test-secret');
@@ -33,7 +39,6 @@ describe('/api/admin/me Route', () => {
   it('should return 401 if no session token', async () => {
     mockGetToken.mockResolvedValueOnce(null);
 
-    const { GET } = await import('../app/api/admin/me/route');
     const request = new NextRequest('http://localhost:3001/api/admin/me');
 
     const response = await GET(request);
@@ -47,7 +52,6 @@ describe('/api/admin/me Route', () => {
   it('should return 401 if no idToken in session', async () => {
     mockGetToken.mockResolvedValueOnce({ sub: 'user-123' }); // No idToken
 
-    const { GET } = await import('../app/api/admin/me/route');
     const request = new NextRequest('http://localhost:3001/api/admin/me');
 
     const response = await GET(request);
@@ -73,7 +77,6 @@ describe('/api/admin/me Route', () => {
       }),
     });
 
-    const { GET } = await import('../app/api/admin/me/route');
     const request = new NextRequest('http://localhost:3001/api/admin/me');
 
     const response = await GET(request);
@@ -110,7 +113,6 @@ describe('/api/admin/me Route', () => {
       }),
     });
 
-    const { GET } = await import('../app/api/admin/me/route');
     const request = new NextRequest('http://localhost:3001/api/admin/me');
 
     const response = await GET(request);
@@ -129,7 +131,6 @@ describe('/api/admin/me Route', () => {
 
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-    const { GET } = await import('../app/api/admin/me/route');
     const request = new NextRequest('http://localhost:3001/api/admin/me');
 
     const response = await GET(request);
@@ -145,7 +146,6 @@ describe('/api/admin/me Route', () => {
     const roles = ['admin', 'manager', 'viewer'] as const;
 
     for (const role of roles) {
-      vi.resetModules();
       mockGetToken.mockReset();
       mockFetch.mockReset();
 
@@ -163,7 +163,6 @@ describe('/api/admin/me Route', () => {
         }),
       });
 
-      const { GET } = await import('../app/api/admin/me/route');
       const request = new NextRequest('http://localhost:3001/api/admin/me');
 
       const response = await GET(request);

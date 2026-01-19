@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { UserNav } from '@/components/layout/user-nav';
 import { Sidebar } from '@/components/layout/sidebar';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { SessionWarning } from '@/components/shared/session-warning';
 import { SessionSync } from '@/components/shared/session-sync';
 import { PermissionErrorHandler } from '@/components/shared/permission-error-handler';
@@ -53,21 +54,24 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Desktop Sidebar - fixed position */}
       <Sidebar />
 
       {/* Main content area - offset by sidebar on desktop */}
       <div className="md:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white border-b">
+        <header className="sticky top-0 z-40 bg-card border-b">
           <div className="px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 {/* Mobile hamburger menu */}
                 <MobileSidebar />
               </div>
-              {session.user && <UserNav user={session.user} />}
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                {session.user && <UserNav user={session.user} />}
+              </div>
             </div>
           </div>
         </header>

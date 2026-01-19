@@ -18,7 +18,7 @@ import { NAV_ITEMS, SECONDARY_NAV_ITEMS } from '@/config/nav-items';
 export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 z-30 bg-white">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 z-30 bg-card border-r">
         {/* Logo Header */}
         <div className="flex items-center gap-3 px-4 py-4 border-b">
           <Logo />

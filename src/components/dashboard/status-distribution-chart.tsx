@@ -24,7 +24,8 @@ import {
 import { PieChart as PieChartIcon } from 'lucide-react';
 import { StatusDistributionSkeleton } from './status-distribution-skeleton';
 import { StatusDistributionEmpty } from './status-distribution-empty';
-import { STATUS_COLORS, STATUS_LABELS, CHART_STYLES, CHART_COLORS } from '@/lib/chart-config';
+import { STATUS_COLORS, STATUS_LABELS, CHART_STYLES } from '@/lib/chart-config';
+import { useChartTheme } from '@/hooks/use-chart-theme';
 import type { DashboardSummary } from '@/types/dashboard';
 
 // ===========================================
@@ -151,53 +152,56 @@ function transformData(data: DashboardSummary): ChartDataItem[] {
 
 /**
  * Custom label renderer for percentage (AC#3)
+ * Returns a function that can be passed to Pie label prop
  */
-function renderCustomLabel({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-}: {
-  cx?: number;
-  cy?: number;
-  midAngle?: number;
-  innerRadius?: number;
-  outerRadius?: number;
-  percent?: number;
-}) {
-  // Handle undefined values
-  if (
-    cx === undefined ||
-    cy === undefined ||
-    midAngle === undefined ||
-    innerRadius === undefined ||
-    outerRadius === undefined ||
-    percent === undefined ||
-    percent < 0.05 // Don't show label for < 5%
-  ) {
-    return null;
-  }
+function createCustomLabelRenderer(backgroundColor: string) {
+  return function renderCustomLabel({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }: {
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    percent?: number;
+  }) {
+    // Handle undefined values
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      innerRadius === undefined ||
+      outerRadius === undefined ||
+      percent === undefined ||
+      percent < 0.05 // Don't show label for < 5%
+    ) {
+      return null;
+    }
 
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  return (
-    <text
-      x={x}
-      y={y}
-      fill={CHART_COLORS.background}
-      textAnchor="middle"
-      dominantBaseline="central"
-      className="text-xs font-semibold"
-      style={{ pointerEvents: 'none' }}
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={backgroundColor}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="text-xs font-semibold"
+        style={{ pointerEvents: 'none' }}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 }
 
 // ===========================================
@@ -205,6 +209,9 @@ function renderCustomLabel({
 // ===========================================
 
 export function StatusDistributionChart({ data, isLoading }: StatusDistributionChartProps) {
+  // Theme-aware chart colors (Story 7.2: AC#7)
+  const { colors: themeColors } = useChartTheme();
+
   // AC#7: Loading state
   if (isLoading) {
     return <StatusDistributionSkeleton />;
@@ -217,6 +224,9 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
   if (total === 0) {
     return <StatusDistributionEmpty />;
   }
+
+  // Create label renderer with theme-aware colors
+  const renderCustomLabel = createCustomLabelRenderer(themeColors.cardBackground);
 
   return (
     <Card data-testid="status-distribution-chart">
@@ -250,7 +260,7 @@ export function StatusDistributionChart({ data, isLoading }: StatusDistributionC
                   <Cell
                     key={`cell-${entry.key}`}
                     fill={entry.color}
-                    stroke={CHART_COLORS.background}
+                    stroke={themeColors.cardBackground}
                     strokeWidth={2}
                     className="transition-opacity duration-200 hover:opacity-80 cursor-pointer"
                   />

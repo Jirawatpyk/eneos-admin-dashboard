@@ -77,8 +77,8 @@ function DashboardHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">แดชบอร์ด</h1>
-        <p className="text-gray-600 mt-1">ยินดีต้อนรับ, {userName}</p>
+        <h1 className="text-2xl font-bold text-foreground">แดชบอร์ด</h1>
+        <p className="text-muted-foreground mt-1">ยินดีต้อนรับ, {userName}</p>
       </div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {/* Last Updated Timestamp - AC#5 */}
@@ -94,7 +94,7 @@ function DashboardHeader({
         </div>
 
         {/* Date Filter - Story 2.7 */}
-        <Suspense fallback={<div className="h-9 w-[180px] bg-gray-100 rounded animate-pulse" />}>
+        <Suspense fallback={<div className="h-9 w-[180px] bg-muted rounded animate-pulse" />}>
           <DateFilter />
         </Suspense>
       </div>

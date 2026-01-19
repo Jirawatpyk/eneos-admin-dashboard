@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
+    <html lang="th" suppressHydrationWarning>
       <body className={`${inter.variable} ${notoSansThai.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
         <Toaster />
