@@ -279,7 +279,7 @@ describe('useColumnVisibility', () => {
         JSON.stringify({ email: false, phone: false })
       );
 
-      const { result } = renderHook(() => useColumnVisibility());
+      renderHook(() => useColumnVisibility());
 
       // Wait for useEffect
       expect(localStorageMock.getItem).toHaveBeenCalledWith('lead-table-column-visibility');

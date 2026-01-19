@@ -12,7 +12,7 @@
  */
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import { useExportAllLeads, type ExportFormat } from '@/hooks/use-export-all-leads';
+import { useExportAllLeads } from '@/hooks/use-export-all-leads';
 import { fetchAllLeadsForExport } from '@/lib/api/export-all-leads';
 import { exportLeadsToExcel, exportLeadsToCSV } from '@/lib/export-leads';
 import { toast } from '@/hooks/use-toast';
