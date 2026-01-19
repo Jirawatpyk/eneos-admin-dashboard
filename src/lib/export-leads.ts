@@ -20,7 +20,8 @@ import type { Lead, LeadStatus } from '@/types/lead';
 /**
  * Export columns configuration
  * AC#3, AC#4: Columns included in export
- * Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date, Industry
+ * Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date, Industry,
+ * Lead Source, Job Title, City (Tech Debt: Additional columns for export)
  */
 export const LEAD_EXPORT_COLUMNS = [
   { key: 'company', header: 'Company' },
@@ -32,6 +33,9 @@ export const LEAD_EXPORT_COLUMNS = [
   { key: 'campaignName', header: 'Campaign' },
   { key: 'createdAt', header: 'Created Date' },
   { key: 'industryAI', header: 'Industry' },
+  { key: 'leadSource', header: 'Lead Source' },
+  { key: 'jobTitle', header: 'Job Title' },
+  { key: 'city', header: 'City' },
 ] as const;
 
 /**
@@ -48,6 +52,9 @@ const EXCEL_COLUMN_WIDTHS = [
   { wch: 25 }, // Campaign
   { wch: 15 }, // Created Date (full name for export)
   { wch: 20 }, // Industry
+  { wch: 15 }, // Lead Source
+  { wch: 25 }, // Job Title
+  { wch: 15 }, // City
 ];
 
 // ===========================================
@@ -72,6 +79,9 @@ function formatLeadForExport(lead: Lead): Record<string, string> {
     campaignName: lead.campaignName || '-',
     createdAt: formatLeadDate(lead.createdAt),
     industryAI: lead.industryAI || '-',
+    leadSource: lead.leadSource || '-',
+    jobTitle: lead.jobTitle || '-',
+    city: lead.city || '-',
   };
 }
 

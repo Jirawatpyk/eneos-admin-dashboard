@@ -32,6 +32,7 @@ import {
   flexRender,
   type SortingState,
   type ColumnDef,
+  type VisibilityState,
 } from '@tanstack/react-table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -78,6 +79,9 @@ interface LeadTableProps {
   isAllSelected: boolean;
   /** True if some (but not all) visible rows are selected */
   isSomeSelected: boolean;
+  // Tech Debt: Column visibility toggle
+  /** Column visibility state from TanStack Table */
+  columnVisibility?: VisibilityState;
 }
 
 /**
@@ -219,6 +223,7 @@ export function LeadTable({
   onSelectAll,
   isAllSelected,
   isSomeSelected,
+  columnVisibility,
 }: LeadTableProps) {
   // Define columns (AC#2)
   // Story 4.7 AC#1: Only company, status, salesOwnerName, createdAt are sortable
@@ -418,7 +423,11 @@ export function LeadTable({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: {
+      sorting,
+      // Tech Debt: Column visibility toggle
+      columnVisibility,
+    },
     getCoreRowModel: getCoreRowModel(),
     // Story 4.7 AC#8: Server-side sorting - don't use client-side sorting
     manualSorting: true,

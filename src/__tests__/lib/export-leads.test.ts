@@ -88,8 +88,8 @@ describe('LEAD_EXPORT_COLUMNS', () => {
     expect(headers).toContain('Industry');
   });
 
-  it('has exactly 9 columns', () => {
-    expect(LEAD_EXPORT_COLUMNS.length).toBe(9);
+  it('has exactly 12 columns', () => {
+    expect(LEAD_EXPORT_COLUMNS.length).toBe(12);
   });
 });
 
@@ -141,6 +141,9 @@ describe('exportLeadsToExcel', () => {
       'Campaign',
       'Created Date',
       'Industry',
+      'Lead Source',
+      'Job Title',
+      'City',
     ]);
   });
 

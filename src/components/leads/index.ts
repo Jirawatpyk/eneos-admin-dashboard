@@ -28,3 +28,7 @@ export { SelectionToolbar } from './selection-toolbar';
 // Story 4.10: Quick Export
 export { LeadExportDropdown } from './lead-export-dropdown';
 export { ExportConfirmationDialog } from './export-confirmation-dialog';
+
+// Tech Debt: Export All & Column Toggle
+export { ExportAllButton } from './export-all-button';
+export { ColumnVisibilityDropdown } from './column-visibility-dropdown';

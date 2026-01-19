@@ -47,3 +47,14 @@ export {
   type ExportFormat,
   type UseExportLeadsReturn,
 } from './use-export-leads';
+
+// Tech Debt: Export All & Column Toggle
+export {
+  useExportAllLeads,
+  type ExportFormat as ExportAllFormat,
+} from './use-export-all-leads';
+export {
+  useColumnVisibility,
+  COLUMN_DEFINITIONS,
+  TOGGLEABLE_COLUMNS,
+} from './use-column-visibility';

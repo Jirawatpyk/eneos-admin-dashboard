@@ -55,8 +55,11 @@ import { LeadOwnerFilter } from './lead-owner-filter';
 import { LeadDateFilter } from './lead-date-filter';
 import { LeadSourceFilter } from './lead-source-filter';
 import { SelectionToolbar } from './selection-toolbar';
+import { ExportAllButton } from './export-all-button';
+import { ColumnVisibilityDropdown } from './column-visibility-dropdown';
 import { formatDateForApi } from '@/lib/date-presets';
-import type { Lead } from '@/types/lead';
+import { useColumnVisibility } from '@/hooks/use-column-visibility';
+import type { Lead, LeadsQueryParams } from '@/types/lead';
 import { cn } from '@/lib/utils';
 
 export function LeadTableContainer() {
@@ -129,6 +132,15 @@ export function LeadTableContainer() {
     isSomeSelected,
   } = useLeadSelection();
 
+  // Tech Debt: Column visibility toggle
+  const {
+    columnVisibility,
+    toggleColumnVisibility,
+    resetColumnVisibility,
+    isColumnVisible,
+    hiddenColumnCount,
+  } = useColumnVisibility();
+
   // Story 4.9 AC#7: Track previous filter values to detect changes
   const prevFiltersRef = useRef({ status: statuses, owner: owners, search: debouncedSearch, dateRange, leadSource });
 
@@ -187,6 +199,21 @@ export function LeadTableContainer() {
   const selectedLeads = useMemo(
     () => data?.filter((lead) => selectedIds.has(lead.row)) ?? [],
     [data, selectedIds]
+  );
+
+  // Tech Debt: Export All - filter params for fetching all matching leads
+  const exportAllFilters: Omit<LeadsQueryParams, 'page' | 'limit'> = useMemo(
+    () => ({
+      status: statuses.length > 0 ? statuses : undefined,
+      owner: owners.length > 0 ? owners : undefined,
+      search: debouncedSearch || undefined,
+      from: dateRange?.from ? formatDateForApi(dateRange.from) : undefined,
+      to: dateRange?.to ? formatDateForApi(dateRange.to) : undefined,
+      leadSource: leadSource || undefined,
+      sortBy,
+      sortDir: sortOrder,
+    }),
+    [statuses, owners, debouncedSearch, dateRange, leadSource, sortBy, sortOrder]
   );
 
   // AC#5: Row click handler
@@ -350,6 +377,22 @@ export function LeadTableContainer() {
           onChange={setLeadSource}
           disabled={isFetching}
         />
+        {/* Tech Debt: Column visibility toggle */}
+        <ColumnVisibilityDropdown
+          isColumnVisible={isColumnVisible}
+          toggleColumnVisibility={toggleColumnVisibility}
+          resetColumnVisibility={resetColumnVisibility}
+          hiddenColumnCount={hiddenColumnCount}
+          disabled={isFetching}
+        />
+        {/* Tech Debt: Export All button (when no selection) */}
+        {selectedCount === 0 && pagination && (
+          <ExportAllButton
+            filters={exportAllFilters}
+            totalCount={pagination.total}
+            disabled={isFetching}
+          />
+        )}
       </div>
 
       {/* Story 4.9 AC#4: Selection toolbar (conditionally rendered) */}
@@ -378,6 +421,8 @@ export function LeadTableContainer() {
           onSelectAll={() => selectAll(visibleRowIds)}
           isAllSelected={isAllSelected(visibleRowIds)}
           isSomeSelected={isSomeSelected(visibleRowIds)}
+          // Tech Debt: Column visibility toggle
+          columnVisibility={columnVisibility}
         />
       </div>
 
