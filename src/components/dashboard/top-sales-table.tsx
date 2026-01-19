@@ -103,10 +103,10 @@ export function TopSalesTable({ data, isLoading }: TopSalesTableProps) {
     router.push(`/sales?userId=${userId}`);
   };
 
-  // AC#4: Sort by conversion rate descending, ties broken by closed count
-  // Defensive sorting in case backend returns unsorted data
+  // AC#4: Data is pre-sorted by backend (by closed count descending)
+  // Use rank from backend to maintain consistent ordering
   const topFiveSales = [...data]
-    .sort((a, b) => b.conversionRate - a.conversionRate || b.closed - a.closed)
+    .sort((a, b) => (a.rank || 0) - (b.rank || 0))
     .slice(0, 5);
 
   return (
