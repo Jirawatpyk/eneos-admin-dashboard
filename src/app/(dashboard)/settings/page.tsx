@@ -1,11 +1,11 @@
 /**
  * Settings Page
- * Story 7.1: User Profile
+ * Story 7.1: User Profile (Consolidated)
  * Story 7.3: Notification Settings
  * Story 7.4: Team Management Link (Admin only)
  * Story 7.5: System Health (Admin only)
  *
- * Displays user profile, session information, and notification settings.
+ * Displays user account (profile + session combined), and notification settings.
  * Admin users also see System Health card.
  *
  * AC#1 (7.1): Settings Page Access - accessible via sidebar navigation
@@ -22,14 +22,11 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Users, ChevronRight } from 'lucide-react';
 import {
-  ProfileCard,
-  ProfileCardSkeleton,
-  SessionCard,
-  SessionCardSkeleton,
+  AccountCard,
+  AccountCardSkeleton,
   NotificationSettingsCard,
   NotificationSettingsSkeleton,
   SystemHealthCard,
-  SystemHealthSkeleton,
 } from '@/components/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isAdmin } from '@/config/roles';
@@ -49,26 +46,18 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Content Grid - Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop for admin */}
+      {/* Content Grid - Always 2 columns (Viewer blocked by middleware) */}
       <div
-        className={`grid gap-6 md:grid-cols-2 ${userIsAdmin ? 'lg:grid-cols-3' : ''}`}
+        className="grid gap-6 md:grid-cols-2"
         data-testid="settings-grid"
       >
-        {isLoading ? (
-          <>
-            <ProfileCardSkeleton />
-            <SessionCardSkeleton />
-            {/* Admin-only System Health Skeleton (Story 7.5 AC#7, AC#8) */}
-            {userIsAdmin && <SystemHealthSkeleton />}
-          </>
-        ) : (
-          <>
-            <ProfileCard />
-            <SessionCard />
-            {/* Admin-only System Health Card (Story 7.5 AC#1, AC#7) */}
-            {userIsAdmin && <SystemHealthCard />}
-          </>
-        )}
+        {/* Column 1: Account */}
+        {isLoading ? <AccountCardSkeleton /> : <AccountCard />}
+
+        {/* Column 2: System Health */}
+        {/* Show during loading (assume admin) or when confirmed admin */}
+        {/* SystemHealthCard has its own internal skeleton via useSystemHealth */}
+        {(isLoading || userIsAdmin) && <SystemHealthCard />}
       </div>
 
       {/* Full-width Notification Settings (Story 7.3 AC#1) */}

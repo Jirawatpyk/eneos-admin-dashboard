@@ -1,10 +1,12 @@
 /**
  * Settings Page Tests
- * Story 7.1: User Profile
+ * Story 7.1: User Profile (Consolidated)
  * Story 7.5: System Health (Admin-only visibility)
  *
  * Tests for AC#1 (Settings Page Access), AC#6 (Responsive Design), AC#7 (Loading State)
  * Story 7.5 AC#7: Admin Only Access - System Health visible to admins only
+ *
+ * Note: ProfileCard + SessionCard consolidated into AccountCard
  */
 import { render, screen } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
@@ -56,16 +58,16 @@ function createWrapper() {
   );
 }
 
-// Helper to create mock session
-function createMockSession(role: 'admin' | 'manager' | 'viewer' = 'admin') {
+// Helper to create mock session (only admin can access Settings page)
+function createMockSession() {
   return {
     data: {
       user: {
         id: 'user-123',
-        name: role === 'admin' ? 'Admin User' : role === 'viewer' ? 'Viewer User' : 'Manager User',
-        email: `${role}@eneos.co.th`,
+        name: 'Admin User',
+        email: 'admin@eneos.co.th',
         image: null,
-        role,
+        role: 'admin' as const,
       },
       expires: '2026-01-20T00:00:00.000Z',
     },
@@ -96,7 +98,7 @@ describe('SettingsPage', () => {
   });
 
   describe('AC#7: Loading State', () => {
-    it('shows skeleton components when session is loading', () => {
+    it('shows AccountCardSkeleton and SystemHealthCard during session loading', () => {
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'loading',
@@ -104,16 +106,28 @@ describe('SettingsPage', () => {
       });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
-      expect(screen.getByTestId('profile-card-skeleton')).toBeInTheDocument();
-      expect(screen.getByTestId('session-card-skeleton')).toBeInTheDocument();
+      expect(screen.getByTestId('account-card-skeleton')).toBeInTheDocument();
+      // SystemHealthCard shows during loading (has its own internal skeleton via useSystemHealth)
+      expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
+    });
+
+    it('uses 2-column grid during loading to prevent layout shift', () => {
+      vi.mocked(useSession).mockReturnValue({
+        data: null,
+        status: 'loading',
+        update: vi.fn(),
+      });
+
+      render(<SettingsPage />, { wrapper: createWrapper() });
+      const gridContainer = screen.getByTestId('settings-grid');
+      expect(gridContainer).toHaveClass('md:grid-cols-2');
     });
 
     it('shows actual cards when session is loaded', () => {
       vi.mocked(useSession).mockReturnValue(createMockSession());
 
       render(<SettingsPage />, { wrapper: createWrapper() });
-      expect(screen.getByTestId('profile-card')).toBeInTheDocument();
-      expect(screen.getByTestId('session-card')).toBeInTheDocument();
+      expect(screen.getByTestId('account-card')).toBeInTheDocument();
     });
   });
 
@@ -124,51 +138,33 @@ describe('SettingsPage', () => {
       render(<SettingsPage />, { wrapper: createWrapper() });
       const gridContainer = screen.getByTestId('settings-grid');
       expect(gridContainer).toHaveClass('grid');
+    });
+
+    it('renders with 2-column grid for admin users (AccountCard + SystemHealth)', () => {
+      vi.mocked(useSession).mockReturnValue(createMockSession());
+
+      render(<SettingsPage />, { wrapper: createWrapper() });
+      const gridContainer = screen.getByTestId('settings-grid');
       expect(gridContainer).toHaveClass('md:grid-cols-2');
     });
 
-    it('renders with 3-column grid for admin users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession('admin'));
-
-      render(<SettingsPage />, { wrapper: createWrapper() });
-      const gridContainer = screen.getByTestId('settings-grid');
-      expect(gridContainer).toHaveClass('lg:grid-cols-3');
-    });
-
-    it('does not render 3-column grid for viewer users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession('viewer'));
-
-      render(<SettingsPage />, { wrapper: createWrapper() });
-      const gridContainer = screen.getByTestId('settings-grid');
-      expect(gridContainer).not.toHaveClass('lg:grid-cols-3');
-    });
+    // Note: Viewer cannot access Settings page (blocked by middleware)
+    // So grid is always 2 columns for admin users
   });
 
   describe('Story 7.5 AC#7: Admin Only Access - System Health', () => {
     it('shows System Health card for admin users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession('admin'));
+      vi.mocked(useSession).mockReturnValue(createMockSession());
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
       expect(screen.getByText('System Health')).toBeInTheDocument();
     });
 
-    it('hides System Health card for viewer users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession('viewer'));
+    // Note: Viewer cannot access Settings page (blocked by middleware)
+    // So we don't need to test hiding System Health for viewer/manager
 
-      render(<SettingsPage />, { wrapper: createWrapper() });
-      expect(screen.queryByTestId('system-health-card')).not.toBeInTheDocument();
-      expect(screen.queryByText('System Health')).not.toBeInTheDocument();
-    });
-
-    it('hides System Health card for manager users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession('manager'));
-
-      render(<SettingsPage />, { wrapper: createWrapper() });
-      expect(screen.queryByTestId('system-health-card')).not.toBeInTheDocument();
-    });
-
-    it('does not show System Health skeleton during loading for unknown role', () => {
+    it('shows System Health card during loading (has internal skeleton via useSystemHealth)', () => {
       vi.mocked(useSession).mockReturnValue({
         data: null,
         status: 'loading',
@@ -176,7 +172,8 @@ describe('SettingsPage', () => {
       });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
-      expect(screen.queryByTestId('system-health-skeleton')).not.toBeInTheDocument();
+      // SystemHealthCard handles its own loading state internally via useSystemHealth hook
+      expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
     });
   });
 

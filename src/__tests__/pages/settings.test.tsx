@@ -1,9 +1,11 @@
 /**
  * Settings Page Tests
- * Story 7.1: User Profile
+ * Story 7.1: User Profile (Consolidated)
  * Story 7.3: Notification Settings
  * Story 7.4: Team Management Link (Admin only)
  * Story 7.5: System Health (Admin only)
+ *
+ * Note: ProfileCard + SessionCard consolidated into AccountCard
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -26,6 +28,9 @@ vi.mock('next/link', () => ({
 
 // Mock settings components (including Story 7.5 components)
 vi.mock('@/components/settings', () => ({
+  AccountCard: () => <div data-testid="account-card">Account Card</div>,
+  AccountCardSkeleton: () => <div data-testid="account-card-skeleton">Loading...</div>,
+  // Legacy exports (deprecated)
   ProfileCard: () => <div data-testid="profile-card">Profile Card</div>,
   ProfileCardSkeleton: () => <div data-testid="profile-card-skeleton">Loading...</div>,
   SessionCard: () => <div data-testid="session-card">Session Card</div>,
@@ -77,7 +82,7 @@ describe('Settings Page', () => {
       expect(screen.getByText(/manage your account/i)).toBeInTheDocument();
     });
 
-    it('should render profile and session cards', () => {
+    it('should render account card', () => {
       mockUseSession.mockReturnValue({
         data: {
           user: { id: '1', name: 'User', email: 'user@eneos.co.th', role: 'viewer' },
@@ -88,8 +93,7 @@ describe('Settings Page', () => {
 
       render(<SettingsPage />);
 
-      expect(screen.getByTestId('profile-card')).toBeInTheDocument();
-      expect(screen.getByTestId('session-card')).toBeInTheDocument();
+      expect(screen.getByTestId('account-card')).toBeInTheDocument();
     });
 
     it('should render notification settings card', () => {
@@ -190,8 +194,7 @@ describe('Settings Page', () => {
 
       render(<SettingsPage />);
 
-      expect(screen.getByTestId('profile-card-skeleton')).toBeInTheDocument();
-      expect(screen.getByTestId('session-card-skeleton')).toBeInTheDocument();
+      expect(screen.getByTestId('account-card-skeleton')).toBeInTheDocument();
       expect(screen.getByTestId('notification-settings-skeleton')).toBeInTheDocument();
     });
 
@@ -221,6 +224,21 @@ describe('Settings Page', () => {
 
       const grid = screen.getByTestId('settings-grid');
       expect(grid).toHaveClass('grid');
+      // Note: Viewer only has AccountCard (1 column), Admin has AccountCard + SystemHealth (2 columns)
+    });
+
+    it('should have 2-column grid for admin users', () => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
+          expires: new Date(Date.now() + 86400000).toISOString(),
+        },
+        status: 'authenticated',
+      });
+
+      render(<SettingsPage />);
+
+      const grid = screen.getByTestId('settings-grid');
       expect(grid).toHaveClass('md:grid-cols-2');
     });
   });
