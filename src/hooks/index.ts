@@ -18,3 +18,6 @@ export type {
   NotificationPreferences,
   UseNotificationPreferencesReturn,
 } from './use-notification-preferences';
+
+// Story 7.4: Team Management
+export { useTeamList, useTeamMember, useUpdateTeamMember } from './use-team-management';
