@@ -1,21 +1,44 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
 const FIVE_MINUTES_IN_SECONDS = 5 * 60;
 const CHECK_INTERVAL_MS = 30 * 1000; // Check every 30 seconds
+const SIGNOUT_DELAY_MS = 2000; // Delay before signOut to allow toast to be shown
 
 /**
  * Session expiry warning component (AC3)
  * Shows a toast notification when session has < 5 minutes remaining
+ * Also handles session errors (e.g., RefreshTokenError) by redirecting to login
  */
 export function SessionWarning() {
   const { data: session } = useSession();
   const warningShownRef = useRef(false);
+  const errorHandledRef = useRef(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle session errors (e.g., token refresh failed)
+  useEffect(() => {
+    if (session?.error && !errorHandledRef.current) {
+      errorHandledRef.current = true;
+      console.warn('[SessionWarning] Session error detected:', session.error);
+
+      toast({
+        title: 'Session Error',
+        description: 'Your session has expired. Please login again.',
+        variant: 'destructive',
+        duration: 5000,
+      });
+
+      // Sign out and redirect to login after toast is shown
+      setTimeout(() => {
+        signOut({ callbackUrl: '/login?error=SessionExpired' });
+      }, SIGNOUT_DELAY_MS);
+    }
+  }, [session?.error]);
 
   useEffect(() => {
     // Clear previous interval

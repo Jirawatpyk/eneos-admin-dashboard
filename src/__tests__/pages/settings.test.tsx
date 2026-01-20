@@ -3,6 +3,7 @@
  * Story 7.1: User Profile
  * Story 7.3: Notification Settings
  * Story 7.4: Team Management Link (Admin only)
+ * Story 7.5: System Health (Admin only)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -23,7 +24,7 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// Mock settings components
+// Mock settings components (including Story 7.5 components)
 vi.mock('@/components/settings', () => ({
   ProfileCard: () => <div data-testid="profile-card">Profile Card</div>,
   ProfileCardSkeleton: () => <div data-testid="profile-card-skeleton">Loading...</div>,
@@ -31,6 +32,8 @@ vi.mock('@/components/settings', () => ({
   SessionCardSkeleton: () => <div data-testid="session-card-skeleton">Loading...</div>,
   NotificationSettingsCard: () => <div data-testid="notification-settings-card">Notification Card</div>,
   NotificationSettingsSkeleton: () => <div data-testid="notification-settings-skeleton">Loading...</div>,
+  SystemHealthCard: () => <div data-testid="system-health-card">System Health Card</div>,
+  SystemHealthSkeleton: () => <div data-testid="system-health-skeleton">Loading...</div>,
 }));
 
 // Mock roles config

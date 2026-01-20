@@ -36,9 +36,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get Google ID token from JWT
-    const idToken = token.idToken as string;
+    const idToken = token.idToken as string | undefined;
 
-    if (!idToken) {
+    // Guard: Check for missing or invalid token (including literal string "undefined")
+    if (!idToken || idToken === 'undefined') {
+      console.warn('[Auth] ID token missing or invalid - user needs to re-login');
       return NextResponse.json(
         { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found' } },
         { status: 401 }

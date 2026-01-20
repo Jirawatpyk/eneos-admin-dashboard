@@ -18,3 +18,7 @@ export { TeamManagementCard, TeamManagementCardSkeleton } from './team-managemen
 export { TeamMemberFilter } from './team-member-filter';
 export { TeamMemberTable } from './team-member-table';
 export { TeamMemberEditModal } from './team-member-edit-modal';
+
+// Story 7.5: System Health
+export { SystemHealthCard } from './system-health-card';
+export { SystemHealthSkeleton } from './system-health-skeleton';

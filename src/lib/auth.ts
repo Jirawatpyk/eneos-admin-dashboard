@@ -52,7 +52,13 @@ const BACKEND_API_TIMEOUT = 5000;
  * @param idToken - Google ID token for authentication
  * @returns User role from backend, defaults to 'viewer' on error or timeout
  */
-async function fetchRoleFromBackend(idToken: string): Promise<typeof ROLES[keyof typeof ROLES]> {
+async function fetchRoleFromBackend(idToken: string | undefined): Promise<typeof ROLES[keyof typeof ROLES]> {
+  // Guard: If no ID token, skip backend call and default to viewer
+  if (!idToken || idToken === 'undefined') {
+    console.warn('[Auth] No valid ID token - defaulting to viewer role');
+    return ROLES.VIEWER;
+  }
+
   try {
     // Create AbortController for timeout
     const controller = new AbortController();
@@ -222,6 +228,14 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     session: async ({ session, token }) => {
+      // Check if token has error (e.g., RefreshTokenError from failed refresh)
+      // If so, expose error to client so it can handle re-login
+      if (token.error) {
+        console.warn('[Auth] Session has token error, user needs to re-login:', token.error);
+        // Expose error to session - client should check this and redirect to login
+        session.error = token.error as string;
+      }
+
       // Expose user data and expiry to client
       // Note: accessToken is intentionally NOT exposed to client for security
       // It remains in the JWT cookie for server-side use only

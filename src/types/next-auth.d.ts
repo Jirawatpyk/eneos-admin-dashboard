@@ -13,6 +13,7 @@ declare module 'next-auth' {
     };
     // Note: accessToken intentionally NOT exposed to client for security
     expiresAt?: number; // Unix timestamp when session expires
+    error?: string; // Error flag when token refresh fails (e.g., 'RefreshTokenError')
   }
 
   interface User {
