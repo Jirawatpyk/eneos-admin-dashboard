@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,14 +19,15 @@ export function PermissionErrorHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [handled, setHandled] = useState(false);
+  // Use ref to track if we're currently processing to prevent double-firing in strict mode
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     const error = searchParams.get('error');
 
-    // Only handle once per mount and only for Unauthorized error
-    if (error === 'Unauthorized' && !handled) {
-      setHandled(true);
+    // Show toast for Unauthorized error
+    if (error === 'Unauthorized' && !isProcessingRef.current) {
+      isProcessingRef.current = true;
 
       // Show toast notification (AC#6)
       // AC#6: Toast message exactly as specified
@@ -43,8 +44,14 @@ export function PermissionErrorHandler() {
         ? `${window.location.pathname}?${newParams.toString()}`
         : window.location.pathname;
       router.replace(newPath, { scroll: false });
+
+      // Reset processing flag after delay (allow next navigation to trigger)
+      // Delay ensures toast animation completes before allowing new toast
+      setTimeout(() => {
+        isProcessingRef.current = false;
+      }, 1000);
     }
-  }, [searchParams, toast, router, handled]);
+  }, [searchParams, toast, router]);
 
   return null;
 }
