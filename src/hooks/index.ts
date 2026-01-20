@@ -25,3 +25,12 @@ export { useTeamList, useTeamMember, useUpdateTeamMember } from './use-team-mana
 // Story 7.5: System Health
 export { useSystemHealth, formatUptime } from './use-system-health';
 export type { SystemHealthData, UseSystemHealthReturn } from './use-system-health';
+
+// Story 7.7: Activity Log
+export { useActivityLog } from './use-activity-log';
+export type {
+  ActivityEntry,
+  ActivityPagination,
+  ActivityLogQueryParams,
+  ChangedByOption,
+} from './use-activity-log';

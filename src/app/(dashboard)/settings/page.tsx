@@ -20,7 +20,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { Users, ChevronRight } from 'lucide-react';
+import { Users, ChevronRight, ClipboardList } from 'lucide-react';
 import {
   AccountCard,
   AccountCardSkeleton,
@@ -81,6 +81,26 @@ export default function SettingsPage() {
             <CardContent>
               <CardDescription>
                 Manage sales team members, roles, and access permissions.
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
+      {/* Admin-only: Activity Log Link (Story 7.7) */}
+      {!isLoading && userIsAdmin && (
+        <Link href="/settings/activity" className="block mt-4" data-testid="activity-log-link">
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-muted-foreground" />
+                <CardTitle className="text-base font-medium">Activity Log</CardTitle>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                View all lead status changes and activities across the system.
               </CardDescription>
             </CardContent>
           </Card>

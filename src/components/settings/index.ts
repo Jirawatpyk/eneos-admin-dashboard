@@ -29,3 +29,10 @@ export { TeamMemberEditModal } from './team-member-edit-modal';
 // Story 7.5: System Health
 export { SystemHealthCard } from './system-health-card';
 export { SystemHealthSkeleton } from './system-health-skeleton';
+
+// Story 7.7: Activity Log
+export { ActivityLogContainer } from './activity-log-container';
+export { ActivityLogTable } from './activity-log-table';
+export { ActivityLogSkeleton } from './activity-log-skeleton';
+export { ActivityLogEmpty } from './activity-log-empty';
+export { ActivityLogFilters } from './activity-log-filters';
