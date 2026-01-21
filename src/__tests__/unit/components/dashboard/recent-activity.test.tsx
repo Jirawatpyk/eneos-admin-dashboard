@@ -1,12 +1,13 @@
 /**
  * Recent Activity Feed Tests
  * Story 2.5: Recent Activity Feed
+ * Story 2.5.1: View All Activity Link Fix
  *
  * AC#1: Activity Feed Display - panel with latest 10 activities
  * AC#2: Activity Types - different types with distinct icon/color
  * AC#3: Activity Details - icon, description, timestamp
  * AC#4: Timestamp Formatting - relative vs date format
- * AC#5: View All Link - navigation to activity log
+ * AC#5: View All Link - navigation to activity log (admin only - Story 2.5.1)
  * AC#6: Color Coding - specific icons for each type
  * AC#7: Loading & Empty States
  */
@@ -17,6 +18,12 @@ import { ActivityItem } from '@/components/dashboard/activity-item';
 import { RecentActivitySkeleton } from '@/components/dashboard/recent-activity-skeleton';
 import { formatActivityTime } from '@/lib/format-activity-time';
 import { TooltipProvider } from '@/components/ui/tooltip';
+
+// Story 2.5.1: Mock useSession from next-auth/react
+const mockUseSession = vi.fn();
+vi.mock('next-auth/react', () => ({
+  useSession: () => mockUseSession(),
+}));
 
 // Mock next/link - pass through all props including aria-label
 vi.mock('next/link', () => ({
@@ -79,10 +86,16 @@ describe('RecentActivity', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(FIXED_NOW);
+    // Story 2.5.1: Default to admin session for existing tests
+    mockUseSession.mockReturnValue({
+      data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+      status: 'authenticated',
+    });
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   describe('AC#1: Activity Feed Display', () => {
@@ -129,24 +142,115 @@ describe('RecentActivity', () => {
   });
 
   describe('AC#5: View All Link', () => {
-    it('displays View All Activity link', () => {
-      renderWithProvider(<RecentActivity activities={mockActivities} />);
-      const link = screen.getByRole('link', { name: /view all/i });
-      expect(link).toBeInTheDocument();
+    // Story 2.5.1: Admin role tests
+    describe('Story 2.5.1 AC#1: Admin sees link', () => {
+      it('displays View All Activity link for admin', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        const link = screen.getByRole('link', { name: /view all/i });
+        expect(link).toBeInTheDocument();
+      });
+
+      it('navigates to /settings/activity page for admin', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        const link = screen.getByRole('link', { name: /view all/i });
+        expect(link).toHaveAttribute('href', '/settings/activity');
+      });
+
+      it('has accessible aria-label on link', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        const link = screen.getByRole('link', { name: /view all/i });
+        expect(link).toHaveAttribute('aria-label', 'View all activity log');
+      });
     });
 
-    it('navigates to /activity page', () => {
-      renderWithProvider(<RecentActivity activities={mockActivities} />);
-      const link = screen.getByRole('link', { name: /view all/i });
-      // Temporary: links to /leads until dedicated /activity page is built
-      expect(link).toHaveAttribute('href', '/leads?sort=updatedAt&order=desc');
+    // Story 2.5.1: Viewer role tests
+    describe('Story 2.5.1 AC#2: Viewer does NOT see link', () => {
+      it('hides View All Activity link for viewer role', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'viewer@eneos.co.th', role: 'viewer' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
+      });
+
+      it('does not show CardFooter for viewer role', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'viewer@eneos.co.th', role: 'viewer' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        expect(screen.queryByText('View All Activity')).not.toBeInTheDocument();
+      });
     });
 
-    // L-03 Fix verification: Check aria-label exists
-    it('has accessible aria-label on link', () => {
-      renderWithProvider(<RecentActivity activities={mockActivities} />);
-      const link = screen.getByRole('link', { name: /view all/i });
-      expect(link).toHaveAttribute('aria-label', 'View all recent leads activity');
+    // Story 2.5.1: Loading state tests
+    describe('Story 2.5.1: Link hidden during session loading', () => {
+      it('hides View All Activity link when session is loading', () => {
+        mockUseSession.mockReturnValue({
+          data: null,
+          status: 'loading',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
+      });
+
+      it('hides link when unauthenticated', () => {
+        mockUseSession.mockReturnValue({
+          data: null,
+          status: 'unauthenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
+      });
+    });
+
+    // Story 2.5.1: Edge case - user without role property (M-02 fix)
+    describe('Story 2.5.1: Edge case - undefined role', () => {
+      it('hides link when user exists but role is undefined', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'user@eneos.co.th' } }, // no role property
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
+      });
+    });
+
+    // Story 2.5.1 AC#3: Link styling
+    describe('Story 2.5.1 AC#3: Link styling', () => {
+      it('has hover underline class for styling', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        const link = screen.getByRole('link', { name: /view all/i });
+        expect(link).toHaveClass('hover:underline');
+      });
+
+      it('has arrow icon for navigation indication', () => {
+        mockUseSession.mockReturnValue({
+          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
+          status: 'authenticated',
+        });
+        renderWithProvider(<RecentActivity activities={mockActivities} />);
+        const link = screen.getByRole('link', { name: /view all/i });
+        // Check the link contains an SVG (ArrowRight icon)
+        expect(link.querySelector('svg')).toBeInTheDocument();
+      });
     });
   });
 
