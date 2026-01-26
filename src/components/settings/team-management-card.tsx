@@ -9,8 +9,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Users } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTeamList } from '@/hooks/use-team-management';
 import { TeamMemberFilter } from './team-member-filter';
@@ -46,50 +44,38 @@ export function TeamManagementCard() {
 
   return (
     <>
-      <Card data-testid="team-management-card">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            <CardTitle>Team Management</CardTitle>
+      <div className="space-y-4" data-testid="team-management-card">
+        {/* Filter controls */}
+        <TeamMemberFilter
+          filter={filter}
+          onFilterChange={setFilter}
+          disabled={isLoading}
+        />
+
+        {/* Results count */}
+        {data && (
+          <p className="text-sm text-muted-foreground" data-testid="results-count">
+            Showing {data.members.length} member{data.members.length !== 1 ? 's' : ''}
+          </p>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div
+            className="rounded-md bg-red-50 p-4 text-sm text-red-800"
+            data-testid="error-message"
+          >
+            Failed to load team members: {error.message}
           </div>
-          <CardDescription>
-            Manage sales team members, roles, and access permissions.
-          </CardDescription>
-        </CardHeader>
+        )}
 
-        <CardContent className="space-y-4">
-          {/* Filter controls */}
-          <TeamMemberFilter
-            filter={filter}
-            onFilterChange={setFilter}
-            disabled={isLoading}
-          />
-
-          {/* Results count */}
-          {data && (
-            <p className="text-sm text-muted-foreground" data-testid="results-count">
-              Showing {data.members.length} member{data.members.length !== 1 ? 's' : ''}
-            </p>
-          )}
-
-          {/* Error state */}
-          {error && (
-            <div
-              className="rounded-md bg-red-50 p-4 text-sm text-red-800"
-              data-testid="error-message"
-            >
-              Failed to load team members: {error.message}
-            </div>
-          )}
-
-          {/* Table */}
-          <TeamMemberTable
-            members={data?.members || []}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-          />
-        </CardContent>
-      </Card>
+        {/* Table */}
+        <TeamMemberTable
+          members={data?.members || []}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+        />
+      </div>
 
       {/* Edit modal */}
       <TeamMemberEditModal
@@ -106,22 +92,16 @@ export function TeamManagementCard() {
  */
 export function TeamManagementCardSkeleton() {
   return (
-    <Card data-testid="team-management-skeleton">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-5 w-5" />
-          <Skeleton className="h-6 w-40" />
-        </div>
-        <Skeleton className="h-4 w-60" />
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-3">
-          <Skeleton className="h-9 w-32" />
-          <Skeleton className="h-9 w-32" />
-        </div>
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-64 w-full" />
-      </CardContent>
-    </Card>
+    <div className="space-y-4" data-testid="team-management-skeleton">
+      {/* Filter skeleton */}
+      <div className="flex gap-3">
+        <Skeleton className="h-9 w-32" />
+        <Skeleton className="h-9 w-32" />
+      </div>
+      {/* Results count skeleton */}
+      <Skeleton className="h-4 w-24" />
+      {/* Table skeleton */}
+      <Skeleton className="h-64 w-full" />
+    </div>
   );
 }

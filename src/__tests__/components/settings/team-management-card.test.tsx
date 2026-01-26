@@ -80,18 +80,6 @@ describe('TeamManagementCard Component', () => {
       expect(screen.getByTestId('team-management-card')).toBeInTheDocument();
     });
 
-    it('should display card title', () => {
-      render(<TeamManagementCard />, { wrapper: createWrapper() });
-
-      expect(screen.getByText('Team Management')).toBeInTheDocument();
-    });
-
-    it('should display card description', () => {
-      render(<TeamManagementCard />, { wrapper: createWrapper() });
-
-      expect(screen.getByText(/manage sales team members/i)).toBeInTheDocument();
-    });
-
     it('should display results count for multiple members', () => {
       render(<TeamManagementCard />, { wrapper: createWrapper() });
 
