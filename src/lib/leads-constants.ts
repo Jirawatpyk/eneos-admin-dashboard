@@ -68,23 +68,26 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
  * Column tooltips for table headers
  */
 export const LEAD_COLUMN_TOOLTIPS: Record<string, string> = {
-  company: 'Company name with industry badge from AI analysis',
+  company: 'Company name with DBD Sector',
+  capital: 'Registered capital',
+  location: 'Province or city',
   customerName: 'Contact person name',
-  email: 'Contact email address (click to send email)',
-  phone: 'Contact phone number in Thai format',
-  status: 'Current lead status in the sales pipeline',
-  salesOwnerName: 'Assigned sales team member',
-  campaignName: 'Marketing campaign that generated this lead',
-  createdAt: 'Date and time when the lead was created',
+  email: 'Contact email (click to send)',
+  phone: 'Contact phone number',
+  status: 'Lead status in pipeline',
+  salesOwnerName: 'Assigned sales owner',
+  createdAt: 'Lead creation date',
 } as const;
 
 /**
  * Story 4.7: Sortable columns (AC#1)
+ * Story 4.15: Added capital column (AC#2)
  * Only these columns support server-side sorting
  * Maps frontend column ID to backend sortBy value
  */
 export const SORTABLE_COLUMNS: Record<string, string> = {
   company: 'company',
+  capital: 'capital', // Story 4.15: Sortable capital column
   status: 'status',
   salesOwnerName: 'salesOwnerName',
   createdAt: 'createdAt',

@@ -82,9 +82,9 @@ export interface LeadDetail {
   /** AI-analyzed industry */
   industry: string;
   /** Company website URL */
-  website: string;
+  website: string | null;
   /** Company capital/size */
-  capital: string;
+  capital: string | null;
   /** Lead status */
   status: LeadStatus;
   /** Owner details with contact info (null if unassigned) */
@@ -98,7 +98,7 @@ export interface LeadDetail {
   /** Event ID from tracking */
   eventId: string;
   /** AI-generated talking point */
-  talkingPoint: string;
+  talkingPoint: string | null;
   /** Status change history (AC#2) */
   history: StatusHistoryItem[];
   /** Performance metrics (AC#3) */
@@ -111,4 +111,13 @@ export interface LeadDetail {
   leadUuid?: string;
   /** Optimistic locking version */
   version?: number;
+  // Google Search Grounding fields (added 2026-01-26)
+  /** Juristic ID - เลขทะเบียนนิติบุคคล 13 หลัก */
+  juristicId?: string | null;
+  /** DBD Sector code (e.g., "F&B-M", "MFG-A") */
+  dbdSector?: string | null;
+  /** Province - จังหวัด */
+  province?: string | null;
+  /** Full address - ที่อยู่เต็มของบริษัท */
+  fullAddress?: string | null;
 }

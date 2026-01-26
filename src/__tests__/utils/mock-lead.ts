@@ -52,6 +52,11 @@ export function createMockLead(overrides: Partial<Lead> = {}): Lead {
     leadUuid: `lead_${row}`,
     createdAt: '2026-01-15T09:00:00Z',
     updatedAt: null,
+    // Google Search Grounding fields (2026-01-26)
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
     ...overrides,
   };
 }

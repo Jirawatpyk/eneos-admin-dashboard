@@ -4,7 +4,7 @@
  * Story 4.7: Sort Columns - AC#1-9
  * Story 4.9: Bulk Select - AC#1, AC#2, AC#3
  *
- * AC#2: Table Columns - Company, Name, Email, Phone, Status, Sales Owner, Campaign, Date
+ * AC#2: Table Columns - Company, Name, Email, Phone, Status, Sales Owner, Date
  * AC#3: Data Display - Proper formatting for each column
  * AC#4: Status Badge Colors
  * AC#7: Responsive Design - horizontal scroll with sticky first column
@@ -51,7 +51,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileText, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, Mail } from 'lucide-react';
+import { FileText, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, Mail, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatThaiPhone, formatLeadDate } from '@/lib/format-lead';
 import { LEAD_COLUMN_TOOLTIPS } from '@/lib/leads-constants';
@@ -180,7 +180,7 @@ function SortableHeader({ columnId, sorting, onSort, children, tooltip, classNam
  * Story 4.7 AC#1: Non-sortable Header Component
  * - Displays column name with tooltip
  * - No sort functionality or indicators
- * - Used for columns: customerName, email, phone, campaignName
+ * - Used for columns: customerName, email, phone
  */
 interface PlainHeaderProps {
   /** Column header text */
@@ -286,13 +286,65 @@ export function LeadTable({
         cell: ({ row }) => (
           <div className="min-w-[200px]">
             <span className="font-medium">{row.original.company}</span>
-            {row.original.industryAI && (
-              <Badge variant="outline" className="ml-2 text-xs">
-                {row.original.industryAI}
+            {/* Story 4.15 AC#1: DBD Sector badge (replaced Industry badge) */}
+            {row.original.dbdSector && (
+              <Badge className="ml-2 text-xs bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
+                {row.original.dbdSector}
               </Badge>
             )}
+            {/* Story 4.15 AC#3: Location moved to separate column */}
           </div>
         ),
+      },
+      // Story 4.15 AC#2: Capital Column - Registered Capital
+      {
+        accessorKey: 'capital',
+        enableSorting: true,
+        header: () => (
+          <SortableHeader
+            columnId="capital"
+            sorting={sorting}
+            onSort={onSortingChange}
+            tooltip={LEAD_COLUMN_TOOLTIPS.capital}
+          >
+            Capital
+          </SortableHeader>
+        ),
+        cell: ({ row }) => {
+          const capital = row.original.capital;
+          const displayValue = capital && capital !== 'ไม่ระบุ' ? capital : '-';
+          return (
+            <span className="block whitespace-nowrap min-w-[140px]">
+              {displayValue}
+            </span>
+          );
+        },
+      },
+      // Story 4.15 AC#3: Location Column - Province with fallback to City
+      {
+        accessorKey: 'province', // Use province as primary accessor
+        id: 'location', // Custom ID for column visibility
+        enableSorting: false,
+        header: () => (
+          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.location}>
+            Location
+          </PlainHeader>
+        ),
+        cell: ({ row }) => {
+          const location = row.original.province || row.original.city;
+          return (
+            <span className="block min-w-[120px]">
+              {location ? (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" aria-hidden="true" />
+                  {location}
+                </span>
+              ) : (
+                '-'
+              )}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'customerName',
@@ -300,7 +352,7 @@ export function LeadTable({
         enableSorting: false,
         header: () => (
           <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.customerName}>
-            Name
+            Contact
           </PlainHeader>
         ),
         cell: ({ getValue }) => (
@@ -383,19 +435,6 @@ export function LeadTable({
         ),
       },
       {
-        accessorKey: 'campaignName',
-        // Story 4.7 AC#1: Non-sortable column
-        enableSorting: false,
-        header: () => (
-          <PlainHeader tooltip={LEAD_COLUMN_TOOLTIPS.campaignName}>
-            Campaign
-          </PlainHeader>
-        ),
-        cell: ({ getValue }) => (
-          <span className="whitespace-nowrap">{getValue() as string}</span>
-        ),
-      },
-      {
         accessorKey: 'createdAt',
         // Story 4.7 AC#1: Sortable column
         enableSorting: true,
@@ -451,6 +490,7 @@ export function LeadTable({
       </CardHeader>
       <CardContent>
         {/* AC#7: Responsive with horizontal scroll */}
+        {/* Story 4.15 AC#5: Responsive design with horizontal scroll for grounding fields */}
         <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
@@ -516,9 +556,9 @@ export function LeadTable({
                       key={cell.id}
                       className={cn(
                         // Story 4.9 AC#1: Checkbox column sticky (40px width)
-                        index === 0 && 'sticky left-0 z-10 bg-inherit w-10',
+                        index === 0 && 'sticky left-0 z-10 bg-card w-10',
                         // AC#7: Sticky second column (Company)
-                        index === 1 && 'sticky left-10 z-10 bg-inherit'
+                        index === 1 && 'sticky left-10 z-10 bg-card'
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -85,6 +85,15 @@ export interface Lead {
   createdAt: string;
   /** Updated timestamp (ISO 8601) */
   updatedAt: string | null;
+  // Google Search Grounding fields (added 2026-01-26)
+  /** Juristic ID - เลขทะเบียนนิติบุคคล 13 หลัก */
+  juristicId: string | null;
+  /** DBD Sector code (e.g., "F&B-M", "MFG-A") */
+  dbdSector: string | null;
+  /** Province - จังหวัด (e.g., "กรุงเทพมหานคร", "เชียงใหม่") */
+  province: string | null;
+  /** Full address - ที่อยู่เต็มของบริษัท */
+  fullAddress: string | null;
 }
 
 /**

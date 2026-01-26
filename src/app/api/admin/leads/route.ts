@@ -133,6 +133,12 @@ export async function GET(request: NextRequest) {
             jobTitle: (lead.jobTitle as string) ?? null,
             city: (lead.city as string) ?? null,
 
+            // Google Search Grounding fields (2026-01-26)
+            juristicId: (lead.juristicId as string) ?? null,
+            dbdSector: (lead.dbdSector as string) ?? null,
+            province: (lead.province as string) ?? null,
+            fullAddress: (lead.fullAddress as string) ?? null,
+
             // Fields not provided in list response (available in detail endpoint)
             emailSubject: null,
             leadId: null,

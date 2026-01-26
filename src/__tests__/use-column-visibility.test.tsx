@@ -41,23 +41,25 @@ describe('useColumnVisibility', () => {
   describe('COLUMN_DEFINITIONS', () => {
     it('has all expected columns', () => {
       expect(COLUMN_DEFINITIONS.company).toBe('Company');
+      expect(COLUMN_DEFINITIONS.capital).toBe('Capital'); // Story 4.15
+      expect(COLUMN_DEFINITIONS.location).toBe('Location'); // Story 4.15
       expect(COLUMN_DEFINITIONS.customerName).toBe('Contact');
       expect(COLUMN_DEFINITIONS.email).toBe('Email');
       expect(COLUMN_DEFINITIONS.phone).toBe('Phone');
       expect(COLUMN_DEFINITIONS.status).toBe('Status');
       expect(COLUMN_DEFINITIONS.salesOwnerName).toBe('Owner');
-      expect(COLUMN_DEFINITIONS.campaignName).toBe('Campaign');
       expect(COLUMN_DEFINITIONS.createdAt).toBe('Date');
     });
 
     it('TOGGLEABLE_COLUMNS contains all column keys', () => {
       expect(TOGGLEABLE_COLUMNS).toContain('company');
+      expect(TOGGLEABLE_COLUMNS).toContain('capital'); // Story 4.15
+      expect(TOGGLEABLE_COLUMNS).toContain('location'); // Story 4.15
       expect(TOGGLEABLE_COLUMNS).toContain('customerName');
       expect(TOGGLEABLE_COLUMNS).toContain('email');
       expect(TOGGLEABLE_COLUMNS).toContain('phone');
       expect(TOGGLEABLE_COLUMNS).toContain('status');
       expect(TOGGLEABLE_COLUMNS).toContain('salesOwnerName');
-      expect(TOGGLEABLE_COLUMNS).toContain('campaignName');
       expect(TOGGLEABLE_COLUMNS).toContain('createdAt');
     });
   });
@@ -119,12 +121,12 @@ describe('useColumnVisibility', () => {
       act(() => {
         result.current.toggleColumnVisibility('email');
         result.current.toggleColumnVisibility('phone');
-        result.current.toggleColumnVisibility('campaignName');
+        result.current.toggleColumnVisibility('capital'); // Story 4.15
       });
 
       expect(result.current.isColumnVisible('email')).toBe(false);
       expect(result.current.isColumnVisible('phone')).toBe(false);
-      expect(result.current.isColumnVisible('campaignName')).toBe(false);
+      expect(result.current.isColumnVisible('capital')).toBe(false);
       expect(result.current.hiddenColumnCount).toBe(3);
     });
 

@@ -8,7 +8,7 @@
  * AC#5: Filter by changed by
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ActivityLogFilters, type ActivityLogFiltersProps } from '@/components/settings/activity-log-filters';
 import type { LeadStatus } from '@/types/lead';

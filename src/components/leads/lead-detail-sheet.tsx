@@ -39,6 +39,7 @@ import {
   ExternalLink,
   Target,
   Tag,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatThaiPhone, formatLeadDateTime } from '@/lib/format-lead';
@@ -189,11 +190,12 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
                     value={lead.jobTitle}
                   />
                 )}
-                {lead.city && (
+                {/* Smart fallback: province (DBD official) || city (Brevo user input) */}
+                {(lead.province || lead.city) && (
                   <DetailItem
-                    label="City"
+                    label="Location"
                     icon={<MapPin className="h-4 w-4 text-red-500" />}
-                    value={lead.city}
+                    value={lead.province || lead.city}
                   />
                 )}
               </CardContent>
@@ -218,9 +220,7 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
                   <DetailItem
                     label="Industry (AI)"
                     icon={<Briefcase className="h-4 w-4 text-amber-500" />}
-                    value={
-                      <Badge variant="outline">{leadDetail?.industry || lead.industryAI}</Badge>
-                    }
+                    value={leadDetail?.industry || lead.industryAI}
                   />
                 )}
                 {(leadDetail?.website || lead.website) && (
@@ -248,6 +248,30 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
                     label="Capital"
                     icon={<Building2 className="h-4 w-4 text-gray-500" />}
                     value={leadDetail?.capital || lead.capital}
+                  />
+                )}
+                {/* Google Search Grounding fields (2026-01-26) */}
+                {(leadDetail?.juristicId || lead.juristicId) && (
+                  <DetailItem
+                    label="Juristic ID"
+                    icon={<FileText className="h-4 w-4 text-indigo-500" />}
+                    value={leadDetail?.juristicId || lead.juristicId}
+                  />
+                )}
+                {(leadDetail?.dbdSector || lead.dbdSector) && (
+                  <DetailItem
+                    label="DBD Sector"
+                    icon={<Briefcase className="h-4 w-4 text-teal-500" />}
+                    value={
+                      <Badge variant="secondary">{leadDetail?.dbdSector || lead.dbdSector}</Badge>
+                    }
+                  />
+                )}
+                {(leadDetail?.fullAddress || lead.fullAddress) && (
+                  <DetailItem
+                    label="Address"
+                    icon={<MapPin className="h-4 w-4 text-orange-500" />}
+                    value={leadDetail?.fullAddress || lead.fullAddress}
                   />
                 )}
               </CardContent>

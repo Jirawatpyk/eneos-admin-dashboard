@@ -15,31 +15,35 @@ const STORAGE_KEY = 'lead-table-column-visibility';
 /**
  * Default column visibility
  * All columns visible by default
+ * Story 4.15: Added capital and location columns
  */
 const DEFAULT_VISIBILITY: VisibilityState = {
   select: true,
   company: true,
+  capital: true, // Story 4.15: Registered capital column
+  location: true, // Story 4.15: Province/City column
   customerName: true,
   email: true,
   phone: true,
   status: true,
   salesOwnerName: true,
-  campaignName: true,
   createdAt: true,
 };
 
 /**
  * Column definitions for the visibility toggle
  * Maps column IDs to display labels
+ * Story 4.15: Added capital and location columns
  */
 export const COLUMN_DEFINITIONS: Record<string, string> = {
   company: 'Company',
+  capital: 'Capital', // Story 4.15: Registered capital
+  location: 'Location', // Story 4.15: Province/City
   customerName: 'Contact',
   email: 'Email',
   phone: 'Phone',
   status: 'Status',
   salesOwnerName: 'Owner',
-  campaignName: 'Campaign',
   createdAt: 'Date',
 };
 

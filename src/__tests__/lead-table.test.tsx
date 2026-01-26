@@ -44,6 +44,10 @@ const mockLeadsData: Lead[] = [
     leadUuid: 'lead_uuid_1',
     createdAt: '2026-01-15T10:30:00Z',
     updatedAt: null,
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   },
   {
     row: 2,
@@ -54,7 +58,7 @@ const mockLeadsData: Lead[] = [
     company: 'XYZ Ltd',
     industryAI: 'Logistics',
     website: 'https://xyz-ltd.com',
-    capital: '50M THB',
+    capital: '796,362,800 บาท',
     status: 'claimed',
     salesOwnerId: 'sales1',
     salesOwnerName: 'Bob Sales',
@@ -76,6 +80,10 @@ const mockLeadsData: Lead[] = [
     leadUuid: 'lead_uuid_2',
     createdAt: '2026-01-14T09:00:00Z',
     updatedAt: '2026-01-14T12:00:00Z',
+    juristicId: '0105551234567',
+    dbdSector: 'F&B-M',
+    province: 'กรุงเทพมหานคร',
+    fullAddress: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
   },
   {
     row: 3,
@@ -108,6 +116,10 @@ const mockLeadsData: Lead[] = [
     leadUuid: 'lead_uuid_3',
     createdAt: '2026-01-13T14:00:00Z',
     updatedAt: '2026-01-15T16:00:00Z',
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   },
 ];
 
@@ -193,12 +205,13 @@ describe('LeadTable', () => {
       );
 
       expect(screen.getByText('Company')).toBeInTheDocument();
-      expect(screen.getByText('Name')).toBeInTheDocument();
+      expect(screen.getByText('Capital')).toBeInTheDocument();
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('Contact')).toBeInTheDocument();
       expect(screen.getByText('Email')).toBeInTheDocument();
       expect(screen.getByText('Phone')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
       expect(screen.getByText('Sales Owner')).toBeInTheDocument();
-      expect(screen.getByText('Campaign')).toBeInTheDocument();
       expect(screen.getByText('Date')).toBeInTheDocument();
     });
 
@@ -221,7 +234,7 @@ describe('LeadTable', () => {
 
   // AC#3: Data Display
   describe('AC#3: Data Display', () => {
-    it('shows company with industry badge', () => {
+    it('shows company name in table', () => {
       renderWithProviders(
         <LeadTable
           data={mockLeadsData}
@@ -233,7 +246,8 @@ describe('LeadTable', () => {
       );
 
       expect(screen.getByText('ABC Corp')).toBeInTheDocument();
-      expect(screen.getByText('Manufacturing')).toBeInTheDocument();
+      expect(screen.getByText('XYZ Ltd')).toBeInTheDocument();
+      expect(screen.getByText('Thai Industries')).toBeInTheDocument();
     });
 
     it('shows email as clickable mailto link', () => {
@@ -497,7 +511,7 @@ describe('LeadTable', () => {
       expect(screen.queryByRole('button', { name: /Sort by Name/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Sort by Email/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Sort by Phone/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /Sort by Campaign/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Sort by Location/i })).not.toBeInTheDocument();
     });
   });
 
@@ -693,6 +707,262 @@ describe('LeadTable', () => {
 
       const companyHeader = screen.getByTestId('sort-header-company');
       expect(companyHeader).toHaveClass('hover:bg-muted/50');
+    });
+  });
+
+  // Story 4.15: Grounding Fields Display
+  describe('Story 4.15: Grounding Fields', () => {
+    // AC#1: DBD Sector Badge in Company Column
+    describe('AC#1: DBD Sector Badge', () => {
+      it('displays DBD Sector badge when dbdSector exists', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 2 has dbdSector = 'F&B-M'
+        expect(screen.getByText('F&B-M')).toBeInTheDocument();
+      });
+
+      it('does not show industry badge when dbdSector is present', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 2 has dbdSector, so industryAI 'Logistics' should NOT be displayed as badge
+        // The 'Logistics' text should not appear in Company column context
+        const row = screen.getByTestId('lead-row-2');
+        const companyCell = within(row).getByText('XYZ Ltd').closest('td');
+        expect(companyCell).not.toHaveTextContent('Logistics');
+      });
+
+      it('shows no badge when dbdSector is null', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 1 has dbdSector = null, so no sector badge
+        const row = screen.getByTestId('lead-row-1');
+        const companyCell = within(row).getByText('ABC Corp').closest('td');
+        // Should only have company name, no badge
+        expect(companyCell?.textContent).toBe('ABC Corp');
+      });
+    });
+
+    // AC#2: Capital Column
+    describe('AC#2: Capital Column', () => {
+      it('displays Capital column header', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        expect(screen.getByText('Capital')).toBeInTheDocument();
+      });
+
+      it('displays capital value when exists and not "ไม่ระบุ"', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 2 has capital = '796,362,800 บาท'
+        expect(screen.getByText('796,362,800 บาท')).toBeInTheDocument();
+      });
+
+      it('shows "-" placeholder when capital is null', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 3 has capital = null, should show "-"
+        const row = screen.getByTestId('lead-row-3');
+        const cells = within(row).getAllByRole('cell');
+        // Capital is the 3rd column (after checkbox, company)
+        const capitalCell = cells[2];
+        expect(capitalCell).toHaveTextContent('-');
+      });
+
+      it('Capital column is sortable', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Should have sort button for Capital
+        expect(screen.getByRole('button', { name: /Sort by Capital/i })).toBeInTheDocument();
+      });
+    });
+
+    // AC#3: Location Column
+    describe('AC#3: Location Column', () => {
+      it('displays Location column header', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        expect(screen.getByText('Location')).toBeInTheDocument();
+      });
+
+      it('shows province with icon when province exists', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 2 has province = 'กรุงเทพมหานคร'
+        expect(screen.getByText('กรุงเทพมหานคร')).toBeInTheDocument();
+      });
+
+      it('falls back to city when province is null', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 1 has province = null, city = 'Bangkok'
+        expect(screen.getByText('Bangkok')).toBeInTheDocument();
+      });
+
+      it('shows "-" when both province and city are null', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 3 has province = null, city = null
+        const row = screen.getByTestId('lead-row-3');
+        const cells = within(row).getAllByRole('cell');
+        // Location is the 4th column (after checkbox, company, capital)
+        const locationCell = cells[3];
+        expect(locationCell).toHaveTextContent('-');
+      });
+    });
+
+    // AC#4: Column Count
+    describe('AC#4: Column Count', () => {
+      it('displays 9 visible columns plus checkbox column', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Expected columns: Checkbox, Company, Capital, Location, Name, Email, Phone, Status, Sales Owner, Date = 10 total
+        const headerRow = screen.getAllByRole('columnheader');
+        expect(headerRow).toHaveLength(10);
+      });
+    });
+
+    // AC#9: Data Integrity - Null Value Handling
+    describe('AC#9: Data Integrity', () => {
+      it('handles legacy leads with all grounding fields null', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 1 has all grounding fields null - should not crash
+        const row = screen.getByTestId('lead-row-1');
+        expect(row).toBeInTheDocument();
+
+        // Row 1 should have company name visible
+        expect(within(row).getByText('ABC Corp')).toBeInTheDocument();
+        // Should show city fallback in location column
+        expect(within(row).getByText('Bangkok')).toBeInTheDocument();
+      });
+
+      it('handles mixed null and populated grounding fields', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Row 2 has all grounding fields populated
+        const row2 = screen.getByTestId('lead-row-2');
+        expect(within(row2).getByText('F&B-M')).toBeInTheDocument();
+        expect(within(row2).getByText('796,362,800 บาท')).toBeInTheDocument();
+        expect(within(row2).getByText('กรุงเทพมหานคร')).toBeInTheDocument();
+
+        // Row 3 has all grounding fields null
+        const row3 = screen.getByTestId('lead-row-3');
+        const cells = within(row3).getAllByRole('cell');
+        expect(cells[2]).toHaveTextContent('-'); // Capital
+        expect(cells[3]).toHaveTextContent('-'); // Location
+      });
     });
   });
 });

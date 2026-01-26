@@ -17,6 +17,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LeadDetailSheet } from '@/components/leads/lead-detail-sheet';
 import type { Lead } from '@/types/lead';
 import type { LeadDetail } from '@/types/lead-detail';
+import { createMockLead } from './utils/mock-lead';
 
 // Mock useLead hook
 const mockUseLead = vi.fn();
@@ -56,6 +57,10 @@ describe('LeadDetailSheet', () => {
     leadUuid: 'lead_uuid_123',
     createdAt: '2026-01-15T08:30:00.000Z',
     updatedAt: '2026-01-16T11:30:00.000Z',
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   };
 
   const mockLeadDetail: LeadDetail = {
@@ -492,7 +497,7 @@ describe('LeadDetailSheet', () => {
         expect(screen.getByText('Manager')).toBeInTheDocument();
       });
 
-      it('displays city when value exists', () => {
+      it('displays location (province || city) when value exists', () => {
         mockUseLead.mockReturnValue({
           data: mockLeadDetail,
           isLoading: false,
@@ -504,7 +509,8 @@ describe('LeadDetailSheet', () => {
           <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
         );
 
-        expect(screen.getByText('City')).toBeInTheDocument();
+        // Smart fallback: Shows "Location" label with province || city
+        expect(screen.getByText('Location')).toBeInTheDocument();
         expect(screen.getByText('Bangkok')).toBeInTheDocument();
       });
     });
@@ -549,6 +555,85 @@ describe('LeadDetailSheet', () => {
         const leadSourceLabel = screen.getByText('Lead Source');
         expect(leadSourceLabel.tagName.toLowerCase()).toBe('p');
       });
+    });
+  });
+
+  describe('Google Search Grounding Fields (2026-01-26)', () => {
+    it('displays grounding fields when values exist', () => {
+      const leadWithGrounding = createMockLead({
+        row: 100,
+        juristicId: '0105563079446',
+        dbdSector: 'F&B-M',
+        province: 'กรุงเทพมหานคร',
+        fullAddress: '123/45 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+      });
+
+      mockUseLead.mockReturnValue({
+        data: {
+          ...mockLeadDetail,
+          juristicId: '0105563079446',
+          dbdSector: 'F&B-M',
+          province: 'กรุงเทพมหานคร',
+          fullAddress: '123/45 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+        },
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <LeadDetailSheet open={true} onOpenChange={() => {}} lead={leadWithGrounding} />
+      );
+
+      // Verify all grounding fields are displayed
+      expect(screen.getByText('Juristic ID')).toBeInTheDocument();
+      expect(screen.getByText('0105563079446')).toBeInTheDocument();
+
+      expect(screen.getByText('DBD Sector')).toBeInTheDocument();
+      expect(screen.getByText('F&B-M')).toBeInTheDocument();
+
+      expect(screen.getByText('Address')).toBeInTheDocument();
+      expect(screen.getByText('123/45 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110')).toBeInTheDocument();
+    });
+
+    it('hides grounding fields when values are null', () => {
+      mockUseLead.mockReturnValue({
+        data: mockLeadDetail,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+      );
+
+      // Grounding fields should not appear if values are null
+      expect(screen.queryByText('Juristic ID')).not.toBeInTheDocument();
+      expect(screen.queryByText('DBD Sector')).not.toBeInTheDocument();
+    });
+
+    it('prefers province over city in Location field', () => {
+      const leadWithProvince = createMockLead({
+        city: 'Bangkok',
+        province: 'กรุงเทพมหานคร',
+      });
+
+      mockUseLead.mockReturnValue({
+        data: mockLeadDetail,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <LeadDetailSheet open={true} onOpenChange={() => {}} lead={leadWithProvince} />
+      );
+
+      // Should show province (DBD official) instead of city (user input)
+      expect(screen.getByText('Location')).toBeInTheDocument();
+      expect(screen.getByText('กรุงเทพมหานคร')).toBeInTheDocument();
+      expect(screen.queryByText('Bangkok')).not.toBeInTheDocument();
     });
   });
 

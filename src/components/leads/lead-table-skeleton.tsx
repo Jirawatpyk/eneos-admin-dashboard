@@ -1,8 +1,9 @@
 /**
  * Lead Table Skeleton Component
  * Story 4.1: Lead List Table
+ * Story 4.15: Updated to 9 columns (added Capital, Location)
  *
- * AC#6: Loading state shows skeleton table rows (8 columns structure)
+ * AC#6: Loading state shows skeleton table rows (9 columns structure)
  */
 'use client';
 
@@ -21,15 +22,16 @@ import { FileText } from 'lucide-react';
 // Number of skeleton rows to display
 const SKELETON_ROWS = 10;
 
-// Column widths matching the actual table structure
+// Column widths matching the actual table structure (Story 4.15: 9 columns)
 const COLUMN_WIDTHS = [
   'w-[200px]', // Company
+  'w-[140px]', // Capital (Story 4.15)
+  'w-[120px]', // Location (Story 4.15)
   'w-[120px]', // Name
   'w-[180px]', // Email
   'w-[100px]', // Phone
   'w-[80px]',  // Status
   'w-[100px]', // Sales Owner
-  'w-[120px]', // Campaign
   'w-[100px]', // Date
 ];
 
@@ -47,27 +49,39 @@ export function LeadTableSkeleton() {
           <Table>
             <TableHeader>
               <TableRow>
+                {/* Company */}
                 <TableHead className="sticky left-0 z-10 bg-background">
                   <Skeleton className="h-4 w-20" />
                 </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-24" />
-                </TableHead>
+                {/* Capital - Story 4.15 */}
                 <TableHead>
                   <Skeleton className="h-4 w-16" />
                 </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-16" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-16" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-24" />
-                </TableHead>
+                {/* Location - Story 4.15 */}
                 <TableHead>
                   <Skeleton className="h-4 w-20" />
                 </TableHead>
+                {/* Name */}
+                <TableHead>
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                {/* Email */}
+                <TableHead>
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                {/* Phone */}
+                <TableHead>
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                {/* Status */}
+                <TableHead>
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                {/* Sales Owner */}
+                <TableHead>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+                {/* Date */}
                 <TableHead className="text-right">
                   <Skeleton className="h-4 w-24 ml-auto" />
                 </TableHead>
