@@ -152,11 +152,13 @@ export function ExportForm() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sales</SelectItem>
-              {salesOwners?.map((owner) => (
-                <SelectItem key={owner.id} value={owner.id}>
-                  {owner.name}
-                </SelectItem>
-              ))}
+              {salesOwners
+                ?.filter((owner) => owner.id && owner.id.trim() !== '')
+                .map((owner) => (
+                  <SelectItem key={owner.id} value={owner.id}>
+                    {owner.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
@@ -174,11 +176,13 @@ export function ExportForm() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Campaigns</SelectItem>
-              {campaigns?.map((campaign) => (
-                <SelectItem key={campaign.id} value={campaign.id}>
-                  {campaign.name}
-                </SelectItem>
-              ))}
+              {campaigns
+                ?.filter((campaign) => campaign.id && campaign.id.trim() !== '')
+                .map((campaign) => (
+                  <SelectItem key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

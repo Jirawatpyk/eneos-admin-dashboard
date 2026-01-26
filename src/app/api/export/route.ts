@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
     const apiUrl = new URL(`${BACKEND_URL}/api/admin/export`);
 
     // Add query params to backend request
+    apiUrl.searchParams.append('type', 'leads'); // Required by backend
     apiUrl.searchParams.append('format', format);
     if (startDate) apiUrl.searchParams.append('startDate', startDate);
     if (endDate) apiUrl.searchParams.append('endDate', endDate);
