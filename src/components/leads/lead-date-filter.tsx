@@ -77,6 +77,8 @@ interface LeadDateFilterProps {
   className?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  /** Story 4.16: Full width button for mobile filter sheet */
+  fullWidth?: boolean;
 }
 
 export function LeadDateFilter({
@@ -84,6 +86,7 @@ export function LeadDateFilter({
   onChange,
   className,
   disabled = false,
+  fullWidth = false,
 }: LeadDateFilterProps) {
   const [open, setOpen] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -225,7 +228,8 @@ export function LeadDateFilter({
             size="sm"
             className={cn(
               'h-9 border-dashed gap-2',
-              hasSelection && 'border-primary bg-primary/5'
+              hasSelection && 'border-primary bg-primary/5',
+              fullWidth && 'w-full justify-start'
             )}
             disabled={disabled}
             aria-label={`Filter by date${hasSelection ? `, ${buttonLabel}` : ''}`}
@@ -239,7 +243,7 @@ export function LeadDateFilter({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-auto p-2"
+          className={cn('p-2', fullWidth ? 'w-[var(--radix-popover-trigger-width)]' : 'w-auto')}
           align="start"
           onKeyDown={handleKeyDown}
           aria-label="Date filter options"

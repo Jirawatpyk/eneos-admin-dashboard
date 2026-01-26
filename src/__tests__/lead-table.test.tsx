@@ -965,4 +965,204 @@ describe('LeadTable', () => {
       });
     });
   });
+
+  // Story 4.16: Mobile-Responsive Lead Filters
+  describe('Story 4.16: Mobile Table Column Visibility', () => {
+    // AC#8: Mobile columns - show only Checkbox, Company, Status, Owner
+    describe('AC#8: Mobile Column Visibility', () => {
+      it('Checkbox column always visible', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Checkbox header should not have hidden class
+        const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
+        const checkboxHeader = selectAllCheckbox.closest('th');
+        expect(checkboxHeader).not.toHaveClass('hidden');
+
+        // Checkbox cell should not have hidden class
+        const row = screen.getByTestId('lead-row-1');
+        const checkboxCell = within(row).getByTestId('select-checkbox-1').closest('td');
+        expect(checkboxCell).not.toHaveClass('hidden');
+      });
+
+      it('Company column always visible', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Company header should not have hidden class
+        const companyHeader = screen.getByText('Company').closest('th');
+        expect(companyHeader).not.toHaveClass('hidden');
+
+        // Company cell should not have hidden class
+        const row = screen.getByTestId('lead-row-1');
+        const companyCell = within(row).getByText('ABC Corp').closest('td');
+        expect(companyCell).not.toHaveClass('hidden');
+      });
+
+      it('Status column always visible', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Status header should not have hidden class
+        const statusHeader = screen.getByText('Status').closest('th');
+        expect(statusHeader).not.toHaveClass('hidden');
+      });
+
+      it('Sales Owner column always visible', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Sales Owner header should not have hidden class
+        const ownerHeader = screen.getByText('Sales Owner').closest('th');
+        expect(ownerHeader).not.toHaveClass('hidden');
+      });
+
+      it('Capital column hidden on mobile (< 768px)', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Capital header should have hidden md:table-cell classes
+        const capitalHeader = screen.getByText('Capital').closest('th');
+        expect(capitalHeader).toHaveClass('hidden', 'md:table-cell');
+
+        // Capital cell should have hidden md:table-cell classes
+        const row = screen.getByTestId('lead-row-2');
+        const capitalCell = within(row).getByText('796,362,800 บาท').closest('td');
+        expect(capitalCell).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('Location column hidden on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Location header should have hidden md:table-cell classes
+        const locationHeader = screen.getByText('Location').closest('th');
+        expect(locationHeader).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('Contact column hidden on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Contact header should have hidden md:table-cell classes
+        const contactHeader = screen.getByText('Contact').closest('th');
+        expect(contactHeader).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('Email column hidden on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Email header should have hidden md:table-cell classes
+        const emailHeader = screen.getByText('Email').closest('th');
+        expect(emailHeader).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('Phone column hidden on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Phone header should have hidden md:table-cell classes
+        const phoneHeader = screen.getByText('Phone').closest('th');
+        expect(phoneHeader).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('Date column hidden on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Date header should have hidden md:table-cell classes
+        const dateHeader = screen.getByText('Date').closest('th');
+        expect(dateHeader).toHaveClass('hidden', 'md:table-cell');
+      });
+
+      it('row click to detail sheet works on mobile', () => {
+        renderWithProviders(
+          <LeadTable
+            data={mockLeadsData}
+            sorting={defaultSorting}
+            onSortingChange={mockOnSortingChange}
+            onRowClick={mockOnRowClick}
+            {...defaultSelectionProps}
+          />
+        );
+
+        // Click on row should still trigger onRowClick
+        const row = screen.getByTestId('lead-row-1');
+        fireEvent.click(row);
+
+        expect(mockOnRowClick).toHaveBeenCalledWith(mockLeadsData[0]);
+      });
+    });
+  });
 });

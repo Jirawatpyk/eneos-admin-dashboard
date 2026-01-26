@@ -48,6 +48,8 @@ interface LeadOwnerFilterProps {
   className?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  /** Story 4.16: Full width button for mobile filter sheet */
+  fullWidth?: boolean;
 }
 
 export function LeadOwnerFilter({
@@ -55,6 +57,7 @@ export function LeadOwnerFilter({
   onChange,
   className,
   disabled = false,
+  fullWidth = false,
 }: LeadOwnerFilterProps) {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -179,7 +182,8 @@ export function LeadOwnerFilter({
             size="sm"
             className={cn(
               'h-9 border-dashed gap-2',
-              hasSelection && 'border-primary bg-primary/5'
+              hasSelection && 'border-primary bg-primary/5',
+              fullWidth && 'w-full justify-start'
             )}
             disabled={disabled}
             aria-label={`Filter by owner${hasSelection ? `, ${selectedCount} selected` : ''}`}
@@ -202,7 +206,7 @@ export function LeadOwnerFilter({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-56 p-2"
+          className={cn('p-2', fullWidth ? 'w-[var(--radix-popover-trigger-width)]' : 'w-56')}
           align="start"
           onKeyDown={handleKeyDown}
           role="listbox"

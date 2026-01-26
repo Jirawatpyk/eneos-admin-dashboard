@@ -238,7 +238,6 @@ describe('MobileFilterSheet', () => {
 
   describe('Task 2.15: Close Behaviors', () => {
     it('should handle sheet onOpenChange', async () => {
-      const user = userEvent.setup()
       render(<MobileFilterSheet {...defaultProps} />)
 
       // Simulate clicking overlay or close button (handled by Sheet)

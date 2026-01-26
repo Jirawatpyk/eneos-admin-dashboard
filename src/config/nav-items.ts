@@ -3,7 +3,7 @@ import {
   Users,
   FileText,
   BarChart3,
-  FileOutput,
+  FileDown,
   Settings,
   LucideIcon,
 } from 'lucide-react';
@@ -42,10 +42,9 @@ export const NAV_ITEMS: NavItemConfig[] = [
     disabled: true,
   },
   {
-    icon: FileOutput,
-    label: 'Reports',
-    href: '/reports',
-    disabled: true,
+    icon: FileDown,
+    label: 'Export & Reports',
+    href: '/export',
   },
 ];
 

@@ -47,9 +47,9 @@ vi.mock('@/components/settings/activity-log-filters', () => ({
 
 // Mock ActivityLogTable
 vi.mock('@/components/settings/activity-log-table', () => ({
-  ActivityLogTable: ({ entries, onRowClick }: any) => (
+  ActivityLogTable: ({ entries, onRowClick }: { entries: ActivityEntry[]; onRowClick: (rowNumber: number) => void }) => (
     <div data-testid="activity-log-table">
-      {entries.map((entry: any) => (
+      {entries.map((entry: ActivityEntry) => (
         <div
           key={entry.id}
           data-testid={`activity-row-${entry.id}`}
@@ -161,7 +161,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       isFetching: false,
       isError: false,
       refetch: vi.fn(),
-    } as any);
+    });
 
     render(
       <TestWrapper>
@@ -193,7 +193,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       notes: 'Called customer',
       lead: {
         ...mockLead,
-        createdAt: null as any, // Legacy lead with null createdAt
+        createdAt: null, // Legacy lead with null createdAt
       },
     };
 
@@ -214,7 +214,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       isFetching: false,
       isError: false,
       refetch: vi.fn(),
-    } as any);
+    });
 
     render(
       <TestWrapper>
@@ -242,11 +242,11 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       status: 'contacted',
       changedById: 'U1234567890abcdef',
       changedByName: 'John Sales',
-      timestamp: null as any, // Null timestamp (edge case)
+      timestamp: null, // Null timestamp (edge case)
       notes: 'Called customer',
       lead: {
         ...mockLead,
-        createdAt: null as any, // Null createdAt
+        createdAt: null, // Null createdAt
       },
     };
 
@@ -267,7 +267,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       isFetching: false,
       isError: false,
       refetch: vi.fn(),
-    } as any);
+    });
 
     render(
       <TestWrapper>

@@ -30,7 +30,7 @@ describe('MobileFilterToolbar', () => {
     })
 
     it('should have Filters button take flex-1 (grow)', () => {
-      const { container } = render(
+      render(
         <MobileFilterToolbar
           activeFilterCount={0}
           onFilterClick={mockOnFilterClick}

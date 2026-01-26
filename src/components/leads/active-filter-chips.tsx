@@ -105,6 +105,7 @@ export function ActiveFilterChips({
           label="Status"
           value={getStatusLabel()}
           onRemove={() => onRemove('status')}
+          testId="filter-chip-status"
         />
       )}
 
@@ -114,6 +115,7 @@ export function ActiveFilterChips({
           label="Owner"
           value={getOwnerLabel()}
           onRemove={() => onRemove('owner')}
+          testId="filter-chip-owner"
         />
       )}
 
@@ -123,6 +125,7 @@ export function ActiveFilterChips({
           label="Date"
           value={getDateLabel()}
           onRemove={() => onRemove('date')}
+          testId="filter-chip-date"
         />
       )}
 
@@ -132,6 +135,7 @@ export function ActiveFilterChips({
           label="Source"
           value={getSourceLabel()}
           onRemove={() => onRemove('source')}
+          testId="filter-chip-source"
         />
       )}
     </div>
@@ -143,13 +147,15 @@ interface FilterChipProps {
   label: string
   value: string
   onRemove: () => void
+  testId?: string
 }
 
-function FilterChip({ label, value, onRemove }: FilterChipProps) {
+function FilterChip({ label, value, onRemove, testId }: FilterChipProps) {
   return (
     <Badge
       variant="secondary"
       className="gap-2 py-1.5 pr-1 pl-3 text-sm"
+      data-testid={testId}
     >
       <span className="font-medium">{label}:</span>
       <span>{value}</span>
@@ -159,6 +165,7 @@ function FilterChip({ label, value, onRemove }: FilterChipProps) {
         className="ml-1 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
         aria-label={`Remove ${label.toLowerCase()} filter`}
         type="button"
+        data-testid={testId ? `${testId}-remove` : undefined}
       >
         <X className="h-3.5 w-3.5" />
       </button>

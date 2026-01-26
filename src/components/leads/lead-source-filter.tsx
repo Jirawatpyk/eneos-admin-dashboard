@@ -48,6 +48,8 @@ interface LeadSourceFilterProps {
   className?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  /** Story 4.16: Full width button for mobile filter sheet */
+  fullWidth?: boolean;
 }
 
 // Special values for filtering
@@ -61,6 +63,7 @@ export function LeadSourceFilter({
   isLoading = false,
   className,
   disabled = false,
+  fullWidth = false,
 }: LeadSourceFilterProps) {
   // AC#3: Handle source selection
   const handleChange = (newValue: string) => {
@@ -93,8 +96,9 @@ export function LeadSourceFilter({
       >
         <SelectTrigger
           className={cn(
-            'w-[180px] h-9 border-dashed gap-2',
-            value && value !== ALL_SOURCES && 'border-primary bg-primary/5'
+            'h-9 border-dashed gap-2',
+            value && value !== ALL_SOURCES && 'border-primary bg-primary/5',
+            fullWidth ? 'w-full' : 'w-[180px]'
           )}
           aria-label={`Filter by lead source${value ? `, ${getDisplayText()} selected` : ''}`}
           data-testid="source-filter-trigger"

@@ -319,6 +319,11 @@ export function LeadTable({
             </span>
           );
         },
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
       // Story 4.15 AC#3: Location Column - Province with fallback to City
       {
@@ -345,6 +350,11 @@ export function LeadTable({
             </span>
           );
         },
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
       {
         accessorKey: 'customerName',
@@ -358,6 +368,11 @@ export function LeadTable({
         cell: ({ getValue }) => (
           <span className="whitespace-nowrap">{getValue() as string}</span>
         ),
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
       {
         accessorKey: 'email',
@@ -382,6 +397,11 @@ export function LeadTable({
             </a>
           );
         },
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
       {
         accessorKey: 'phone',
@@ -397,6 +417,11 @@ export function LeadTable({
             {formatThaiPhone(getValue() as string)}
           </span>
         ),
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
       {
         accessorKey: 'status',
@@ -454,6 +479,11 @@ export function LeadTable({
             {formatLeadDate(getValue() as string)}
           </span>
         ),
+        // Story 4.16 AC#8: Mobile column visibility meta
+        meta: {
+          headerClassName: 'hidden md:table-cell',
+          cellClassName: 'hidden md:table-cell',
+        },
       },
     ],
     [sorting, onSortingChange]
@@ -508,6 +538,10 @@ export function LeadTable({
                           : 'none'
                       : undefined;
 
+                    // Story 4.16 AC#8: Extract mobile visibility classes from column meta
+                    const columnMeta = header.column.columnDef.meta as { headerClassName?: string; cellClassName?: string } | undefined;
+                    const mobileHeaderClass = columnMeta?.headerClassName || '';
+
                     return (
                       <TableHead
                         key={header.id}
@@ -516,7 +550,9 @@ export function LeadTable({
                           index === 0 && 'sticky left-0 z-10 bg-background w-10',
                           // AC#7: Sticky second column (Company) - positioned after checkbox
                           index === 1 && 'sticky left-10 z-10 bg-background',
-                          index === header.getContext().table.getAllColumns().length - 1 && 'text-right'
+                          index === header.getContext().table.getAllColumns().length - 1 && 'text-right',
+                          // Story 4.16 AC#8: Mobile column visibility
+                          mobileHeaderClass
                         )}
                         aria-sort={ariaSort}
                         data-testid={isSortable ? `column-header-${header.id}` : undefined}
@@ -551,19 +587,27 @@ export function LeadTable({
                   data-testid={`lead-row-${row.original.row}`}
                   data-selected={selectedIds.has(row.original.row)}
                 >
-                  {row.getVisibleCells().map((cell, index) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        // Story 4.9 AC#1: Checkbox column sticky (40px width)
-                        index === 0 && 'sticky left-0 z-10 bg-card w-10',
-                        // AC#7: Sticky second column (Company)
-                        index === 1 && 'sticky left-10 z-10 bg-card'
-                      )}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell, index) => {
+                    // Story 4.16 AC#8: Extract mobile visibility classes from column meta
+                    const columnMeta = cell.column.columnDef.meta as { headerClassName?: string; cellClassName?: string } | undefined;
+                    const mobileCellClass = columnMeta?.cellClassName || '';
+
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          // Story 4.9 AC#1: Checkbox column sticky (40px width)
+                          index === 0 && 'sticky left-0 z-10 bg-card w-10',
+                          // AC#7: Sticky second column (Company)
+                          index === 1 && 'sticky left-10 z-10 bg-card',
+                          // Story 4.16 AC#8: Mobile column visibility
+                          mobileCellClass
+                        )}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>

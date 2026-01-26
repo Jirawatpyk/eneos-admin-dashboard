@@ -51,12 +51,17 @@ test.describe('Lead Date Filter', () => {
         body: JSON.stringify({
           success: true,
           data: {
-            data: mockLeads,
+            leads: mockLeads,
             pagination: {
               page: 1,
               limit: 20,
               total: 2,
               totalPages: 1,
+            },
+            availableFilters: {
+              statuses: [],
+              owners: [],
+              leadSources: [],
             },
           },
         }),
