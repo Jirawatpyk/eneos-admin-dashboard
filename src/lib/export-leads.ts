@@ -19,12 +19,18 @@ import type { Lead, LeadStatus } from '@/types/lead';
 
 /**
  * Export columns configuration
+ *
  * AC#3, AC#4: Columns included in export (Task 9: Enhanced with grounding fields)
  * Company, DBD Sector, Industry, Juristic ID, Capital, Location, Contact Name, Phone, Email,
  * Job Title, Website, Lead Source, Status, Sales Owner, Campaign, Created Date
  *
- * Type-safe: 'key' constrained to keyof Lead to prevent runtime errors
- * Includes column widths for Excel export (single source of truth)
+ * @constant
+ * @type {ReadonlyArray<{key: keyof Lead, header: string, width: number}>}
+ *
+ * @remarks
+ * - Type-safe: 'key' constrained to keyof Lead to prevent runtime errors
+ * - Includes column widths for Excel export (single source of truth)
+ * - Adding/removing columns: update this array only, Excel widths auto-derived
  */
 export const LEAD_EXPORT_COLUMNS: ReadonlyArray<{
   key: keyof Lead;
@@ -55,7 +61,12 @@ export const LEAD_EXPORT_COLUMNS: ReadonlyArray<{
 
 /**
  * Type for formatted export record - ensures type safety for export keys
- * Uses Partial to allow only exporting subset of Lead fields
+ *
+ * @typedef {Partial<Record<keyof Lead, string>>} ExportRecord
+ *
+ * @remarks
+ * Uses Partial to allow exporting only a subset of Lead fields.
+ * All exported values are converted to strings for Excel/CSV compatibility.
  */
 type ExportRecord = Partial<Record<keyof Lead, string>>;
 
