@@ -22,8 +22,13 @@ import type { Lead, LeadStatus } from '@/types/lead';
  * AC#3, AC#4: Columns included in export (Task 9: Enhanced with grounding fields)
  * Company, DBD Sector, Industry, Juristic ID, Capital, Location, Contact Name, Phone, Email,
  * Job Title, Website, Lead Source, Status, Sales Owner, Campaign, Created Date
+ *
+ * Type-safe: 'key' constrained to keyof Lead to prevent runtime errors
  */
-export const LEAD_EXPORT_COLUMNS = [
+export const LEAD_EXPORT_COLUMNS: ReadonlyArray<{
+  key: keyof Lead;
+  header: string;
+}> = [
   { key: 'company', header: 'Company' },
   { key: 'dbdSector', header: 'DBD Sector' },
   { key: 'industryAI', header: 'Industry' },
@@ -40,7 +45,7 @@ export const LEAD_EXPORT_COLUMNS = [
   { key: 'salesOwnerName', header: 'Sales Owner' },
   { key: 'campaignName', header: 'Campaign' },
   { key: 'createdAt', header: 'Created Date' },
-] as const;
+];
 
 /**
  * Column widths for Excel export (character width)
@@ -71,14 +76,20 @@ const EXCEL_COLUMN_WIDTHS = [
 // ===========================================
 
 /**
+ * Type for formatted export record - ensures type safety for export keys
+ * Uses Partial to allow only exporting subset of Lead fields
+ */
+type ExportRecord = Partial<Record<keyof Lead, string>>;
+
+/**
  * Format lead data for export
  * Converts raw lead data to formatted strings for export
  * Task 9: Enhanced with grounding fields (DBD Sector, Juristic ID, Capital, Location, Website)
  *
  * @param lead - Lead data to format
- * @returns Record of formatted values keyed by column key
+ * @returns Typed record of formatted values keyed by column key
  */
-function formatLeadForExport(lead: Lead): Record<string, string> {
+function formatLeadForExport(lead: Lead): ExportRecord {
   return {
     company: lead.company || '-',
     dbdSector: lead.dbdSector || '-',
@@ -93,7 +104,7 @@ function formatLeadForExport(lead: Lead): Record<string, string> {
     website: lead.website || '-',
     leadSource: lead.leadSource || '-',
     status: LEAD_STATUS_LABELS[lead.status as LeadStatus] || lead.status,
-    salesOwnerName: lead.salesOwnerName || 'Unassigned',
+    salesOwnerName: lead.salesOwnerName || 'Unassigned', // Human-readable default for unassigned leads
     campaignName: lead.campaignName || '-',
     createdAt: formatLeadDate(lead.createdAt),
   };

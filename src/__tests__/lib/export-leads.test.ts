@@ -222,6 +222,52 @@ describe('exportLeadsToExcel', () => {
     expect(data[1][2]).toBe('-'); // Industry (index 2)
   });
 
+  // Task 9: Grounding fields export validation
+  it('exports grounding fields with proper values', async () => {
+    const xlsx = await import('xlsx');
+    const leads = [createMockLead({
+      dbdSector: 'MFG-A',
+      juristicId: '0123456789012',
+      capital: '5,000,000',
+      province: 'กรุงเทพมหานคร',
+      website: 'https://example.com',
+    })];
+
+    exportLeadsToExcel(leads);
+
+    const aoaCall = vi.mocked(xlsx.utils.aoa_to_sheet).mock.calls[0];
+    const data = aoaCall[0] as string[][];
+
+    expect(data[1][1]).toBe('MFG-A'); // DBD Sector (index 1)
+    expect(data[1][3]).toBe('0123456789012'); // Juristic ID (index 3)
+    expect(data[1][4]).toBe('5,000,000'); // Capital (index 4)
+    expect(data[1][5]).toBe('กรุงเทพมหานคร'); // Location/Province (index 5)
+    expect(data[1][10]).toBe('https://example.com'); // Website (index 10)
+  });
+
+  // Task 9: Grounding fields null handling
+  it('handles null grounding fields with dash fallback', async () => {
+    const xlsx = await import('xlsx');
+    const leads = [createMockLead({
+      dbdSector: null,
+      juristicId: null,
+      capital: null,
+      province: null,
+      website: null,
+    })];
+
+    exportLeadsToExcel(leads);
+
+    const aoaCall = vi.mocked(xlsx.utils.aoa_to_sheet).mock.calls[0];
+    const data = aoaCall[0] as string[][];
+
+    expect(data[1][1]).toBe('-'); // DBD Sector (index 1)
+    expect(data[1][3]).toBe('-'); // Juristic ID (index 3)
+    expect(data[1][4]).toBe('-'); // Capital (index 4)
+    expect(data[1][5]).toBe('-'); // Location/Province (index 5)
+    expect(data[1][10]).toBe('-'); // Website (index 10)
+  });
+
   // AC#3: Column widths
   it('sets column widths for better readability', async () => {
     const xlsx = await import('xlsx');
@@ -232,6 +278,19 @@ describe('exportLeadsToExcel', () => {
 
     // Verify worksheet is created (column widths would be set on it)
     expect(worksheet).toBeDefined();
+  });
+
+  // Task 9: Column width array length validation
+  it('has column widths matching export columns count', async () => {
+    const xlsx = await import('xlsx');
+
+    exportLeadsToExcel(mockLeads);
+
+    const worksheet = vi.mocked(xlsx.utils.aoa_to_sheet).mock.results[0].value;
+
+    // Verify column widths array exists and matches column count
+    expect(worksheet['!cols']).toBeDefined();
+    expect(worksheet['!cols'].length).toBe(LEAD_EXPORT_COLUMNS.length);
   });
 
   // AC#3: Empty array handling
