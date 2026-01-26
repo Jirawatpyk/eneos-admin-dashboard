@@ -48,6 +48,9 @@ import { LeadTableSkeleton } from './lead-table-skeleton';
 import { LeadTableEmpty } from './lead-table-empty';
 import { LeadTableError } from './lead-table-error';
 import { LeadDetailSheet } from './lead-detail-sheet';
+import { MobileFilterSheet } from './mobile-filter-sheet';
+import { MobileFilterToolbar } from './mobile-filter-toolbar';
+import { ActiveFilterChips } from './active-filter-chips';
 import { LeadPagination } from './lead-pagination';
 import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
@@ -169,6 +172,9 @@ export function LeadTableContainer() {
   // Detail sheet state
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  // Story 4.16 AC#4: Mobile filter sheet state
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
   // Story 4.3 AC#3: Pass search param to useLeads hook
   // Story 4.4 AC#4, AC#5: Pass status filter to useLeads hook

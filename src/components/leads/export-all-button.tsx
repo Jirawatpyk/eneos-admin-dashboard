@@ -53,6 +53,8 @@ interface ExportAllButtonProps {
   totalCount: number;
   /** Whether button is disabled externally */
   disabled?: boolean;
+  /** Render as icon-only (for mobile) */
+  iconOnly?: boolean;
 }
 
 // ===========================================
@@ -81,6 +83,7 @@ export function ExportAllButton({
   filters,
   totalCount,
   disabled,
+  iconOnly = false,
 }: ExportAllButtonProps) {
   const { isExporting, progress, exportAllLeads } = useExportAllLeads();
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -136,9 +139,9 @@ export function ExportAllButton({
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size={iconOnly ? 'icon' : 'sm'}
             disabled={isDisabled}
-            className="gap-2"
+            className={iconOnly ? '' : 'gap-2'}
             aria-label={
               isExporting
                 ? 'Exporting all leads...'
@@ -152,7 +155,7 @@ export function ExportAllButton({
             ) : (
               <Download className="h-4 w-4" aria-hidden="true" />
             )}
-            {getButtonLabel()}
+            {!iconOnly && getButtonLabel()}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" data-testid="export-all-dropdown-content">

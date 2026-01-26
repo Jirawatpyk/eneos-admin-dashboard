@@ -29,7 +29,7 @@ interface TeamMemberTableProps {
  * Shows first 4 chars and last 4 chars for privacy
  */
 function maskLineUserId(lineUserId: string): string {
-  if (!lineUserId || lineUserId.length < 10) return lineUserId;
+  if (!lineUserId || lineUserId.length <= 8) return lineUserId;
   return `${lineUserId.slice(0, 4)}...${lineUserId.slice(-4)}`;
 }
 
