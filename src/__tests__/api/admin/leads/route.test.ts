@@ -148,12 +148,16 @@ describe('GET /api/admin/leads', () => {
     const request = new NextRequest(
       'http://localhost:3001/api/admin/leads?search=ENEOS&status=contacted,closed&page=1&limit=20'
     );
-    await GET(request);
+    const response = await GET(request);
+    const data = await response.json();
 
     // Verify both search and status are forwarded
     const calledUrl = mockFetch.mock.calls[0][0];
     expect(calledUrl).toContain('search=ENEOS');
     expect(calledUrl).toContain('status=contacted%2Cclosed'); // URL encoded comma
+
+    // Verify transformed response structure
+    expect(data.data.pagination.total).toBe(45);
   });
 
   // Story 4.4 AC#4: Filtered pagination count test
@@ -183,8 +187,8 @@ describe('GET /api/admin/leads', () => {
     const data = await response.json();
 
     // AC#4: Pagination should reflect filtered count
-    expect(data.pagination.total).toBe(45);
-    expect(data.pagination.totalPages).toBe(3);
+    expect(data.data.pagination.total).toBe(45);
+    expect(data.data.pagination.totalPages).toBe(3);
   });
 
   it('returns 500 on fetch error', async () => {

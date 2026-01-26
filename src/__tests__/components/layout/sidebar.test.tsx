@@ -20,7 +20,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Sales')).toBeInTheDocument();
     expect(screen.getByText('Leads')).toBeInTheDocument();
     expect(screen.getByText('Campaigns')).toBeInTheDocument();
-    expect(screen.getByText('Reports')).toBeInTheDocument();
+    expect(screen.getByText('Export & Reports')).toBeInTheDocument();
   });
 
   it('renders Settings in secondary navigation', () => {
