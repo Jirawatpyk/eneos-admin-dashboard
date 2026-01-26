@@ -210,19 +210,52 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
             </h3>
             <Card>
               <CardContent className="p-4 space-y-4">
+                {/* 1. Company */}
                 <DetailItem
                   label="Company"
                   icon={<Building2 className="h-4 w-4 text-blue-500" />}
                   value={lead.company}
                 />
-                {/* Use detail data if available, fallback to table data */}
+
+                {/* 2. DBD Sector */}
+                {(leadDetail?.dbdSector || lead.dbdSector) && (
+                  <DetailItem
+                    label="DBD Sector"
+                    icon={<Briefcase className="h-4 w-4 text-teal-500" />}
+                    value={
+                      <Badge variant="secondary">{leadDetail?.dbdSector || lead.dbdSector}</Badge>
+                    }
+                  />
+                )}
+
+                {/* 3. Industry (changed from "Industry (AI)") */}
                 {(leadDetail?.industry || lead.industryAI) && (
                   <DetailItem
-                    label="Industry (AI)"
+                    label="Industry"
                     icon={<Briefcase className="h-4 w-4 text-amber-500" />}
                     value={leadDetail?.industry || lead.industryAI}
                   />
                 )}
+
+                {/* 4. Juristic ID */}
+                {(leadDetail?.juristicId || lead.juristicId) && (
+                  <DetailItem
+                    label="Juristic ID"
+                    icon={<FileText className="h-4 w-4 text-indigo-500" />}
+                    value={leadDetail?.juristicId || lead.juristicId}
+                  />
+                )}
+
+                {/* 5. Capital */}
+                {(leadDetail?.capital || lead.capital) && (
+                  <DetailItem
+                    label="Capital"
+                    icon={<Building2 className="h-4 w-4 text-gray-500" />}
+                    value={leadDetail?.capital || lead.capital}
+                  />
+                )}
+
+                {/* 6. Website */}
                 {(leadDetail?.website || lead.website) && (
                   <DetailItem
                     label="Website"
@@ -243,30 +276,8 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
                     }
                   />
                 )}
-                {(leadDetail?.capital || lead.capital) && (
-                  <DetailItem
-                    label="Capital"
-                    icon={<Building2 className="h-4 w-4 text-gray-500" />}
-                    value={leadDetail?.capital || lead.capital}
-                  />
-                )}
-                {/* Google Search Grounding fields (2026-01-26) */}
-                {(leadDetail?.juristicId || lead.juristicId) && (
-                  <DetailItem
-                    label="Juristic ID"
-                    icon={<FileText className="h-4 w-4 text-indigo-500" />}
-                    value={leadDetail?.juristicId || lead.juristicId}
-                  />
-                )}
-                {(leadDetail?.dbdSector || lead.dbdSector) && (
-                  <DetailItem
-                    label="DBD Sector"
-                    icon={<Briefcase className="h-4 w-4 text-teal-500" />}
-                    value={
-                      <Badge variant="secondary">{leadDetail?.dbdSector || lead.dbdSector}</Badge>
-                    }
-                  />
-                )}
+
+                {/* 7. Address */}
                 {(leadDetail?.fullAddress || lead.fullAddress) && (
                   <DetailItem
                     label="Address"
