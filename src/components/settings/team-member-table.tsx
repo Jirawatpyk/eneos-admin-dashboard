@@ -146,7 +146,7 @@ export function TeamMemberTable({
     <div className="rounded-md border" data-testid="team-member-table">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-muted/50">
             <TableHead className="w-[100px]">LINE ID</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
