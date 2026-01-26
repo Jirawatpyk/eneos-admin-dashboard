@@ -120,10 +120,10 @@ export async function fetchLeads(
   }
 
   return {
-    leads: result.data,
-    pagination: result.pagination,
+    leads: result.data.leads,
+    pagination: result.data.pagination,
     // Story 4.14: Include available filters for LeadSourceFilter
-    availableFilters: result.filters?.available,
+    availableFilters: result.data.availableFilters,
   };
 }
 

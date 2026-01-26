@@ -83,20 +83,25 @@ export function useStatusFilterParams(): UseStatusFilterParamsReturn {
    */
   const setStatuses = useCallback(
     (newStatuses: LeadStatus[]) => {
-      const params = new URLSearchParams(searchParams.toString());
+      try {
+        const params = new URLSearchParams(searchParams.toString());
 
-      if (newStatuses.length > 0) {
-        // AC#4: Join with comma for URL
-        params.set('status', newStatuses.join(','));
-      } else {
-        // AC#6: Remove status param when cleared
-        params.delete('status');
+        if (newStatuses.length > 0) {
+          // AC#4: Join with comma for URL
+          params.set('status', newStatuses.join(','));
+        } else {
+          // AC#6: Remove status param when cleared
+          params.delete('status');
+        }
+
+        // AC#6: Reset page to 1 when filter changes
+        params.set('page', '1');
+
+        const newUrl = `${pathname}?${params.toString()}`;
+        router.replace(newUrl, { scroll: false });
+      } catch (error) {
+        console.error('Error in setStatuses:', error);
       }
-
-      // AC#6: Reset page to 1 when filter changes
-      params.set('page', '1');
-
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [searchParams, router, pathname]
   );

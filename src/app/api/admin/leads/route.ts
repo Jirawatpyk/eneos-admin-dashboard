@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     // Transform backend response to match frontend expected format
-    // Backend returns: { success, data: { data: leads[], pagination } }
-    // Frontend expects: { success, data: leads[], pagination }
+    // Backend returns: { success, data: { data: leads[], pagination, filters } }
+    // Frontend expects: { success, data: { leads, pagination, availableFilters } }
     if (data.success && data.data?.data) {
       try {
         // Transform each lead to match frontend interface
@@ -154,10 +154,12 @@ export async function GET(request: NextRequest) {
 
         const transformedData = {
           success: true,
-          data: transformedLeads,
-          pagination: data.data.pagination,
-          // Story 4.14: Include available filters for Lead Source dropdown
-          filters: data.data.filters,
+          data: {
+            leads: transformedLeads,
+            pagination: data.data.pagination,
+            // Story 4.14: Include available filters for Lead Source dropdown
+            availableFilters: data.data.filters?.available,
+          },
         };
         return NextResponse.json(transformedData, { status: response.status });
       } catch (transformError) {

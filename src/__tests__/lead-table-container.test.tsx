@@ -14,6 +14,17 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { LeadTableContainer } from '@/components/leads/lead-table-container';
 import type { Lead } from '@/types/lead';
 
+// Story 4.16: Mock useToast for MobileFilterSheet (must be hoisted)
+const { mockToast } = vi.hoisted(() => ({
+  mockToast: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: mockToast,
+  }),
+}));
+
 // Story 4.10: Mock LeadExportDropdown to avoid hook issues in tests
 vi.mock('@/components/leads/lead-export-dropdown', () => ({
   LeadExportDropdown: ({ leads }: { leads: Lead[] }) => (
@@ -72,12 +83,6 @@ const mockSetLimit = vi.fn();
 const mockClearSelection = vi.fn();
 const mockToggleSelection = vi.fn();
 const mockSelectAll = vi.fn();
-
-// Story 4.9: Mock toast
-const mockToast = vi.fn();
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (args: unknown) => mockToast(args),
-}));
 
 // Story 4.9: Mock lead selection hook
 const mockIsSelected = vi.fn(() => false);
@@ -191,6 +196,7 @@ import { useLeadSelection } from '@/hooks/use-lead-selection';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
 import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
 import { useDateFilterParams } from '@/hooks/use-date-filter-params';
+import { useLeadSourceFilterParams } from '@/hooks/use-lead-source-filter-params';
 import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { LeadsApiError } from '@/lib/api/leads';
 
@@ -630,6 +636,146 @@ describe('LeadTableContainer', () => {
 
         expect(mockClearSelection).toHaveBeenCalled();
       });
+    });
+  });
+
+  // Story 4.16 Task 8: URL State Sync
+  describe('Task 8: URL State Sync on Mobile', () => {
+    beforeEach(() => {
+      // Reset all mocks
+      mockSetStatuses.mockClear();
+      mockSetOwners.mockClear();
+      mockSetDateRange.mockClear();
+      mockSetLeadSource.mockClear();
+    });
+
+    // AC#12, Task 8.1: Verify URL param hooks work on mobile
+    it('8.1: URL param hooks work correctly on mobile', () => {
+      renderWithProviders(<LeadTableContainer />);
+
+      // Verify all URL hooks are called on mount
+      expect(useStatusFilterParams).toHaveBeenCalled();
+      expect(useOwnerFilterParams).toHaveBeenCalled();
+      expect(useDateFilterParams).toHaveBeenCalled();
+      expect(useLeadSourceFilterParams).toHaveBeenCalled();
+    });
+
+    // AC#12, Task 8.2: Apply filters → URL updates
+    it('8.2: applying filters through mobile sheet updates URL params', async () => {
+      renderWithProviders(<LeadTableContainer />);
+
+      // Open mobile filter sheet
+      const filterButton = screen.getByRole('button', { name: /filters/i });
+      fireEvent.click(filterButton);
+
+      // Wait for sheet to open
+      await waitFor(() => {
+        expect(screen.getByTestId('mobile-filter-sheet')).toBeInTheDocument();
+      });
+
+      // Get mobile filter sheet container
+      const mobileSheet = screen.getByTestId('mobile-filter-sheet');
+
+      // Change status filter inside mobile sheet
+      const statusFilters = screen.getAllByTestId('status-filter-trigger');
+      const mobileStatusFilter = statusFilters.find((el) =>
+        mobileSheet.contains(el)
+      );
+      expect(mobileStatusFilter).toBeDefined();
+      fireEvent.click(mobileStatusFilter!);
+
+      // Select "New" status (using test id)
+      await waitFor(() => {
+        const newOption = screen.getByTestId('status-option-new');
+        fireEvent.click(newOption);
+      });
+
+      // Apply filters
+      const applyButton = screen.getByRole('button', { name: /apply/i });
+      fireEvent.click(applyButton);
+
+      // Verify URL hook was called with new status
+      await waitFor(() => {
+        expect(mockSetStatuses).toHaveBeenCalled();
+      });
+    });
+
+    // AC#12, Task 8.3: Direct URL navigation → filters restored
+    it('8.3: loading with URL params restores filters correctly', () => {
+      // Mock URL params as if user navigated to filtered URL
+      vi.mocked(useStatusFilterParams).mockReturnValue({
+        statuses: ['new', 'contacted'],
+        setStatuses: mockSetStatuses,
+        clearStatuses: vi.fn(),
+        hasStatusFilter: true,
+      });
+
+      vi.mocked(useOwnerFilterParams).mockReturnValue({
+        owners: ['owner1'],
+        setOwners: mockSetOwners,
+        clearOwners: vi.fn(),
+        hasOwnerFilter: true,
+      });
+
+      renderWithProviders(<LeadTableContainer />);
+
+      // Verify filter chips are displayed with restored values
+      expect(screen.getByText(/status:/i)).toBeInTheDocument();
+      expect(screen.getByText(/owner:/i)).toBeInTheDocument();
+    });
+
+    // AC#12, Task 8.5: Bottom sheet closed by default when loading from URL
+    it('8.5: bottom sheet is closed by default when loading from URL with filters', () => {
+      // Mock URL params with active filters
+      vi.mocked(useStatusFilterParams).mockReturnValue({
+        statuses: ['new'],
+        setStatuses: mockSetStatuses,
+        clearStatuses: vi.fn(),
+        hasStatusFilter: true,
+      });
+
+      renderWithProviders(<LeadTableContainer />);
+
+      // Verify filter chips are shown
+      expect(screen.getByText(/status:/i)).toBeInTheDocument();
+
+      // Verify bottom sheet is NOT open
+      expect(screen.queryByTestId('mobile-filter-sheet')).not.toBeInTheDocument();
+    });
+
+    // Task 8: Verify filter state persists when closing/reopening sheet
+    it('preserves filter state when opening bottom sheet after URL load', async () => {
+      // Mock URL params
+      vi.mocked(useStatusFilterParams).mockReturnValue({
+        statuses: ['new'],
+        setStatuses: mockSetStatuses,
+        clearStatuses: vi.fn(),
+        hasStatusFilter: true,
+      });
+
+      renderWithProviders(<LeadTableContainer />);
+
+      // Open mobile filter sheet
+      const filterButton = screen.getByRole('button', { name: /filters/i });
+      fireEvent.click(filterButton);
+
+      // Wait for sheet to open
+      await waitFor(() => {
+        expect(screen.getByTestId('mobile-filter-sheet')).toBeInTheDocument();
+      });
+
+      // Get mobile filter sheet container
+      const mobileSheet = screen.getByTestId('mobile-filter-sheet');
+
+      // Verify the filter shows pre-selected value from URL
+      // The status filter button exists and has content (showing "ใหม่" in Thai)
+      const statusFilters = screen.getAllByTestId('status-filter-trigger');
+      const mobileStatusFilter = statusFilters.find((el) =>
+        mobileSheet.contains(el)
+      );
+      expect(mobileStatusFilter).toBeDefined();
+      // Filter shows "ใหม่" (New in Thai) because status=['new'] from URL
+      expect(mobileStatusFilter).toHaveTextContent(/ใหม่/i);
     });
   });
 });

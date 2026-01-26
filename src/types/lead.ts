@@ -120,11 +120,17 @@ export interface LeadsAvailableFilters {
 /**
  * Backend API response for leads list
  * Story 4.14: Added filters for available filter options
+ * Updated: data is now an object containing leads, pagination, and availableFilters
  */
 export interface LeadsResponse {
   success: boolean;
-  data: Lead[];
-  pagination: LeadsPagination;
+  data: {
+    leads: Lead[];
+    pagination: LeadsPagination;
+    availableFilters?: LeadsAvailableFilters;
+  };
+  // Legacy fields (kept for backward compatibility)
+  pagination?: LeadsPagination;
   filters?: {
     available: LeadsAvailableFilters;
   };

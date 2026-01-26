@@ -23,10 +23,10 @@ vi.mock('@/components/leads/lead-owner-filter', () => ({
 }))
 
 vi.mock('@/components/leads/lead-date-filter', () => ({
-  LeadDateFilter: ({ value, onChange }: { value: { from?: Date; to?: Date }; onChange: (value: { from?: Date; to?: Date }) => void }) => (
+  LeadDateFilter: ({ value, onChange }: { value: { from?: Date; to?: Date } | null; onChange: (value: { from?: Date; to?: Date } | null) => void }) => (
     <div data-testid="date-filter">
       <button onClick={() => onChange({ from: new Date('2026-01-20'), to: new Date('2026-01-26') })}>Select Date</button>
-      <span>Date: {value.from?.toISOString() || 'none'}</span>
+      <span>Date: {value?.from?.toISOString() || 'none'}</span>
     </div>
   ),
 }))
@@ -49,10 +49,10 @@ describe('MobileFilterSheet', () => {
   const defaultProps = {
     open: true,
     onOpenChange: mockOnOpenChange,
-    status: [],
+    status: [] as never[],
     owner: [],
-    dateRange: {},
-    leadSource: '',
+    dateRange: null,
+    leadSource: null,
     onApply: mockOnApply,
     onCancel: mockOnCancel,
     onClearAll: mockOnClearAll,
@@ -246,6 +246,38 @@ describe('MobileFilterSheet', () => {
 
       // AC6: Close without applying
       expect(mockOnOpenChange).toHaveBeenCalledWith(false)
+    })
+  })
+
+  describe('Task 7: Touch-Friendly Styling', () => {
+    it('Apply button has 44px minimum height', () => {
+      render(<MobileFilterSheet {...defaultProps} />)
+
+      const applyButton = screen.getByRole('button', { name: /apply/i })
+      expect(applyButton).toHaveClass('min-h-[44px]')
+    })
+
+    it('Cancel button has 44px minimum height', () => {
+      render(<MobileFilterSheet {...defaultProps} />)
+
+      const cancelButton = screen.getByRole('button', { name: /cancel/i })
+      expect(cancelButton).toHaveClass('min-h-[44px]')
+    })
+
+    it('Clear All button has 44px minimum height', () => {
+      render(<MobileFilterSheet {...defaultProps} />)
+
+      const clearButton = screen.getByRole('button', { name: /clear all/i })
+      expect(clearButton).toHaveClass('min-h-[44px]')
+    })
+
+    it('filter sections have adequate spacing', () => {
+      render(<MobileFilterSheet {...defaultProps} />)
+
+      // Verify space-y-6 class exists on parent container
+      const sheet = screen.getByTestId('mobile-filter-sheet')
+      const filterContainer = sheet.querySelector('.space-y-6')
+      expect(filterContainer).toBeInTheDocument()
     })
   })
 

@@ -18,7 +18,7 @@ import { Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 import type { LeadStatus } from '@/types/lead'
-import type { DateRange } from '@/hooks/use-date-filter-params'
+import type { DateRange } from '@/hooks/use-date-filter'
 
 interface MobileFilterSheetProps {
   open: boolean
@@ -82,6 +82,7 @@ export function MobileFilterSheet({
       // Success - close sheet
       onOpenChange(false)
     } catch (error) {
+      console.error('onApply failed:', error);
       // AC13: Error handling - show toast, keep sheet open
       toast({
         title: 'Error',
@@ -135,6 +136,7 @@ export function MobileFilterSheet({
             <LeadStatusFilter
               value={tempStatus}
               onChange={setTempStatus}
+              fullWidth
             />
           </div>
 
@@ -146,6 +148,7 @@ export function MobileFilterSheet({
             <LeadOwnerFilter
               value={tempOwner}
               onChange={setTempOwner}
+              fullWidth
             />
           </div>
 
@@ -157,6 +160,7 @@ export function MobileFilterSheet({
             <LeadDateFilter
               value={tempDateRange}
               onChange={setTempDateRange}
+              fullWidth
             />
           </div>
 
@@ -169,17 +173,19 @@ export function MobileFilterSheet({
               value={tempLeadSource}
               sources={availableLeadSources}
               onChange={setTempLeadSource}
+              fullWidth
             />
           </div>
         </div>
 
         {/* AC6, AC7: Action buttons */}
+        {/* Story 4.16 AC#11: Touch-friendly 44x44px buttons */}
         <SheetFooter className="sticky bottom-0 bg-background pt-4 border-t gap-2">
           <Button
             variant="outline"
             onClick={handleCancel}
             disabled={isApplying}
-            className="flex-1"
+            className="flex-1 min-h-[44px]"
           >
             Cancel
           </Button>
@@ -187,14 +193,14 @@ export function MobileFilterSheet({
             variant="outline"
             onClick={handleClearAll}
             disabled={isApplying}
-            className="flex-1"
+            className="flex-1 min-h-[44px]"
           >
             Clear All
           </Button>
           <Button
             onClick={handleApply}
             disabled={isApplying}
-            className="flex-1"
+            className="flex-1 min-h-[44px]"
           >
             {isApplying ? (
               <>

@@ -19,7 +19,7 @@ export function MobileFilterToolbar({
   totalCount = 0,
 }: MobileFilterToolbarProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" data-testid="mobile-filter-toolbar">
       {/* Task 4.2: Filters button (flex-1) + Export All icon button */}
 
       {/* Filters button with badge */}
@@ -32,6 +32,7 @@ export function MobileFilterToolbar({
             ? `Filters (${activeFilterCount} active)`
             : 'Filters'
         }
+        data-testid="filters-button"
       >
         <Filter className="h-4 w-4" aria-hidden="true" />
         {/* AC2, Task 4.3: Show active count badge when > 0 */}

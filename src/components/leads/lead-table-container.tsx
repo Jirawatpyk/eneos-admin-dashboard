@@ -40,6 +40,7 @@ import { useLeadSearchParams } from '@/hooks/use-search-params';
 import { useStatusFilterParams } from '@/hooks/use-status-filter-params';
 import { useOwnerFilterParams } from '@/hooks/use-owner-filter-params';
 import { useDateFilterParams } from '@/hooks/use-date-filter-params';
+import { type DateRange } from '@/hooks/use-date-filter';
 import { useLeadSourceFilterParams } from '@/hooks/use-lead-source-filter-params';
 import { useSortParams } from '@/hooks/use-sort-params';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -52,7 +53,7 @@ import { MobileFilterSheet } from './mobile-filter-sheet';
 import { MobileFilterToolbar } from './mobile-filter-toolbar';
 import { ActiveFilterChips } from './active-filter-chips';
 import { LeadPagination } from './lead-pagination';
-import type { Lead, LeadStatus } from '@/types/lead';
+import type { Lead, LeadStatus, LeadsQueryParams } from '@/types/lead';
 import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
 import { LeadOwnerFilter } from './lead-owner-filter';
@@ -63,7 +64,6 @@ import { ExportAllButton } from './export-all-button';
 import { ColumnVisibilityDropdown } from './column-visibility-dropdown';
 import { formatDateForApi } from '@/lib/date-presets';
 import { useColumnVisibility } from '@/hooks/use-column-visibility';
-import type { Lead, LeadsQueryParams } from '@/types/lead';
 import { cn } from '@/lib/utils';
 
 export function LeadTableContainer() {
@@ -278,18 +278,16 @@ export function LeadTableContainer() {
   }, [setStatuses, setOwners, setDateRange, setLeadSource]);
 
   // Story 4.16 AC#6: Handle mobile filter sheet apply
-  const handleFilterSheetApply = useCallback(async (filters: {
+  const handleFilterSheetApply = useCallback((filters: {
     status: LeadStatus[]
     owner: string[]
-    dateRange: { from?: Date; to?: Date } | null
+    dateRange: DateRange | null
     leadSource: string | null
   }) => {
+    // Story 4.16 AC#6: Apply filters from mobile sheet
     setStatuses(filters.status);
     setOwners(filters.owner);
-    setDateRange(filters.dateRange?.from && filters.dateRange?.to ? {
-      from: filters.dateRange.from,
-      to: filters.dateRange.to
-    } : null);
+    setDateRange(filters.dateRange);
     setLeadSource(filters.leadSource);
     setFilterSheetOpen(false);
   }, [setStatuses, setOwners, setDateRange, setLeadSource]);
@@ -301,8 +299,8 @@ export function LeadTableContainer() {
 
   // Story 4.16 AC#7: Handle clear all in bottom sheet
   const handleFilterSheetClearAll = useCallback(() => {
-    // Clear all immediately (updates temp state in sheet)
-    // Will apply when user clicks "Apply"
+    // No-op: MobileFilterSheet handles clearing its temp state internally
+    // Parent container doesn't need to do anything - filters only apply when user clicks "Apply"
   }, []);
 
   // Story 4.16 AC#1: Auto-close bottom sheet on resize mobile→desktop
@@ -341,8 +339,10 @@ export function LeadTableContainer() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {/* Story 4.3, 4.4, 4.5, 4.6, 4.14: Show search and filters even during loading */}
-        <div className="flex flex-wrap items-center gap-4">
+        {/* Story 4.16 AC#1: Responsive filter toolbar during loading */}
+
+        {/* Desktop layout (>= 768px) */}
+        <div className="hidden md:flex flex-wrap items-center gap-4">
           <LeadSearch
             value={searchInput}
             onChange={setSearchInput}
@@ -356,9 +356,46 @@ export function LeadTableContainer() {
             value={leadSource}
             sources={availableLeadSources}
             onChange={setLeadSource}
-            isLoading={true}
+          />
+          <ColumnVisibilityDropdown
+            isColumnVisible={isColumnVisible}
+            toggleColumnVisibility={toggleColumnVisibility}
+            resetColumnVisibility={resetColumnVisibility}
+            hiddenColumnCount={hiddenColumnCount}
+          />
+          <ExportAllButton
+            filters={exportAllFilters}
+            totalCount={0}
+            disabled={true}
           />
         </div>
+
+        {/* Mobile layout (< 768px) */}
+        <div className="md:hidden space-y-3">
+          <LeadSearch
+            value={searchInput}
+            onChange={setSearchInput}
+            isPending={isSearchPending}
+            className="w-full"
+          />
+
+          <ActiveFilterChips
+            status={statuses}
+            owner={owners}
+            dateRange={dateRange}
+            leadSource={leadSource}
+            onRemove={handleChipRemove}
+            ownerNames={ownerNames}
+          />
+
+          <MobileFilterToolbar
+            activeFilterCount={activeFilterCount}
+            onFilterClick={() => setFilterSheetOpen(true)}
+            filters={exportAllFilters}
+            totalCount={0}
+          />
+        </div>
+
         <LeadTableSkeleton />
       </div>
     );
@@ -368,7 +405,10 @@ export function LeadTableContainer() {
   if (isError) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-4">
+        {/* Story 4.16 AC#1: Responsive filter toolbar during error */}
+
+        {/* Desktop layout (>= 768px) */}
+        <div className="hidden md:flex flex-wrap items-center gap-4">
           <LeadSearch
             value={searchInput}
             onChange={setSearchInput}
@@ -383,7 +423,45 @@ export function LeadTableContainer() {
             sources={availableLeadSources}
             onChange={setLeadSource}
           />
+          <ColumnVisibilityDropdown
+            isColumnVisible={isColumnVisible}
+            toggleColumnVisibility={toggleColumnVisibility}
+            resetColumnVisibility={resetColumnVisibility}
+            hiddenColumnCount={hiddenColumnCount}
+          />
+          <ExportAllButton
+            filters={exportAllFilters}
+            totalCount={0}
+            disabled={true}
+          />
         </div>
+
+        {/* Mobile layout (< 768px) */}
+        <div className="md:hidden space-y-3">
+          <LeadSearch
+            value={searchInput}
+            onChange={setSearchInput}
+            isPending={isSearchPending}
+            className="w-full"
+          />
+
+          <ActiveFilterChips
+            status={statuses}
+            owner={owners}
+            dateRange={dateRange}
+            leadSource={leadSource}
+            onRemove={handleChipRemove}
+            ownerNames={ownerNames}
+          />
+
+          <MobileFilterToolbar
+            activeFilterCount={activeFilterCount}
+            onFilterClick={() => setFilterSheetOpen(true)}
+            filters={exportAllFilters}
+            totalCount={0}
+          />
+        </div>
+
         <LeadTableError
           message={error?.message || 'Failed to load leads data'}
           onRetry={refetch}
@@ -397,7 +475,10 @@ export function LeadTableContainer() {
     const hasAnyFilter = hasStatusFilter || hasOwnerFilter || hasDateFilter || hasLeadSourceFilter;
     return (
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-4">
+        {/* Story 4.16 AC#1: Responsive filter toolbar during empty state */}
+
+        {/* Desktop layout (>= 768px) */}
+        <div className="hidden md:flex flex-wrap items-center gap-4">
           <LeadSearch
             value={searchInput}
             onChange={setSearchInput}
@@ -412,7 +493,45 @@ export function LeadTableContainer() {
             sources={availableLeadSources}
             onChange={setLeadSource}
           />
+          <ColumnVisibilityDropdown
+            isColumnVisible={isColumnVisible}
+            toggleColumnVisibility={toggleColumnVisibility}
+            resetColumnVisibility={resetColumnVisibility}
+            hiddenColumnCount={hiddenColumnCount}
+          />
+          <ExportAllButton
+            filters={exportAllFilters}
+            totalCount={0}
+            disabled={true}
+          />
         </div>
+
+        {/* Mobile layout (< 768px) */}
+        <div className="md:hidden space-y-3">
+          <LeadSearch
+            value={searchInput}
+            onChange={setSearchInput}
+            isPending={isSearchPending}
+            className="w-full"
+          />
+
+          <ActiveFilterChips
+            status={statuses}
+            owner={owners}
+            dateRange={dateRange}
+            leadSource={leadSource}
+            onRemove={handleChipRemove}
+            ownerNames={ownerNames}
+          />
+
+          <MobileFilterToolbar
+            activeFilterCount={activeFilterCount}
+            onFilterClick={() => setFilterSheetOpen(true)}
+            filters={exportAllFilters}
+            totalCount={0}
+          />
+        </div>
+
         <LeadTableEmpty
           searchTerm={debouncedSearch}
           hasFilters={hasAnyFilter}
@@ -563,6 +682,7 @@ export function LeadTableContainer() {
         owner={owners}
         dateRange={dateRange}
         leadSource={leadSource}
+        availableLeadSources={availableLeadSources}
         onApply={handleFilterSheetApply}
         onCancel={handleFilterSheetCancel}
         onClearAll={handleFilterSheetClearAll}
