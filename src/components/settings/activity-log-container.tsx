@@ -137,46 +137,18 @@ export function ActivityLogContainer() {
   const { data, isLoading, isFetching, isError, refetch } = useActivityLog(queryParams);
 
   // Handlers
-  // Create a minimal Lead object for the detail sheet - it will fetch the full details
+  // Use full Lead data from API (includes grounding fields)
   const handleRowClick = useCallback(
     (rowNumber: number) => {
-      // Find the entry to get company name for the sheet
+      // Find the entry to get full lead data
       const entry = data?.entries.find((e) => e.rowNumber === rowNumber);
       if (entry) {
-        // Create minimal Lead object - LeadDetailSheet will fetch full details via useLead
-        const minimalLead: Lead = {
-          row: rowNumber,
-          date: entry.timestamp,
-          customerName: '',
-          email: '',
-          phone: '',
-          company: entry.companyName,
-          industryAI: null,
-          website: null,
-          capital: null,
-          status: entry.status,
-          salesOwnerId: null,
-          salesOwnerName: null,
-          campaignId: '',
-          campaignName: '',
-          emailSubject: null,
-          source: '',
-          leadId: null,
-          eventId: null,
-          clickedAt: null,
-          talkingPoint: null,
-          closedAt: null,
-          lostAt: null,
-          unreachableAt: null,
-          version: 1,
-          leadSource: null,
-          jobTitle: null,
-          city: null,
-          leadUuid: entry.leadUUID,
-          createdAt: entry.timestamp,
-          updatedAt: null,
-        };
-        setSelectedLead(minimalLead);
+        // Use full lead data from API response (includes all fields + grounding fields)
+        // Fallback createdAt: lead.createdAt → activity.timestamp → current time
+        setSelectedLead({
+          ...entry.lead,
+          createdAt: entry.lead.createdAt || entry.timestamp || new Date().toISOString(),
+        });
         setSheetOpen(true);
       }
     },
