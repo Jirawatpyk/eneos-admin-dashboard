@@ -24,51 +24,29 @@ import type { Lead, LeadStatus } from '@/types/lead';
  * Job Title, Website, Lead Source, Status, Sales Owner, Campaign, Created Date
  *
  * Type-safe: 'key' constrained to keyof Lead to prevent runtime errors
+ * Includes column widths for Excel export (single source of truth)
  */
 export const LEAD_EXPORT_COLUMNS: ReadonlyArray<{
   key: keyof Lead;
   header: string;
+  width: number; // Excel column width in characters
 }> = [
-  { key: 'company', header: 'Company' },
-  { key: 'dbdSector', header: 'DBD Sector' },
-  { key: 'industryAI', header: 'Industry' },
-  { key: 'juristicId', header: 'Juristic ID' },
-  { key: 'capital', header: 'Capital' },
-  { key: 'province', header: 'Location' },
-  { key: 'customerName', header: 'Contact Name' },
-  { key: 'phone', header: 'Phone' },
-  { key: 'email', header: 'Email' },
-  { key: 'jobTitle', header: 'Job Title' },
-  { key: 'website', header: 'Website' },
-  { key: 'leadSource', header: 'Lead Source' },
-  { key: 'status', header: 'Status' },
-  { key: 'salesOwnerName', header: 'Sales Owner' },
-  { key: 'campaignName', header: 'Campaign' },
-  { key: 'createdAt', header: 'Created Date' },
-];
-
-/**
- * Column widths for Excel export (character width)
- * Note: Export headers use full names for clarity outside the app
- * Task 9: Updated to match new column order with grounding fields
- */
-const EXCEL_COLUMN_WIDTHS = [
-  { wch: 25 }, // Company
-  { wch: 15 }, // DBD Sector
-  { wch: 20 }, // Industry
-  { wch: 18 }, // Juristic ID
-  { wch: 15 }, // Capital
-  { wch: 20 }, // Location (Province)
-  { wch: 20 }, // Contact Name
-  { wch: 15 }, // Phone
-  { wch: 30 }, // Email
-  { wch: 25 }, // Job Title
-  { wch: 30 }, // Website
-  { wch: 15 }, // Lead Source
-  { wch: 12 }, // Status
-  { wch: 18 }, // Sales Owner
-  { wch: 25 }, // Campaign
-  { wch: 15 }, // Created Date
+  { key: 'company', header: 'Company', width: 25 },
+  { key: 'dbdSector', header: 'DBD Sector', width: 15 },
+  { key: 'industryAI', header: 'Industry', width: 20 },
+  { key: 'juristicId', header: 'Juristic ID', width: 18 },
+  { key: 'capital', header: 'Capital', width: 15 },
+  { key: 'province', header: 'Location', width: 20 },
+  { key: 'customerName', header: 'Contact Name', width: 20 },
+  { key: 'phone', header: 'Phone', width: 15 },
+  { key: 'email', header: 'Email', width: 30 },
+  { key: 'jobTitle', header: 'Job Title', width: 25 },
+  { key: 'website', header: 'Website', width: 30 },
+  { key: 'leadSource', header: 'Lead Source', width: 15 },
+  { key: 'status', header: 'Status', width: 12 },
+  { key: 'salesOwnerName', header: 'Sales Owner', width: 18 },
+  { key: 'campaignName', header: 'Campaign', width: 25 },
+  { key: 'createdAt', header: 'Created Date', width: 15 },
 ];
 
 // ===========================================
@@ -168,8 +146,8 @@ export function exportLeadsToExcel(leads: Lead[]): void {
   // Create worksheet from array of arrays
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-  // Set column widths for better readability
-  ws['!cols'] = EXCEL_COLUMN_WIDTHS;
+  // Set column widths for better readability (derived from LEAD_EXPORT_COLUMNS)
+  ws['!cols'] = LEAD_EXPORT_COLUMNS.map((col) => ({ wch: col.width }));
 
   // Add worksheet to workbook
   XLSX.utils.book_append_sheet(wb, ws, 'Leads');
