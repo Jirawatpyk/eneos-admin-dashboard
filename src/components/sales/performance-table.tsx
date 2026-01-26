@@ -379,16 +379,19 @@ export function PerformanceTable({
                         key={header.id}
                         className={cn(
                           // AC#9: Sticky first column
-                          index === 0 && 'sticky left-0 z-10 bg-background',
+                          index === 0 && 'sticky left-0 z-10 bg-background text-left',
+                          // Align numeric column headers to the right
                           index > 0 && 'text-right'
                         )}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                        <div className={cn(index > 0 && 'flex justify-end')}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </div>
                       </TableHead>
                     ))}
                   </TableRow>
