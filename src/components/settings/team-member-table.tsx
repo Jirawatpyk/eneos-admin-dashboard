@@ -1,6 +1,7 @@
 /**
  * Team Member Table Component (Story 7-4)
- * AC#1: Table displays all members with LINE ID (masked), Name, Email, Role, Status, Created At
+ * AC#1: Table displays all members with LINE ID (masked), Name, Email, Phone, Role, Status, Created At
+ * Note: Phone column added post-review for better UX (users can see what they edit)
  */
 'use client';
 
@@ -107,6 +108,9 @@ function TableSkeleton({ 'data-testid': testId }: { 'data-testid'?: string }) {
             <Skeleton className="h-4 w-40" />
           </TableCell>
           <TableCell>
+            <Skeleton className="h-4 w-28" />
+          </TableCell>
+          <TableCell>
             <Skeleton className="h-6 w-16" />
           </TableCell>
           <TableCell>
@@ -130,7 +134,7 @@ function TableSkeleton({ 'data-testid': testId }: { 'data-testid'?: string }) {
 function EmptyState() {
   return (
     <TableRow>
-      <TableCell colSpan={7} className="h-24 text-center">
+      <TableCell colSpan={8} className="h-24 text-center">
         <p className="text-muted-foreground">No team members found</p>
       </TableCell>
     </TableRow>
@@ -150,6 +154,7 @@ export function TeamMemberTable({
             <TableHead className="w-[100px]">LINE ID</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead className="w-[110px]">Phone</TableHead>
             <TableHead className="w-[80px]">Role</TableHead>
             <TableHead className="w-[90px]">Status</TableHead>
             <TableHead className="w-[110px]">Created At</TableHead>
@@ -170,6 +175,9 @@ export function TeamMemberTable({
                 <TableCell className="font-medium">{member.name}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {member.email || '-'}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {member.phone || '-'}
                 </TableCell>
                 <TableCell>
                   <RoleBadge role={member.role} />

@@ -52,6 +52,7 @@ import { MobileFilterSheet } from './mobile-filter-sheet';
 import { MobileFilterToolbar } from './mobile-filter-toolbar';
 import { ActiveFilterChips } from './active-filter-chips';
 import { LeadPagination } from './lead-pagination';
+import type { Lead, LeadStatus } from '@/types/lead';
 import { LeadSearch } from './lead-search';
 import { LeadStatusFilter } from './lead-status-filter';
 import { LeadOwnerFilter } from './lead-owner-filter';
@@ -258,8 +259,83 @@ export function LeadTableContainer() {
     }
   }, [debouncedSearch, handleClearSearch, hasStatusFilter, setStatuses, hasOwnerFilter, setOwners, hasDateFilter, setDateRange, hasLeadSourceFilter, setLeadSource]);
 
+  // Story 4.16 AC#3: Handle individual chip removal (immediate update, bypasses manual-apply)
+  const handleChipRemove = useCallback((filterType: 'status' | 'owner' | 'date' | 'source') => {
+    switch (filterType) {
+      case 'status':
+        setStatuses([]);
+        break;
+      case 'owner':
+        setOwners([]);
+        break;
+      case 'date':
+        setDateRange(null);
+        break;
+      case 'source':
+        setLeadSource(null);
+        break;
+    }
+  }, [setStatuses, setOwners, setDateRange, setLeadSource]);
+
+  // Story 4.16 AC#6: Handle mobile filter sheet apply
+  const handleFilterSheetApply = useCallback(async (filters: {
+    status: LeadStatus[]
+    owner: string[]
+    dateRange: { from?: Date; to?: Date } | null
+    leadSource: string | null
+  }) => {
+    setStatuses(filters.status);
+    setOwners(filters.owner);
+    setDateRange(filters.dateRange?.from && filters.dateRange?.to ? {
+      from: filters.dateRange.from,
+      to: filters.dateRange.to
+    } : null);
+    setLeadSource(filters.leadSource);
+    setFilterSheetOpen(false);
+  }, [setStatuses, setOwners, setDateRange, setLeadSource]);
+
+  // Story 4.16 AC#6: Handle mobile filter sheet cancel
+  const handleFilterSheetCancel = useCallback(() => {
+    setFilterSheetOpen(false);
+  }, []);
+
+  // Story 4.16 AC#7: Handle clear all in bottom sheet
+  const handleFilterSheetClearAll = useCallback(() => {
+    // Clear all immediately (updates temp state in sheet)
+    // Will apply when user clicks "Apply"
+  }, []);
+
+  // Story 4.16 AC#1: Auto-close bottom sheet on resize mobile→desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && filterSheetOpen) {
+        setFilterSheetOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [filterSheetOpen]);
+
   // Story 4.14: Get available lead sources from API
   const availableLeadSources = availableFilters?.leadSources ?? [];
+
+  // Story 4.16: Calculate active filter count for mobile toolbar badge
+  const activeFilterCount = (
+    (hasStatusFilter ? 1 : 0) +
+    (hasOwnerFilter ? 1 : 0) +
+    (hasDateFilter ? 1 : 0) +
+    (hasLeadSourceFilter ? 1 : 0)
+  );
+
+  // Story 4.16: Owner names map for ActiveFilterChips
+  const ownerNames = useMemo(() => {
+    const names: Record<string, string> = {};
+    availableFilters?.owners?.forEach(owner => {
+      names[owner.id] = owner.name;
+    });
+    return names;
+  }, [availableFilters]);
 
   // AC#6: Loading state (only on initial load, not during pagination)
   if (isLoading) {
@@ -349,8 +425,10 @@ export function LeadTableContainer() {
   // Render table with data and pagination
   return (
     <div className="space-y-4">
-      {/* Story 4.3 AC#1, Story 4.4 AC#1, Story 4.5 AC#1, Story 4.6 AC#1: Filter toolbar */}
-      <div className="flex flex-wrap items-center gap-4">
+      {/* Story 4.16 AC#1: Responsive filter toolbar */}
+
+      {/* Desktop layout (>= 768px) */}
+      <div className="hidden md:flex flex-wrap items-center gap-4">
         <LeadSearch
           value={searchInput}
           onChange={setSearchInput}
@@ -358,32 +436,28 @@ export function LeadTableContainer() {
           resultCount={pagination?.total}
           className="flex-1 min-w-[200px]"
         />
-        {/* Story 4.4 AC#1: Status filter next to search */}
         <LeadStatusFilter
           value={statuses}
           onChange={setStatuses}
           disabled={isFetching}
         />
-        {/* Story 4.5 AC#1: Owner filter next to status filter */}
         <LeadOwnerFilter
           value={owners}
           onChange={setOwners}
           disabled={isFetching}
         />
-        {/* Story 4.6 AC#1: Date filter next to owner filter */}
         <LeadDateFilter
           value={dateRange}
           onChange={setDateRange}
           disabled={isFetching}
         />
-        {/* Story 4.14 AC#1: Lead source filter next to date filter */}
         <LeadSourceFilter
           value={leadSource}
           sources={availableLeadSources}
           onChange={setLeadSource}
           disabled={isFetching}
         />
-        {/* Tech Debt: Column visibility toggle */}
+        {/* Story 4.16 AC#2: Hide Column Visibility on mobile */}
         <ColumnVisibilityDropdown
           isColumnVisible={isColumnVisible}
           toggleColumnVisibility={toggleColumnVisibility}
@@ -391,7 +465,6 @@ export function LeadTableContainer() {
           hiddenColumnCount={hiddenColumnCount}
           disabled={isFetching}
         />
-        {/* Tech Debt: Export All button (when no selection) */}
         {selectedCount === 0 && pagination && (
           <ExportAllButton
             filters={exportAllFilters}
@@ -399,6 +472,36 @@ export function LeadTableContainer() {
             disabled={isFetching}
           />
         )}
+      </div>
+
+      {/* Mobile layout (< 768px) */}
+      <div className="md:hidden space-y-3">
+        {/* Story 4.16 AC#2: Mobile search (full-width) */}
+        <LeadSearch
+          value={searchInput}
+          onChange={setSearchInput}
+          isPending={isSearchPending || isFetching}
+          resultCount={pagination?.total}
+          className="w-full"
+        />
+
+        {/* Story 4.16 AC#3: Active filter chips (if any) */}
+        <ActiveFilterChips
+          status={statuses}
+          owner={owners}
+          dateRange={dateRange}
+          leadSource={leadSource}
+          onRemove={handleChipRemove}
+          ownerNames={ownerNames}
+        />
+
+        {/* Story 4.16 AC#2, AC#9: Mobile filter toolbar */}
+        <MobileFilterToolbar
+          activeFilterCount={activeFilterCount}
+          onFilterClick={() => setFilterSheetOpen(true)}
+          filters={exportAllFilters}
+          totalCount={pagination?.total ?? 0}
+        />
       </div>
 
       {/* Story 4.9 AC#4: Selection toolbar (conditionally rendered) */}
@@ -450,6 +553,19 @@ export function LeadTableContainer() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         lead={selectedLead}
+      />
+
+      {/* Story 4.16 AC#4, AC#5, AC#6: Mobile Filter Sheet */}
+      <MobileFilterSheet
+        open={filterSheetOpen}
+        onOpenChange={setFilterSheetOpen}
+        status={statuses}
+        owner={owners}
+        dateRange={dateRange}
+        leadSource={leadSource}
+        onApply={handleFilterSheetApply}
+        onCancel={handleFilterSheetCancel}
+        onClearAll={handleFilterSheetClearAll}
       />
     </div>
   );

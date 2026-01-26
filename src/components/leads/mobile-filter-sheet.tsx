@@ -17,18 +17,22 @@ import { LeadSourceFilter } from './lead-source-filter'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+import type { LeadStatus } from '@/types/lead'
+import type { DateRange } from '@/hooks/use-date-filter-params'
+
 interface MobileFilterSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  status: string[]
+  status: LeadStatus[]
   owner: string[]
-  dateRange: { from?: Date; to?: Date }
-  leadSource: string
+  dateRange: DateRange | null
+  leadSource: string | null
+  availableLeadSources?: string[]
   onApply: (filters: {
-    status: string[]
+    status: LeadStatus[]
     owner: string[]
-    dateRange: { from?: Date; to?: Date }
-    leadSource: string
+    dateRange: DateRange | null
+    leadSource: string | null
   }) => Promise<void> | void
   onCancel: () => void
   onClearAll: () => void
@@ -41,6 +45,7 @@ export function MobileFilterSheet({
   owner,
   dateRange,
   leadSource,
+  availableLeadSources = [],
   onApply,
   onCancel,
   onClearAll,
@@ -48,10 +53,10 @@ export function MobileFilterSheet({
   const { toast } = useToast()
 
   // Temporary filter state (AC6: Manual Apply)
-  const [tempStatus, setTempStatus] = useState<string[]>(status)
+  const [tempStatus, setTempStatus] = useState<LeadStatus[]>(status)
   const [tempOwner, setTempOwner] = useState<string[]>(owner)
-  const [tempDateRange, setTempDateRange] = useState<{ from?: Date; to?: Date }>(dateRange)
-  const [tempLeadSource, setTempLeadSource] = useState<string>(leadSource)
+  const [tempDateRange, setTempDateRange] = useState<DateRange | null>(dateRange)
+  const [tempLeadSource, setTempLeadSource] = useState<string | null>(leadSource)
 
   // Loading state (AC6, AC13)
   const [isApplying, setIsApplying] = useState(false)
@@ -102,8 +107,8 @@ export function MobileFilterSheet({
   const handleClearAll = () => {
     setTempStatus([])
     setTempOwner([])
-    setTempDateRange({})
-    setTempLeadSource('')
+    setTempDateRange(null)
+    setTempLeadSource(null)
     onClearAll()
   }
 
@@ -162,6 +167,7 @@ export function MobileFilterSheet({
             <h3 className="text-sm font-medium">Lead Source</h3>
             <LeadSourceFilter
               value={tempLeadSource}
+              sources={availableLeadSources}
               onChange={setTempLeadSource}
             />
           </div>

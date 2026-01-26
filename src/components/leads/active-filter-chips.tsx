@@ -4,14 +4,15 @@ import { X } from 'lucide-react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import type { LeadStatus } from '@/types/lead'
 
 type FilterType = 'status' | 'owner' | 'date' | 'source'
 
 interface ActiveFilterChipsProps {
-  status: string[]
+  status: LeadStatus[]
   owner: string[]
-  dateRange: { from?: Date; to?: Date; preset?: string }
-  leadSource: string
+  dateRange: { from?: Date; to?: Date; preset?: string } | null
+  leadSource: string | null
   onRemove: (filterType: FilterType) => void
   ownerNames: Record<string, string>
   className?: string
@@ -30,8 +31,8 @@ export function ActiveFilterChips({
   const hasFilters =
     status.length > 0 ||
     owner.length > 0 ||
-    (dateRange.from && dateRange.to) ||
-    leadSource.length > 0
+    (dateRange?.from && dateRange?.to) ||
+    (leadSource && leadSource.length > 0)
 
   if (!hasFilters) {
     return null
@@ -72,14 +73,15 @@ export function ActiveFilterChips({
 
   // Format date label
   const getDateLabel = (): string => {
-    if (!dateRange.from || !dateRange.to) return ''
+    if (!dateRange?.from || !dateRange?.to) return ''
 
     // Check for preset
-    if (dateRange.preset === 'today') return 'Today'
-    if (dateRange.preset === 'last7days') return 'Last 7 Days'
-    if (dateRange.preset === 'last30days') return 'Last 30 Days'
-    if (dateRange.preset === 'thisMonth') return 'This Month'
-    if (dateRange.preset === 'lastMonth') return 'Last Month'
+    const preset = (dateRange as { preset?: string }).preset
+    if (preset === 'today') return 'Today'
+    if (preset === 'last7days') return 'Last 7 Days'
+    if (preset === 'last30days') return 'Last 30 Days'
+    if (preset === 'thisMonth') return 'This Month'
+    if (preset === 'lastMonth') return 'Last Month'
 
     // Custom date range
     const fromStr = format(dateRange.from, 'MMM d')
@@ -116,7 +118,7 @@ export function ActiveFilterChips({
       )}
 
       {/* Date chip */}
-      {dateRange.from && dateRange.to && (
+      {dateRange?.from && dateRange?.to && (
         <FilterChip
           label="Date"
           value={getDateLabel()}
@@ -125,7 +127,7 @@ export function ActiveFilterChips({
       )}
 
       {/* Source chip */}
-      {leadSource && (
+      {leadSource && leadSource.length > 0 && (
         <FilterChip
           label="Source"
           value={getSourceLabel()}
