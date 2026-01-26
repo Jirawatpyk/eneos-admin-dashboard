@@ -380,8 +380,8 @@ export function PerformanceTable({
                         className={cn(
                           // AC#9: Sticky first column
                           index === 0 && 'sticky left-0 z-10 bg-background text-left',
-                          // Align numeric column headers to the right
-                          index > 0 && 'text-right'
+                          // Align numeric column headers to the right with more spacing
+                          index > 0 && 'text-right px-4'
                         )}
                       >
                         <div className={cn(index > 0 && 'flex justify-end')}>
@@ -422,7 +422,9 @@ export function PerformanceTable({
                         key={cell.id}
                         className={cn(
                           // AC#9: Sticky first column
-                          index === 0 && 'sticky left-0 z-10 bg-background'
+                          index === 0 && 'sticky left-0 z-10 bg-background',
+                          // More spacing for numeric columns
+                          index > 0 && 'px-4'
                         )}
                       >
                         {flexRender(
