@@ -54,6 +54,10 @@ const mockLeads: Lead[] = [
     leadUuid: 'lead_uuid_1',
     createdAt: '2026-01-15T10:30:00Z',
     updatedAt: null,
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   },
 ];
 

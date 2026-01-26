@@ -66,6 +66,10 @@ const mockLeads: Lead[] = [
     leadUuid: 'uuid-1',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: null,
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   },
   {
     row: 2,
@@ -98,6 +102,10 @@ const mockLeads: Lead[] = [
     leadUuid: 'uuid-2',
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-03T00:00:00Z',
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   },
 ];
 

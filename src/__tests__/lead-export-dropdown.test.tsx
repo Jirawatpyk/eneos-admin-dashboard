@@ -61,6 +61,10 @@ const createMockLead = (row: number): Lead => ({
   leadUuid: `lead_${row}`,
   createdAt: '2026-01-15T09:00:00Z',
   updatedAt: null,
+  juristicId: null,
+  dbdSector: null,
+  province: null,
+  fullAddress: null,
 });
 
 describe('LeadExportDropdown', () => {

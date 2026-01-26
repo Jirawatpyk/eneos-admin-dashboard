@@ -55,6 +55,10 @@ const createMockLead = (overrides: Partial<Lead> = {}): Lead => ({
   leadUuid: 'lead_12345',
   createdAt: '2026-01-15T09:00:00Z',
   updatedAt: null,
+  juristicId: null,
+  dbdSector: null,
+  province: null,
+  fullAddress: null,
   ...overrides,
 });
 

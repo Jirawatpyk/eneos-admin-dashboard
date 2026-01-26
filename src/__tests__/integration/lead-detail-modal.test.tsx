@@ -76,6 +76,10 @@ describe('Lead Detail Modal Integration', () => {
     leadUuid: 'uuid_123',
     createdAt: '2026-01-15T08:30:00.000Z',
     updatedAt: null,
+    juristicId: null,
+    dbdSector: null,
+    province: null,
+    fullAddress: null,
   };
 
   const mockLeadDetail: LeadDetail = {
