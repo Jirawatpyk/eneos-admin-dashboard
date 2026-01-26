@@ -19,42 +19,51 @@ import type { Lead, LeadStatus } from '@/types/lead';
 
 /**
  * Export columns configuration
- * AC#3, AC#4: Columns included in export
- * Company, Contact Name, Email, Phone, Status, Sales Owner, Campaign, Created Date, Industry,
- * Lead Source, Job Title, City (Tech Debt: Additional columns for export)
+ * AC#3, AC#4: Columns included in export (Task 9: Enhanced with grounding fields)
+ * Company, DBD Sector, Industry, Juristic ID, Capital, Location, Contact Name, Phone, Email,
+ * Job Title, Website, Lead Source, Status, Sales Owner, Campaign, Created Date
  */
 export const LEAD_EXPORT_COLUMNS = [
   { key: 'company', header: 'Company' },
+  { key: 'dbdSector', header: 'DBD Sector' },
+  { key: 'industryAI', header: 'Industry' },
+  { key: 'juristicId', header: 'Juristic ID' },
+  { key: 'capital', header: 'Capital' },
+  { key: 'province', header: 'Location' },
   { key: 'customerName', header: 'Contact Name' },
-  { key: 'email', header: 'Email' },
   { key: 'phone', header: 'Phone' },
+  { key: 'email', header: 'Email' },
+  { key: 'jobTitle', header: 'Job Title' },
+  { key: 'website', header: 'Website' },
+  { key: 'leadSource', header: 'Lead Source' },
   { key: 'status', header: 'Status' },
   { key: 'salesOwnerName', header: 'Sales Owner' },
   { key: 'campaignName', header: 'Campaign' },
   { key: 'createdAt', header: 'Created Date' },
-  { key: 'industryAI', header: 'Industry' },
-  { key: 'leadSource', header: 'Lead Source' },
-  { key: 'jobTitle', header: 'Job Title' },
-  { key: 'city', header: 'City' },
 ] as const;
 
 /**
  * Column widths for Excel export (character width)
  * Note: Export headers use full names for clarity outside the app
+ * Task 9: Updated to match new column order with grounding fields
  */
 const EXCEL_COLUMN_WIDTHS = [
   { wch: 25 }, // Company
-  { wch: 20 }, // Contact Name (full name for export)
-  { wch: 30 }, // Email
+  { wch: 15 }, // DBD Sector
+  { wch: 20 }, // Industry
+  { wch: 18 }, // Juristic ID
+  { wch: 15 }, // Capital
+  { wch: 20 }, // Location (Province)
+  { wch: 20 }, // Contact Name
   { wch: 15 }, // Phone
+  { wch: 30 }, // Email
+  { wch: 25 }, // Job Title
+  { wch: 30 }, // Website
+  { wch: 15 }, // Lead Source
   { wch: 12 }, // Status
   { wch: 18 }, // Sales Owner
   { wch: 25 }, // Campaign
-  { wch: 15 }, // Created Date (full name for export)
-  { wch: 20 }, // Industry
-  { wch: 15 }, // Lead Source
-  { wch: 25 }, // Job Title
-  { wch: 15 }, // City
+  { wch: 15 }, // Created Date
 ];
 
 // ===========================================
@@ -64,6 +73,7 @@ const EXCEL_COLUMN_WIDTHS = [
 /**
  * Format lead data for export
  * Converts raw lead data to formatted strings for export
+ * Task 9: Enhanced with grounding fields (DBD Sector, Juristic ID, Capital, Location, Website)
  *
  * @param lead - Lead data to format
  * @returns Record of formatted values keyed by column key
@@ -71,17 +81,21 @@ const EXCEL_COLUMN_WIDTHS = [
 function formatLeadForExport(lead: Lead): Record<string, string> {
   return {
     company: lead.company || '-',
+    dbdSector: lead.dbdSector || '-',
+    industryAI: lead.industryAI || '-',
+    juristicId: lead.juristicId || '-',
+    capital: lead.capital || '-',
+    province: lead.province || '-',
     customerName: lead.customerName || '-',
-    email: lead.email || '-',
     phone: formatThaiPhone(lead.phone),
+    email: lead.email || '-',
+    jobTitle: lead.jobTitle || '-',
+    website: lead.website || '-',
+    leadSource: lead.leadSource || '-',
     status: LEAD_STATUS_LABELS[lead.status as LeadStatus] || lead.status,
     salesOwnerName: lead.salesOwnerName || 'Unassigned',
     campaignName: lead.campaignName || '-',
     createdAt: formatLeadDate(lead.createdAt),
-    industryAI: lead.industryAI || '-',
-    leadSource: lead.leadSource || '-',
-    jobTitle: lead.jobTitle || '-',
-    city: lead.city || '-',
   };
 }
 

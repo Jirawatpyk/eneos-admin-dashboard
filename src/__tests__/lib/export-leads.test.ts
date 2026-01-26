@@ -92,8 +92,8 @@ describe('LEAD_EXPORT_COLUMNS', () => {
     expect(headers).toContain('Industry');
   });
 
-  it('has exactly 12 columns', () => {
-    expect(LEAD_EXPORT_COLUMNS.length).toBe(12);
+  it('has exactly 16 columns', () => {
+    expect(LEAD_EXPORT_COLUMNS.length).toBe(16);
   });
 });
 
@@ -125,7 +125,7 @@ describe('exportLeadsToExcel', () => {
     expect(xlsx.writeFile).toHaveBeenCalledTimes(1);
   });
 
-  // AC#3: Header row with column names
+  // AC#3: Header row with column names (Task 9: Updated with grounding fields)
   it('includes header row with column names', async () => {
     const xlsx = await import('xlsx');
 
@@ -137,21 +137,25 @@ describe('exportLeadsToExcel', () => {
 
     expect(headers).toEqual([
       'Company',
+      'DBD Sector',
+      'Industry',
+      'Juristic ID',
+      'Capital',
+      'Location',
       'Contact Name',
-      'Email',
       'Phone',
+      'Email',
+      'Job Title',
+      'Website',
+      'Lead Source',
       'Status',
       'Sales Owner',
       'Campaign',
       'Created Date',
-      'Industry',
-      'Lead Source',
-      'Job Title',
-      'City',
     ]);
   });
 
-  // AC#3: Lead data in rows
+  // AC#3: Lead data in rows (Task 9: Updated column indices)
   it('includes lead data in rows', async () => {
     const xlsx = await import('xlsx');
 
@@ -164,14 +168,14 @@ describe('exportLeadsToExcel', () => {
     expect(data.length).toBe(3);
 
     // First data row (Company A)
-    expect(data[1][0]).toBe('Company A');
-    expect(data[1][1]).toBe('John Smith');
-    expect(data[1][4]).toBe('ติดต่อแล้ว'); // Thai label for 'contacted'
+    expect(data[1][0]).toBe('Company A'); // Company (index 0)
+    expect(data[1][6]).toBe('John Smith'); // Contact Name (index 6)
+    expect(data[1][12]).toBe('ติดต่อแล้ว'); // Status (index 12) - Thai label for 'contacted'
 
     // Second data row (Company B)
-    expect(data[2][0]).toBe('Company B');
-    expect(data[2][1]).toBe('Jane Doe');
-    expect(data[2][4]).toBe('ปิดสำเร็จ'); // Thai label for 'closed'
+    expect(data[2][0]).toBe('Company B'); // Company (index 0)
+    expect(data[2][6]).toBe('Jane Doe'); // Contact Name (index 6)
+    expect(data[2][12]).toBe('ปิดสำเร็จ'); // Status (index 12) - Thai label for 'closed'
   });
 
   // AC#3: File naming pattern
@@ -186,7 +190,7 @@ describe('exportLeadsToExcel', () => {
     expect(filename).toBe('leads_export_2026-01-18.xlsx');
   });
 
-  // AC#3: Phone number formatting
+  // AC#3: Phone number formatting (Task 9: Phone is now at index 7)
   it('formats Thai phone numbers correctly', async () => {
     const xlsx = await import('xlsx');
     const leads = [createMockLead({ phone: '0812345678' })];
@@ -196,10 +200,10 @@ describe('exportLeadsToExcel', () => {
     const aoaCall = vi.mocked(xlsx.utils.aoa_to_sheet).mock.calls[0];
     const data = aoaCall[0] as string[][];
 
-    expect(data[1][3]).toBe('081-234-5678');
+    expect(data[1][7]).toBe('081-234-5678'); // Phone (index 7)
   });
 
-  // AC#3: Null value handling
+  // AC#3: Null value handling (Task 9: Updated column indices)
   it('handles null values with defaults', async () => {
     const xlsx = await import('xlsx');
     const leads = [createMockLead({
@@ -213,9 +217,9 @@ describe('exportLeadsToExcel', () => {
     const aoaCall = vi.mocked(xlsx.utils.aoa_to_sheet).mock.calls[0];
     const data = aoaCall[0] as string[][];
 
-    expect(data[1][3]).toBe('-'); // Phone
-    expect(data[1][5]).toBe('Unassigned'); // Sales Owner
-    expect(data[1][8]).toBe('-'); // Industry
+    expect(data[1][7]).toBe('-'); // Phone (index 7)
+    expect(data[1][13]).toBe('Unassigned'); // Sales Owner (index 13)
+    expect(data[1][2]).toBe('-'); // Industry (index 2)
   });
 
   // AC#3: Column widths
