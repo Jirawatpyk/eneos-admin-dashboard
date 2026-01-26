@@ -3,11 +3,11 @@
  * TypeScript interfaces for activity log data from backend API
  */
 
-import type { LeadStatus } from './lead';
+import type { LeadStatus, Lead } from './lead';
 
 /**
  * Activity Log Entry from backend
- * Combines Status_History with Lead company name
+ * Combines Status_History with full Lead data for detail modal
  */
 export interface ActivityEntry {
   /** Unique ID (leadUUID + timestamp) */
@@ -28,6 +28,8 @@ export interface ActivityEntry {
   timestamp: string;
   /** Optional notes */
   notes: string | null;
+  /** Full lead data for detail modal (includes grounding fields) */
+  lead: Lead;
 }
 
 /**

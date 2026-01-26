@@ -11,6 +11,119 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ActivityLogTable } from '@/components/settings/activity-log-table';
 import type { ActivityEntry } from '@/types/activity';
+import type { Lead } from '@/types/lead';
+
+// Mock Lead objects (full data for detail modal)
+const mockLead1: Lead = {
+  row: 5,
+  date: '2026-01-15',
+  customerName: 'John Doe',
+  email: 'john@acme.com',
+  phone: '0812345678',
+  company: 'ACME Corporation',
+  industryAI: 'Manufacturing',
+  website: 'https://acme.com',
+  capital: '5,000,000',
+  status: 'contacted',
+  salesOwnerId: 'U1234567890abcdef',
+  salesOwnerName: 'John Sales',
+  campaignId: 'campaign_001',
+  campaignName: 'Campaign Q1',
+  emailSubject: 'ENEOS Premium Oils',
+  source: 'brevo',
+  leadId: 'lead_001',
+  eventId: 'evt_001',
+  clickedAt: '2026-01-15T09:00:00Z',
+  talkingPoint: 'ENEOS has premium lubricants',
+  closedAt: null,
+  lostAt: null,
+  unreachableAt: null,
+  version: 1,
+  leadSource: 'email',
+  jobTitle: 'Manager',
+  city: 'Bangkok',
+  leadUuid: 'lead_abc123',
+  createdAt: '2026-01-15T09:00:00Z',
+  updatedAt: '2026-01-15T10:00:00Z',
+  juristicId: '0123456789012',
+  dbdSector: 'MFG-A',
+  province: 'กรุงเทพมหานคร',
+  fullAddress: '123 Main St, Bangkok 10500',
+};
+
+const mockLead2: Lead = {
+  row: 12,
+  date: '2026-01-14',
+  customerName: 'Jane Smith',
+  email: 'jane@techstartup.com',
+  phone: '0898765432',
+  company: 'Tech Startup Inc.',
+  industryAI: 'Technology',
+  website: 'https://techstartup.com',
+  capital: '10,000,000',
+  status: 'closed',
+  salesOwnerId: null,
+  salesOwnerName: null,
+  campaignId: 'campaign_002',
+  campaignName: 'Campaign Q1',
+  emailSubject: 'ENEOS Solutions',
+  source: 'brevo',
+  leadId: 'lead_002',
+  eventId: 'evt_002',
+  clickedAt: '2026-01-14T14:00:00Z',
+  talkingPoint: null,
+  closedAt: '2026-01-14T14:30:00Z',
+  lostAt: null,
+  unreachableAt: null,
+  version: 1,
+  leadSource: 'email',
+  jobTitle: 'CEO',
+  city: 'Chiang Mai',
+  leadUuid: 'lead_def456',
+  createdAt: '2026-01-14T14:00:00Z',
+  updatedAt: '2026-01-14T14:30:00Z',
+  juristicId: null,
+  dbdSector: null,
+  province: null,
+  fullAddress: null,
+};
+
+const mockLead3: Lead = {
+  row: 20,
+  date: '2026-01-13',
+  customerName: 'Bob Manager',
+  email: 'bob@global.com',
+  phone: '0801234567',
+  company: 'Global Industries',
+  industryAI: 'Construction',
+  website: 'https://global.com',
+  capital: '50,000,000',
+  status: 'new',
+  salesOwnerId: 'U9876543210fedcba',
+  salesOwnerName: 'Jane Manager',
+  campaignId: 'campaign_003',
+  campaignName: 'Campaign Q1',
+  emailSubject: 'ENEOS Industrial Solutions',
+  source: 'brevo',
+  leadId: 'lead_003',
+  eventId: 'evt_003',
+  clickedAt: '2026-01-13T08:00:00Z',
+  talkingPoint: null,
+  closedAt: null,
+  lostAt: null,
+  unreachableAt: null,
+  version: 1,
+  leadSource: 'email',
+  jobTitle: 'Director',
+  city: 'Chonburi',
+  leadUuid: 'lead_ghi789',
+  createdAt: '2026-01-13T08:00:00Z',
+  updatedAt: '2026-01-13T08:15:00Z',
+  juristicId: '1234567890123',
+  dbdSector: 'CON-C',
+  province: 'ชลบุรี',
+  fullAddress: '789 Industrial Rd, Chonburi 20000',
+};
 
 const mockEntries: ActivityEntry[] = [
   {
@@ -23,6 +136,7 @@ const mockEntries: ActivityEntry[] = [
     changedByName: 'John Sales',
     timestamp: '2026-01-15T10:00:00Z',
     notes: 'Called customer',
+    lead: mockLead1,
   },
   {
     id: 'lead_def456_2026-01-14T14:30:00Z',
@@ -34,6 +148,7 @@ const mockEntries: ActivityEntry[] = [
     changedByName: 'System',
     timestamp: '2026-01-14T14:30:00Z',
     notes: null,
+    lead: mockLead2,
   },
   {
     id: 'lead_ghi789_2026-01-13T08:15:00Z',
@@ -45,6 +160,7 @@ const mockEntries: ActivityEntry[] = [
     changedByName: 'Jane Manager',
     timestamp: '2026-01-13T08:15:00Z',
     notes: 'New lead from campaign',
+    lead: mockLead3,
   },
 ];
 
@@ -239,6 +355,44 @@ describe('ActivityLogTable Component', () => {
 
   describe('status badge colors', () => {
     it('renders all status types with appropriate badges', () => {
+      // Helper to create minimal mock Lead
+      const createMockLead = (rowNumber: number, company: string, status: ActivityEntry['status']): Lead => ({
+        row: rowNumber,
+        date: '2026-01-15',
+        customerName: `Contact ${rowNumber}`,
+        email: `contact${rowNumber}@company.com`,
+        phone: '0812345678',
+        company,
+        industryAI: 'General',
+        website: null,
+        capital: null,
+        status,
+        salesOwnerId: null,
+        salesOwnerName: null,
+        campaignId: 'campaign_test',
+        campaignName: 'Test Campaign',
+        emailSubject: null,
+        source: 'brevo',
+        leadId: null,
+        eventId: null,
+        clickedAt: null,
+        talkingPoint: null,
+        closedAt: null,
+        lostAt: null,
+        unreachableAt: null,
+        version: 1,
+        leadSource: null,
+        jobTitle: null,
+        city: null,
+        leadUuid: `lead-${rowNumber}`,
+        createdAt: '2026-01-15T10:00:00Z',
+        updatedAt: null,
+        juristicId: null,
+        dbdSector: null,
+        province: null,
+        fullAddress: null,
+      });
+
       const allStatusEntries: ActivityEntry[] = [
         {
           id: 'entry-1',
@@ -250,6 +404,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 1',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(1, 'Company 1', 'new'),
         },
         {
           id: 'entry-2',
@@ -261,6 +416,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 2',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(2, 'Company 2', 'claimed'),
         },
         {
           id: 'entry-3',
@@ -272,6 +428,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 3',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(3, 'Company 3', 'contacted'),
         },
         {
           id: 'entry-4',
@@ -283,6 +440,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 4',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(4, 'Company 4', 'closed'),
         },
         {
           id: 'entry-5',
@@ -294,6 +452,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 5',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(5, 'Company 5', 'lost'),
         },
         {
           id: 'entry-6',
@@ -305,6 +464,7 @@ describe('ActivityLogTable Component', () => {
           changedByName: 'User 6',
           timestamp: '2026-01-15T10:00:00Z',
           notes: null,
+          lead: createMockLead(6, 'Company 6', 'unreachable'),
         },
       ];
 

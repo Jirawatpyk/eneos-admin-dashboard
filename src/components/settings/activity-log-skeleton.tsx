@@ -5,6 +5,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -20,39 +21,41 @@ interface ActivityLogSkeletonProps {
 
 export function ActivityLogSkeleton({ rows = 10 }: ActivityLogSkeletonProps) {
   return (
-    <div className="rounded-md border" data-testid="activity-log-skeleton">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[170px]">Timestamp</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead className="w-[100px]">Status</TableHead>
-            <TableHead>Changed By</TableHead>
-            <TableHead className="w-[200px]">Notes</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: rows }).map((_, i) => (
-            <TableRow key={i} data-testid={i === 0 ? 'skeleton-row' : undefined}>
-              <TableCell>
-                <Skeleton className="h-4 w-32" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-40" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-6 w-20" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-28" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-36" />
-              </TableCell>
+    <Card className="overflow-hidden" data-testid="activity-log-skeleton">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-[170px] whitespace-nowrap">Timestamp</TableHead>
+              <TableHead className="min-w-[180px]">Company</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[120px]">Changed By</TableHead>
+              <TableHead className="min-w-[200px]">Notes</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: rows }).map((_, i) => (
+              <TableRow key={i} data-testid={i === 0 ? 'skeleton-row' : undefined}>
+                <TableCell className="text-sm text-muted-foreground whitespace-nowrap py-3">
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell className="font-medium py-3">
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell className="py-3">
+                  <Skeleton className="h-6 w-20 rounded-md" />
+                </TableCell>
+                <TableCell className="py-3">
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground py-3">
+                  <Skeleton className="h-4 w-36" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
   );
 }
