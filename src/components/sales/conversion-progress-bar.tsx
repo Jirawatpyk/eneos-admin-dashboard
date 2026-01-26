@@ -37,7 +37,7 @@ export function ConversionProgressBar({ rate }: ConversionProgressBarProps) {
   const status = getConversionStatus(rate);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 justify-end">
       <span className="text-sm font-medium w-14 text-right text-muted-foreground">
         {isNA ? 'N/A' : `${rate.toFixed(1)}%`}
       </span>
