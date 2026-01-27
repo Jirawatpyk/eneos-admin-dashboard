@@ -65,7 +65,7 @@ describe('TeamMemberTable Component', () => {
       expect(screen.getByText('Role')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
       expect(screen.getByText('Created At')).toBeInTheDocument();
-      expect(screen.getByText('Edit')).toBeInTheDocument();
+      expect(screen.getByText('Actions')).toBeInTheDocument();
     });
 
     it('should render member names', () => {

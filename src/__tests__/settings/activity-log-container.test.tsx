@@ -10,8 +10,51 @@ import '@testing-library/jest-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActivityLogContainer } from '@/components/settings/activity-log-container';
 import * as useActivityLogHook from '@/hooks/use-activity-log';
-import type { ActivityEntry } from '@/types/activity';
+import type { ActivityEntry, ActivityPagination, ChangedByOption } from '@/types/activity';
 import type { Lead } from '@/types/lead';
+
+// Helper to create mock return value for useActivityLog
+function createMockQueryResult(entries: ActivityEntry[]) {
+  return {
+    data: {
+      entries,
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: entries.length,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      } as ActivityPagination,
+      changedByOptions: [] as ChangedByOption[],
+    },
+    isLoading: false,
+    isFetching: false,
+    isError: false,
+    error: null,
+    isPending: false,
+    isLoadingError: false,
+    isRefetchError: false,
+    isSuccess: true,
+    isStale: false,
+    isPlaceholderData: false,
+    status: 'success' as const,
+    fetchStatus: 'idle' as const,
+    dataUpdatedAt: Date.now(),
+    errorUpdatedAt: 0,
+    failureCount: 0,
+    failureReason: null,
+    errorUpdateCount: 0,
+    isFetched: true,
+    isFetchedAfterMount: true,
+    isInitialLoading: false,
+    isPaused: false,
+    isRefetching: false,
+    isEnabled: true,
+    promise: Promise.resolve(),
+    refetch: vi.fn(),
+  } as unknown as ReturnType<typeof useActivityLogHook.useActivityLog>;
+}
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -144,24 +187,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       lead: mockLead,
     };
 
-    mockUseActivityLog.mockReturnValue({
-      data: {
-        entries: [mockEntry],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 1,
-          totalPages: 1,
-          hasNext: false,
-          hasPrev: false,
-        },
-        filters: { changedByOptions: [] },
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      refetch: vi.fn(),
-    });
+    mockUseActivityLog.mockReturnValue(createMockQueryResult([mockEntry]));
 
     render(
       <TestWrapper>
@@ -180,7 +206,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
     });
   });
 
-  it('should fallback to timestamp when lead.createdAt is null', async () => {
+  it('should fallback to timestamp when lead.createdAt is empty', async () => {
     const mockEntry: ActivityEntry = {
       id: 'lead_abc123_2026-01-15T10:00:00Z',
       leadUUID: 'lead_abc123',
@@ -193,28 +219,11 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       notes: 'Called customer',
       lead: {
         ...mockLead,
-        createdAt: null, // Legacy lead with null createdAt
+        createdAt: '', // Legacy lead with empty createdAt
       },
     };
 
-    mockUseActivityLog.mockReturnValue({
-      data: {
-        entries: [mockEntry],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 1,
-          totalPages: 1,
-          hasNext: false,
-          hasPrev: false,
-        },
-        filters: { changedByOptions: [] },
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      refetch: vi.fn(),
-    });
+    mockUseActivityLog.mockReturnValue(createMockQueryResult([mockEntry]));
 
     render(
       <TestWrapper>
@@ -233,7 +242,7 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
     });
   });
 
-  it('should fallback to current time when both createdAt and timestamp are null', async () => {
+  it('should fallback to current time when both createdAt and timestamp are empty', async () => {
     const mockEntry: ActivityEntry = {
       id: 'lead_abc123_2026-01-15T10:00:00Z',
       leadUUID: 'lead_abc123',
@@ -242,32 +251,15 @@ describe('ActivityLogContainer - createdAt Fallback Logic', () => {
       status: 'contacted',
       changedById: 'U1234567890abcdef',
       changedByName: 'John Sales',
-      timestamp: null, // Null timestamp (edge case)
+      timestamp: '', // Empty timestamp (edge case)
       notes: 'Called customer',
       lead: {
         ...mockLead,
-        createdAt: null, // Null createdAt
+        createdAt: '', // Empty createdAt
       },
     };
 
-    mockUseActivityLog.mockReturnValue({
-      data: {
-        entries: [mockEntry],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 1,
-          totalPages: 1,
-          hasNext: false,
-          hasPrev: false,
-        },
-        filters: { changedByOptions: [] },
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      refetch: vi.fn(),
-    });
+    mockUseActivityLog.mockReturnValue(createMockQueryResult([mockEntry]));
 
     render(
       <TestWrapper>

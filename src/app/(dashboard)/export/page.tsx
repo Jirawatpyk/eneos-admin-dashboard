@@ -21,8 +21,8 @@ export default function ExportPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Export & Reports</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl font-bold tracking-tight">Export & Reports</h1>
+        <p className="text-muted-foreground">
           Export lead data with customizable filters and format options
         </p>
       </div>

@@ -10,7 +10,7 @@ describe('nav-items configuration', () => {
       expect(labels).toContain('Sales');
       expect(labels).toContain('Leads');
       expect(labels).toContain('Campaigns');
-      expect(labels).toContain('Reports');
+      expect(labels).toContain('Export & Reports');
     });
 
     it('has Dashboard as first item', () => {
@@ -21,10 +21,8 @@ describe('nav-items configuration', () => {
     it('marks future features as disabled', () => {
       // Story 4.1: Leads is now enabled
       const campaigns = NAV_ITEMS.find((item) => item.label === 'Campaigns');
-      const reports = NAV_ITEMS.find((item) => item.label === 'Reports');
 
       expect(campaigns?.disabled).toBe(true);
-      expect(reports?.disabled).toBe(true);
     });
 
     it('has Dashboard, Sales, and Leads enabled', () => {

@@ -39,6 +39,8 @@ vi.mock('@/components/settings', () => ({
   NotificationSettingsSkeleton: () => <div data-testid="notification-settings-skeleton">Loading...</div>,
   SystemHealthCard: () => <div data-testid="system-health-card">System Health Card</div>,
   SystemHealthSkeleton: () => <div data-testid="system-health-skeleton">Loading...</div>,
+  // Story 0-16: Lead Processing Status
+  LeadProcessingStatusCard: () => <div data-testid="lead-processing-status-card">Lead Processing</div>,
 }));
 
 // Mock roles config

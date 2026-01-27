@@ -1,13 +1,15 @@
 /**
- * Team Member Table Component (Story 7-4)
+ * Team Member Table Component (Story 7-4 + 7-4b)
  * AC#1: Table displays all members with LINE ID (masked), Name, Email, Phone, Role, Status, Created At
+ * AC#8 (7-4b): Unlinked Member Indicator - "Not linked" badge + "Link" button
  * Note: Phone column added post-review for better UX (users can see what they edit)
  */
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { Pencil, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { maskLineUserId } from '@/lib';
 import {
   Table,
   TableBody,
@@ -17,21 +19,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { TeamMember } from '@/types/team';
+import type { TeamMember } from '@/types';
 
 interface TeamMemberTableProps {
   members: TeamMember[];
   isLoading?: boolean;
   onEdit: (member: TeamMember) => void;
-}
-
-/**
- * Mask LINE User ID for display
- * Shows first 4 chars and last 4 chars for privacy
- */
-function maskLineUserId(lineUserId: string): string {
-  if (!lineUserId || lineUserId.length <= 8) return lineUserId;
-  return `${lineUserId.slice(0, 4)}...${lineUserId.slice(-4)}`;
+  onLink?: (member: TeamMember) => void; // Story 7-4b: Link action for unlinked members
 }
 
 /**
@@ -145,20 +139,21 @@ export function TeamMemberTable({
   members,
   isLoading = false,
   onEdit,
+  onLink,
 }: TeamMemberTableProps) {
   return (
     <div className="rounded-md border" data-testid="team-member-table">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="w-[100px]">LINE ID</TableHead>
+            <TableHead className="w-[130px]">LINE ID</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead className="w-[110px]">Phone</TableHead>
             <TableHead className="w-[80px]">Role</TableHead>
             <TableHead className="w-[90px]">Status</TableHead>
             <TableHead className="w-[110px]">Created At</TableHead>
-            <TableHead className="w-[60px]">Edit</TableHead>
+            <TableHead className="w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -167,42 +162,76 @@ export function TeamMemberTable({
           ) : members.length === 0 ? (
             <EmptyState />
           ) : (
-            members.map((member) => (
-              <TableRow key={member.lineUserId} data-testid={`team-row-${member.lineUserId}`}>
-                <TableCell className="font-mono text-xs" data-testid="line-id-cell">
-                  {maskLineUserId(member.lineUserId)}
-                </TableCell>
-                <TableCell className="font-medium">{member.name}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {member.email || '-'}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {member.phone || '-'}
-                </TableCell>
-                <TableCell>
-                  <RoleBadge role={member.role} />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={member.status} />
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground" data-testid="created-at-cell">
-                  {formatDate(member.createdAt)}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onEdit(member)}
-                    aria-label={`Edit ${member.name}`}
-                    data-testid="edit-btn"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
+            members.map((member) => {
+              // Use email as fallback key when lineUserId is null (Story 7-4b)
+              const rowKey = member.lineUserId || member.email || member.name;
+              const isUnlinked = !member.lineUserId;
+
+              return (
+                <TableRow key={rowKey} data-testid={`team-row-${rowKey}`}>
+                  {/* LINE ID Column - AC#8: Show "Not linked" badge for unlinked members */}
+                  <TableCell className="font-mono text-xs" data-testid="line-id-cell">
+                    {isUnlinked ? (
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-muted-foreground font-normal"
+                        data-testid="not-linked-badge"
+                      >
+                        Not linked
+                      </Badge>
+                    ) : (
+                      maskLineUserId(member.lineUserId!)
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{member.name}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {member.email || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {member.phone || '-'}
+                  </TableCell>
+                  <TableCell>
+                    <RoleBadge role={member.role} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={member.status} />
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground" data-testid="created-at-cell">
+                    {formatDate(member.createdAt)}
+                  </TableCell>
+                  {/* Actions Column - Edit always visible, Link for unlinked members */}
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onEdit(member)}
+                        aria-label={`Edit ${member.name}`}
+                        data-testid="edit-btn"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      {isUnlinked && onLink && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2"
+                          onClick={() => onLink(member)}
+                          aria-label={`Link LINE account for ${member.name}`}
+                          data-testid="link-btn"
+                        >
+                          <LinkIcon className="h-4 w-4 mr-1" />
+                          Link
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

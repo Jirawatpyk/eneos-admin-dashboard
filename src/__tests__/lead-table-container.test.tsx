@@ -23,6 +23,7 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: mockToast,
   }),
+  toast: mockToast,
 }));
 
 // Story 4.10: Mock LeadExportDropdown to avoid hook issues in tests
@@ -189,6 +190,29 @@ vi.mock('@/hooks/use-lead-source-filter-params', () => ({
     hasLeadSourceFilter: false,
   })),
   UNKNOWN_SOURCE: '__unknown__',
+}));
+
+// Tech Debt: Mock column visibility hook (uses localStorage)
+vi.mock('@/hooks/use-column-visibility', () => ({
+  useColumnVisibility: vi.fn(() => ({
+    columnVisibility: {},
+    toggleColumnVisibility: vi.fn(),
+    resetColumnVisibility: vi.fn(),
+    isColumnVisible: () => true,
+    hiddenColumnCount: 0,
+  })),
+  COLUMN_DEFINITIONS: {
+    company: 'Company',
+    capital: 'Capital',
+    location: 'Location',
+    customerName: 'Contact',
+    email: 'Email',
+    phone: 'Phone',
+    status: 'Status',
+    salesOwnerName: 'Owner',
+    createdAt: 'Date',
+  },
+  TOGGLEABLE_COLUMNS: ['company', 'capital', 'location', 'customerName', 'email', 'phone', 'status', 'salesOwnerName', 'createdAt'],
 }));
 
 import { useLeads } from '@/hooks/use-leads';

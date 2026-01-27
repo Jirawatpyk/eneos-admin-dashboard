@@ -22,6 +22,15 @@ export type {
 // Story 7.4: Team Management
 export { useTeamList, useTeamMember, useUpdateTeamMember } from './use-team-management';
 
+// Story 7.4b: Manual Member Registration & LINE Account Linking
+export {
+  useCreateTeamMember,
+  useUnlinkedLINEAccounts,
+  useLinkLINEAccount,
+  useUnlinkedDashboardMembers,
+  useReverseLinkAccount,
+} from './use-team-management';
+
 // Story 7.5: System Health
 export { useSystemHealth, formatUptime } from './use-system-health';
 export type { SystemHealthData, UseSystemHealthReturn } from './use-system-health';

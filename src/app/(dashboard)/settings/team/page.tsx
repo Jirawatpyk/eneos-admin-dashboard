@@ -80,8 +80,8 @@ export default function TeamManagementPage() {
         </p>
       </div>
 
-      {/* Team Management Card */}
-      <TeamManagementCard />
+      {/* Team Management Card - Pass admin status for button visibility */}
+      <TeamManagementCard isAdmin={hasAccess} />
     </div>
   );
 }

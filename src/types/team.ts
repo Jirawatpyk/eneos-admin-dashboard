@@ -1,13 +1,14 @@
 /**
- * Team Management Types (Story 7-4)
+ * Team Management Types (Story 7-4 + 7-4b)
  */
 
 /**
  * Sales Team Member from Backend API
  * Matches SalesTeamMemberFull from backend
+ * Story 7-4b: lineUserId can be null for manually added members
  */
 export interface TeamMember {
-  lineUserId: string;
+  lineUserId: string | null;
   name: string;
   email: string | null;
   phone: string | null;
@@ -35,6 +36,16 @@ export interface TeamMemberUpdate {
 }
 
 /**
+ * Create payload for new team member (Story 7-4b)
+ */
+export interface CreateTeamMemberInput {
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'admin' | 'sales';
+}
+
+/**
  * API Response for team list
  */
 export interface TeamListResponse {
@@ -51,4 +62,45 @@ export interface TeamMemberResponse {
   success: boolean;
   data: TeamMember;
   error?: { code: string; message: string };
+}
+
+/**
+ * Unlinked LINE Account (Story 7-4b AC#9, #13)
+ * Represents a LINE account that hasn't been linked to a dashboard member
+ */
+export interface UnlinkedLINEAccount {
+  lineUserId: string;
+  name: string;
+  createdAt: string;
+}
+
+/**
+ * Link LINE Account Input (Story 7-4b AC#11)
+ * Request payload for linking a LINE account to a dashboard member
+ */
+export interface LinkLINEAccountInput {
+  email: string; // Dashboard member's email (identifier)
+  targetLineUserId: string; // LINE account to link
+}
+
+/**
+ * Unlinked Dashboard Member (Story 7-4b AC#14)
+ * Dashboard member without LINE account (for reverse linking)
+ */
+export interface UnlinkedDashboardMember {
+  lineUserId: null;
+  name: string;
+  email: string;
+  role: 'admin' | 'sales';
+  createdAt: string;
+  status: 'active' | 'inactive';
+}
+
+/**
+ * Reverse Link Input (Story 7-4b AC#14)
+ * Link from LINE account side to dashboard member
+ */
+export interface ReverseLinkInput {
+  lineUserId: string; // LINE account's ID
+  targetEmail: string; // Dashboard member's email to link to
 }

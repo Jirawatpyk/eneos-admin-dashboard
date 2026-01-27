@@ -12,7 +12,7 @@
 // ===========================================
 // Core Utilities
 // ===========================================
-export { cn } from './utils';
+export { cn, maskLineUserId } from './utils';
 
 // ===========================================
 // Sales Formatting (Story 3.1, 3.2, 3.4)

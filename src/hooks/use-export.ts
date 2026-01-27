@@ -41,12 +41,18 @@ export function useExport(): UseExportReturn {
         campaign: params.campaign,
       });
 
-      // Add date range if provided
+      // Add date range if provided (format: YYYY-MM-DD to avoid timezone issues)
       if (params.dateRange?.from) {
-        queryParams.append('startDate', params.dateRange.from.toISOString());
+        const year = params.dateRange.from.getFullYear();
+        const month = String(params.dateRange.from.getMonth() + 1).padStart(2, '0');
+        const day = String(params.dateRange.from.getDate()).padStart(2, '0');
+        queryParams.append('startDate', `${year}-${month}-${day}`);
       }
       if (params.dateRange?.to) {
-        queryParams.append('endDate', params.dateRange.to.toISOString());
+        const year = params.dateRange.to.getFullYear();
+        const month = String(params.dateRange.to.getMonth() + 1).padStart(2, '0');
+        const day = String(params.dateRange.to.getDate()).padStart(2, '0');
+        queryParams.append('endDate', `${year}-${month}-${day}`);
       }
 
       // Call API route (Task 4: Next.js API route proxy)

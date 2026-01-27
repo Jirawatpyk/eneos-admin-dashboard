@@ -19,7 +19,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Sales')).toBeInTheDocument();
     expect(screen.getByText('Leads')).toBeInTheDocument();
-    expect(screen.getByText('Campaigns')).toBeInTheDocument();
+    // Note: Campaigns is disabled and hidden from sidebar
     expect(screen.getByText('Export & Reports')).toBeInTheDocument();
   });
 

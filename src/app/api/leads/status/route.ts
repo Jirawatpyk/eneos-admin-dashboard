@@ -10,7 +10,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { isAdmin } from '@/config/roles';
+import { isAdmin, type Role } from '@/config/roles';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check admin authentication (AC#1 requirement)
-    const userRole = token.role as string;
+    const userRole = token.role as Role;
     if (!userRole || !isAdmin(userRole)) {
       return NextResponse.json(
         { success: false, error: 'Admin access required' },

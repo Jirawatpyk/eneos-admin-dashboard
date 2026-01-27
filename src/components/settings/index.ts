@@ -26,6 +26,12 @@ export { TeamMemberFilter } from './team-member-filter';
 export { TeamMemberTable } from './team-member-table';
 export { TeamMemberEditModal } from './team-member-edit-modal';
 
+// Story 7.4b: Manual Member Registration & LINE Account Linking
+export { AddMemberModal } from './add-member-modal';
+export { LinkLineAccountModal } from './link-line-account-modal';
+export { UnlinkedLineAccountsTable } from './unlinked-line-accounts-table';
+export { ReverseLinkModal } from './reverse-link-modal';
+
 // Story 7.5: System Health
 export { SystemHealthCard } from './system-health-card';
 export { SystemHealthSkeleton } from './system-health-skeleton';

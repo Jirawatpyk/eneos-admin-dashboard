@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { TeamFilter } from '@/types/team';
+import type { TeamFilter } from '@/types';
 
 interface TeamMemberFilterProps {
   filter: TeamFilter;

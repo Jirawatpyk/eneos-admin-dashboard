@@ -34,11 +34,34 @@ const mockMembers: TeamMember[] = [
   },
 ];
 
-// Mock useTeamList hook
+// Mock useTeamList hook (Story 7-4b: added useUnlinkedLINEAccounts + other hooks)
 const mockUseTeamList = vi.fn();
 vi.mock('@/hooks/use-team-management', () => ({
   useTeamList: (filter: unknown) => mockUseTeamList(filter),
   useUpdateTeamMember: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useUnlinkedLINEAccounts: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  }),
+  useCreateTeamMember: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useLinkLINEAccount: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+  useUnlinkedDashboardMembers: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useReverseLinkAccount: () => ({
     mutateAsync: vi.fn(),
     isPending: false,
   }),
@@ -47,6 +70,20 @@ vi.mock('@/hooks/use-team-management', () => ({
 // Mock toast
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
+}));
+
+// Mock sub-components that the card imports (Story 7-4b)
+vi.mock('@/components/settings/add-member-modal', () => ({
+  AddMemberModal: () => <div data-testid="add-member-modal-mock" />,
+}));
+vi.mock('@/components/settings/link-line-account-modal', () => ({
+  LinkLineAccountModal: () => <div data-testid="link-line-modal-mock" />,
+}));
+vi.mock('@/components/settings/unlinked-line-accounts-table', () => ({
+  UnlinkedLineAccountsTable: () => <div data-testid="unlinked-table-mock" />,
+}));
+vi.mock('@/components/settings/reverse-link-modal', () => ({
+  ReverseLinkModal: () => <div data-testid="reverse-link-modal-mock" />,
 }));
 
 const createWrapper = () => {

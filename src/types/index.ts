@@ -35,6 +35,20 @@ export type {
   LeadDetail,
 } from './lead-detail';
 
+// Team Management types (Story 7.4b)
+export type {
+  TeamMember,
+  TeamFilter,
+  TeamMemberUpdate,
+  CreateTeamMemberInput,
+  TeamListResponse,
+  TeamMemberResponse,
+  UnlinkedLINEAccount,
+  LinkLINEAccountInput,
+  UnlinkedDashboardMember,
+  ReverseLinkInput,
+} from './team';
+
 // Sales Performance types
 export type {
   SalesPersonMetrics,

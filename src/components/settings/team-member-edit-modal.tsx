@@ -39,8 +39,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useUpdateTeamMember } from '@/hooks/use-team-management';
-import type { TeamMember, TeamMemberUpdate } from '@/types/team';
+import { useUpdateTeamMember } from '@/hooks';
+import type { TeamMember, TeamMemberUpdate } from '@/types';
 
 interface TeamMemberEditModalProps {
   member: TeamMember | null;
@@ -133,7 +133,8 @@ export function TeamMemberEditModal({
 
   // Perform the actual update
   const performUpdate = async (updates: TeamMemberUpdate) => {
-    if (!member) return;
+    // Guard: Edit modal should only be used for linked members (with lineUserId)
+    if (!member || !member.lineUserId) return;
 
     try {
       await updateMutation.mutateAsync({
@@ -243,7 +244,7 @@ export function TeamMemberEditModal({
               <Label htmlFor="lineUserId">LINE User ID</Label>
               <Input
                 id="lineUserId"
-                value={member.lineUserId}
+                value={member.lineUserId || ''}
                 disabled
                 className="font-mono text-xs"
                 data-testid="input-line-id"
