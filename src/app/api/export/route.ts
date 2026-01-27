@@ -13,8 +13,6 @@ import { getToken } from 'next-auth/jwt';
  * - status: all | new | contacted | closed | lost | unreachable (optional)
  * - owner: LINE User ID or 'all' (optional)
  * - campaign: Campaign ID or 'all' (optional)
- * - claimed: boolean string (optional)
- * - grounding: boolean string (optional)
  */
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -51,8 +49,6 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'all';
     const owner = searchParams.get('owner') || 'all';
     const campaign = searchParams.get('campaign') || 'all';
-    const claimed = searchParams.get('claimed') === 'true';
-    const grounding = searchParams.get('grounding') === 'true';
 
     // Build backend API URL
     const apiUrl = new URL(`${BACKEND_URL}/api/admin/export`);
@@ -65,8 +61,6 @@ export async function GET(request: NextRequest) {
     if (status !== 'all') apiUrl.searchParams.append('status', status);
     if (owner !== 'all') apiUrl.searchParams.append('owner', owner);
     if (campaign !== 'all') apiUrl.searchParams.append('campaign', campaign);
-    if (claimed) apiUrl.searchParams.append('claimed', 'true');
-    if (grounding) apiUrl.searchParams.append('grounding', 'true');
 
     // Call backend API with Google ID token
     const response = await fetch(apiUrl.toString(), {

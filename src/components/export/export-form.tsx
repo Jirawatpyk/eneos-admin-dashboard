@@ -20,8 +20,6 @@ interface ExportFormData {
   status: ExportStatus;
   owner: string;
   campaign: string;
-  includeClaimed: boolean;
-  includeGroundingFields: boolean;
 }
 
 export function ExportForm() {
@@ -30,8 +28,6 @@ export function ExportForm() {
     status: 'all',
     owner: 'all',
     campaign: 'all',
-    includeClaimed: true,
-    includeGroundingFields: false,
   });
 
   const { exportData, isExporting } = useExport();
@@ -187,39 +183,7 @@ export function ExportForm() {
           </Select>
         </div>
 
-        {/* Claimed Filter (Task 2.6) */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="include-claimed"
-            checked={formData.includeClaimed}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, includeClaimed: checked as boolean })
-            }
-          />
-          <Label
-            htmlFor="include-claimed"
-            className="text-sm font-normal cursor-pointer"
-          >
-            Include only claimed leads
-          </Label>
-        </div>
-
-        {/* Grounding Fields Filter (Task 2.7) */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="include-grounding"
-            checked={formData.includeGroundingFields}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, includeGroundingFields: checked as boolean })
-            }
-          />
-          <Label
-            htmlFor="include-grounding"
-            className="text-sm font-normal cursor-pointer"
-          >
-            Include Google Search Grounding fields (DBD Sector, Capital, Province, Full Address)
-          </Label>
-        </div>
+        {/* Note: Claimed and Grounding filters not supported by backend API */}
 
         {/* Export Button (Task 2.8) */}
         <Button

@@ -11,8 +11,6 @@ export interface ExportParams {
   status: ExportStatus;
   owner: string;
   campaign: string;
-  includeClaimed: boolean;
-  includeGroundingFields: boolean;
 }
 
 export interface UseExportReturn {
@@ -41,8 +39,6 @@ export function useExport(): UseExportReturn {
         status: params.status,
         owner: params.owner,
         campaign: params.campaign,
-        claimed: params.includeClaimed.toString(),
-        grounding: params.includeGroundingFields.toString(),
       });
 
       // Add date range if provided
