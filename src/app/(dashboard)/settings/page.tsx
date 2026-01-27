@@ -51,7 +51,7 @@ export default function SettingsPage() {
 
       {/* Content Grid - 2 columns for non-admin, 3 columns for admin */}
       <div
-        className={`grid gap-6 ${userIsAdmin ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}
+        className={`grid gap-6 ${isLoading || userIsAdmin ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}
         data-testid="settings-grid"
       >
         {/* Column 1: Account */}
