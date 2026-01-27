@@ -4,9 +4,10 @@
  * Story 7.3: Notification Settings
  * Story 7.4: Team Management Link (Admin only)
  * Story 7.5: System Health (Admin only)
+ * Story 0-16: Lead Processing Status (Admin only)
  *
  * Displays user account (profile + session combined), and notification settings.
- * Admin users also see System Health card.
+ * Admin users also see System Health card and Lead Processing Status card.
  *
  * AC#1 (7.1): Settings Page Access - accessible via sidebar navigation
  * AC#5 (7.1): Viewer Access Restriction - handled by middleware (from Story 1-5)
@@ -15,6 +16,7 @@
  * AC#1 (7.3): Notification Settings Section - full-width below grid
  * AC#1 (7.5): System Health Card - displays for admin users only
  * AC#7 (7.5): Admin Only Access - System Health visible to admins only
+ * AC#3 (0-16): Lead Processing Status Card - displays for admin users only
  */
 'use client';
 
@@ -27,6 +29,7 @@ import {
   NotificationSettingsCard,
   NotificationSettingsSkeleton,
   SystemHealthCard,
+  LeadProcessingStatusCard,
 } from '@/components/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { isAdmin } from '@/config/roles';
@@ -46,18 +49,21 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Content Grid - Always 2 columns (Viewer blocked by middleware) */}
+      {/* Content Grid - 2 columns for non-admin, 3 columns for admin */}
       <div
-        className="grid gap-6 md:grid-cols-2"
+        className={`grid gap-6 ${userIsAdmin ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}
         data-testid="settings-grid"
       >
         {/* Column 1: Account */}
         {isLoading ? <AccountCardSkeleton /> : <AccountCard />}
 
-        {/* Column 2: System Health */}
+        {/* Column 2: System Health (Admin only) */}
         {/* Show during loading (assume admin) or when confirmed admin */}
         {/* SystemHealthCard has its own internal skeleton via useSystemHealth */}
         {(isLoading || userIsAdmin) && <SystemHealthCard />}
+
+        {/* Column 3: Lead Processing Status (Admin only - Story 0-16 AC#3) */}
+        {(isLoading || userIsAdmin) && <LeadProcessingStatusCard />}
       </div>
 
       {/* Full-width Notification Settings (Story 7.3 AC#1) */}

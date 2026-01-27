@@ -36,3 +36,6 @@ export { ActivityLogTable } from './activity-log-table';
 export { ActivityLogSkeleton } from './activity-log-skeleton';
 export { ActivityLogEmpty } from './activity-log-empty';
 export { ActivityLogFilters } from './activity-log-filters';
+
+// Story 0-16: Lead Processing Status
+export { LeadProcessingStatusCard } from './lead-processing-status-card';
