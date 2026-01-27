@@ -5,6 +5,7 @@
  *
  * Tests for admin-only /api/leads/status endpoint
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET } from './route';

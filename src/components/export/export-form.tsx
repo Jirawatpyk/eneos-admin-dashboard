@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useExport, type ExportFormat, type ExportStatus } from '@/hooks/use-export';
 import { useSalesOwners } from '@/hooks/use-sales-owners';
 import { useCampaigns } from '@/hooks/use-campaigns';
