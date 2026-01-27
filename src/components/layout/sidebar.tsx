@@ -27,7 +27,7 @@ export function Sidebar() {
         {/* Navigation */}
         <ScrollArea className="flex-1 py-4">
           <nav className="space-y-1 px-3 pt-2" aria-label="Main navigation">
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.filter((item) => !item.disabled).map((item) => (
               <NavItem
                 key={item.href}
                 href={item.href}
