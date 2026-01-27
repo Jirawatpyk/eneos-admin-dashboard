@@ -10,7 +10,7 @@ vi.mock('next/navigation', () => ({
 describe('Sidebar', () => {
   it('renders ENEOS logo', () => {
     render(<Sidebar />);
-    expect(screen.getByText('ENEOS')).toBeInTheDocument();
+    expect(screen.getByAltText('ENEOS')).toBeInTheDocument();
   });
 
   it('renders all main navigation items', () => {

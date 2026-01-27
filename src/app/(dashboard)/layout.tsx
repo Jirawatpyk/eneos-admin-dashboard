@@ -62,8 +62,8 @@ export default async function DashboardLayout({
       <div className="md:pl-64">
         {/* Header */}
         <header className="sticky top-0 z-40 bg-card border-b">
-          <div className="px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
+          <div className="px-4 sm:px-6 lg:px-8 h-[65px] flex items-center">
+            <div className="flex items-center justify-between w-full">
               <div className="flex items-center">
                 {/* Mobile hamburger menu */}
                 <MobileSidebar />

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface LogoProps {
@@ -11,13 +12,16 @@ export function Logo({ onClick }: LogoProps) {
   return (
     <Link
       href="/dashboard"
-      className="flex items-center gap-3"
+      className="flex items-center"
       onClick={onClick}
     >
-      <div className="w-10 h-10 bg-eneos-red rounded-lg flex items-center justify-center">
-        <span className="text-white font-bold text-sm">E</span>
-      </div>
-      <span className="text-lg font-semibold text-foreground">ENEOS</span>
+      <Image
+        src="/eneos-logo-horizontal.png"
+        alt="ENEOS"
+        width={160}
+        height={40}
+        priority
+      />
     </Link>
   );
 }

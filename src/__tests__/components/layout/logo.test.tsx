@@ -3,14 +3,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { Logo } from '@/components/layout/logo';
 
 describe('Logo', () => {
-  it('renders ENEOS text', () => {
+  it('renders ENEOS logo image', () => {
     render(<Logo />);
-    expect(screen.getByText('ENEOS')).toBeInTheDocument();
+    expect(screen.getByAltText('ENEOS')).toBeInTheDocument();
   });
 
-  it('renders logo icon with E letter', () => {
+  it('uses horizontal logo image', () => {
     render(<Logo />);
-    expect(screen.getByText('E')).toBeInTheDocument();
+    const img = screen.getByAltText('ENEOS');
+    expect(img).toHaveAttribute('src', expect.stringContaining('eneos-logo-horizontal'));
   });
 
   it('links to dashboard', () => {
@@ -28,12 +29,5 @@ describe('Logo', () => {
     fireEvent.click(link);
 
     expect(onClick).toHaveBeenCalledTimes(1);
-  });
-
-  it('has ENEOS brand red background on icon', () => {
-    render(<Logo />);
-
-    const iconContainer = screen.getByText('E').parentElement;
-    expect(iconContainer).toHaveClass('bg-eneos-red');
   });
 });

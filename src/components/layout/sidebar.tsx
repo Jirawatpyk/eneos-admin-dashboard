@@ -20,7 +20,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 z-30 bg-card border-r">
         {/* Logo Header */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b">
+        <div className="flex items-center px-4 h-[65px] border-b">
           <Logo />
         </div>
 
