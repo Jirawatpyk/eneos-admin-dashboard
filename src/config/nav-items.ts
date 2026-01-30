@@ -2,7 +2,7 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  BarChart3,
+  Mail,
   FileDown,
   Settings,
   LucideIcon,
@@ -36,10 +36,9 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: '/leads',
   },
   {
-    icon: BarChart3,
+    icon: Mail,
     label: 'Campaigns',
     href: '/campaigns',
-    disabled: true,
   },
   {
     icon: FileDown,

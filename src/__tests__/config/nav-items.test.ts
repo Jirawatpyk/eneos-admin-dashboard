@@ -18,21 +18,16 @@ describe('nav-items configuration', () => {
       expect(NAV_ITEMS[0].href).toBe('/dashboard');
     });
 
-    it('marks future features as disabled', () => {
-      // Story 4.1: Leads is now enabled
-      const campaigns = NAV_ITEMS.find((item) => item.label === 'Campaigns');
-
-      expect(campaigns?.disabled).toBe(true);
-    });
-
-    it('has Dashboard, Sales, and Leads enabled', () => {
+    it('has Dashboard, Sales, Leads, and Campaigns enabled', () => {
       const dashboard = NAV_ITEMS.find((item) => item.label === 'Dashboard');
       const sales = NAV_ITEMS.find((item) => item.label === 'Sales');
       const leads = NAV_ITEMS.find((item) => item.label === 'Leads');
+      const campaigns = NAV_ITEMS.find((item) => item.label === 'Campaigns');
 
       expect(dashboard?.disabled).toBeFalsy();
       expect(sales?.disabled).toBeFalsy();
       expect(leads?.disabled).toBeFalsy(); // Story 4.1: Leads enabled
+      expect(campaigns?.disabled).toBeFalsy(); // Story 5.3: Campaigns enabled
     });
 
     it('all items have required properties', () => {
