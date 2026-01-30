@@ -435,6 +435,26 @@ if (!response.data.success) {
 // Handle 503 (circuit breaker) gracefully
 ```
 
+### Campaign API Endpoints (Story 5-2)
+```typescript
+// List campaigns with metrics
+GET /api/admin/campaigns/stats
+  ?page=1&limit=20
+  &search=campaign_name
+  &dateFrom=2026-01-01&dateTo=2026-01-31
+  &sortBy=Last_Updated&sortOrder=desc
+
+// Single campaign detail
+GET /api/admin/campaigns/:id/stats
+  // :id = Campaign_ID (from Brevo camp_id)
+
+// Event log for campaign
+GET /api/admin/campaigns/:id/events
+  ?page=1&limit=50
+  &event=click|opened|delivered
+  &dateFrom=2026-01-01&dateTo=2026-01-31
+```
+
 ### Lead Status (EXACTLY 6 values)
 ```typescript
 type LeadStatus =
