@@ -6,7 +6,9 @@
  * AC#5: PDF Row Limit Warning
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ExportForm } from '@/components/export/export-form';
 
 // Mock hooks
@@ -39,6 +41,20 @@ vi.mock('@/hooks/use-campaigns', () => ({
   }),
 }));
 
+// Story 6.4: Mock useLeads for useRecordCount dependency
+vi.mock('@/hooks/use-leads', () => ({
+  useLeads: () => ({
+    data: undefined,
+    pagination: { total: 100, page: 1, limit: 1, totalPages: 100 },
+    availableFilters: undefined,
+    isLoading: false,
+    isFetching: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
 // Mock PdfPreviewModal to avoid react-pdf complexity
 vi.mock('@/components/export/pdf-preview-modal', () => ({
   PdfPreviewModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
@@ -49,6 +65,14 @@ vi.mock('@/components/export/pdf-preview-modal', () => ({
     ) : null,
 }));
 
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+}
+
 describe('ExportForm - PDF Features', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -57,7 +81,7 @@ describe('ExportForm - PDF Features', () => {
   // AC#1: Preview PDF Button
   describe('Preview PDF Button (AC#1)', () => {
     it('shows Preview PDF button when PDF format is selected', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
@@ -67,14 +91,14 @@ describe('ExportForm - PDF Features', () => {
     });
 
     it('hides Preview PDF button when Excel format is selected', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Excel is default format
       expect(screen.queryByRole('button', { name: /preview pdf/i })).not.toBeInTheDocument();
     });
 
     it('hides Preview PDF button when CSV format is selected', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select CSV format
       const csvRadio = screen.getByLabelText(/csv/i);
@@ -87,23 +111,29 @@ describe('ExportForm - PDF Features', () => {
       const mockBlob = new Blob(['pdf'], { type: 'application/pdf' });
       mockPreviewPdf.mockResolvedValue({ blob: mockBlob, filename: 'test.pdf' });
 
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
-      fireEvent.click(pdfRadio);
+      await act(async () => {
+        fireEvent.click(pdfRadio);
+      });
 
       const previewButton = screen.getByRole('button', { name: /preview pdf/i });
-      fireEvent.click(previewButton);
+      await act(async () => {
+        fireEvent.click(previewButton);
+      });
 
-      expect(mockPreviewPdf).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockPreviewPdf).toHaveBeenCalled();
+      });
     });
   });
 
   // AC#5: PDF Row Limit Warning
   describe('PDF Limit Warning (AC#5)', () => {
     it('shows PDF limit warning when PDF format is selected', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
@@ -113,14 +143,14 @@ describe('ExportForm - PDF Features', () => {
     });
 
     it('hides PDF limit warning when non-PDF format is selected', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Excel is default
       expect(screen.queryByText(/pdf limited to 100 rows/i)).not.toBeInTheDocument();
     });
 
     it('has link to switch to Excel format in warning banner', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
@@ -131,7 +161,7 @@ describe('ExportForm - PDF Features', () => {
     });
 
     it('switches format to Excel when clicking the link in warning', () => {
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
@@ -152,16 +182,20 @@ describe('ExportForm - PDF Features', () => {
       const mockBlob = new Blob(['pdf'], { type: 'application/pdf' });
       mockPreviewPdf.mockResolvedValue({ blob: mockBlob, filename: 'test.pdf' });
 
-      render(<ExportForm />);
+      render(<ExportForm />, { wrapper: createWrapper() });
 
       // Select PDF format
       const pdfRadio = screen.getByLabelText(/pdf/i);
-      fireEvent.click(pdfRadio);
+      await act(async () => {
+        fireEvent.click(pdfRadio);
+      });
 
       const previewButton = screen.getByRole('button', { name: /preview pdf/i });
-      fireEvent.click(previewButton);
+      await act(async () => {
+        fireEvent.click(previewButton);
+      });
 
-      await vi.waitFor(() => {
+      await waitFor(() => {
         expect(screen.getByTestId('pdf-preview-modal')).toBeInTheDocument();
       });
     });

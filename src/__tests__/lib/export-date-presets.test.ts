@@ -92,7 +92,7 @@ describe('export-date-presets', () => {
 
   describe('validateDateRange', () => {
     it('returns valid for incomplete range (no from)', () => {
-      const result = validateDateRange({ to: new Date() });
+      const result = validateDateRange({ from: undefined, to: new Date() });
       expect(result.valid).toBe(true);
       expect(result.error).toBeUndefined();
     });
@@ -130,6 +130,14 @@ describe('export-date-presets', () => {
       const today = new Date();
       const result = validateDateRange({ from: today, to: today });
       expect(result.valid).toBe(true);
+    });
+
+    it('returns invalid for negative range (from after to)', () => {
+      const from = new Date(2026, 5, 30);
+      const to = new Date(2026, 0, 1);
+      const result = validateDateRange({ from, to });
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('Start date must be before end date');
     });
   });
 });

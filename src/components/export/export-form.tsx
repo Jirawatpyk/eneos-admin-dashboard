@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { useExport, type ExportFormat, type ExportStatus } from '@/hooks/use-export';
 import { useSalesOwners } from '@/hooks/use-sales-owners';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { PdfPreviewModal } from '@/components/export/pdf-preview-modal';
+import { ExportDatePresets } from '@/components/export/export-date-presets';
+import { ExportDateRangePicker } from '@/components/export/export-date-range-picker';
+import { useRecordCount } from '@/hooks/use-record-count';
+import { getExportDateRange, EXPORT_PRESETS, type ExportPresetType } from '@/lib/export-date-presets';
 import type { DateRange } from 'react-day-picker';
 
 interface ExportFormData {
@@ -29,6 +32,7 @@ export function ExportForm() {
     owner: 'all',
     campaign: 'all',
   });
+  const [activePreset, setActivePreset] = useState<ExportPresetType | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewFilename, setPreviewFilename] = useState('');
@@ -37,12 +41,44 @@ export function ExportForm() {
   const { data: salesOwners, isLoading: isLoadingOwners } = useSalesOwners();
   const { data: campaigns, isLoading: isLoadingCampaigns } = useCampaigns();
 
+  // AC#5: Record count from leads API (no campaign - leads API doesn't support it)
+  const { count: recordCount, isLoading: isCountLoading } = useRecordCount({
+    dateRange: formData.dateRange,
+    status: formData.status,
+    owner: formData.owner,
+  });
+  const hasCampaignFilter = formData.campaign !== 'all';
+
   // Cleanup blob on unmount to release memory (M1: large binary data)
   useEffect(() => {
     return () => {
       setPreviewBlob(null);
     };
   }, []);
+
+  // AC#1: Toggle preset - clicking active preset clears it
+  const handlePresetSelect = (preset: ExportPresetType) => {
+    if (activePreset === preset) {
+      setActivePreset(null);
+      setFormData({ ...formData, dateRange: undefined });
+    } else {
+      const range = getExportDateRange(preset);
+      setActivePreset(preset);
+      setFormData({ ...formData, dateRange: range });
+    }
+  };
+
+  // AC#2: Custom range clears active preset
+  const handleCustomDateChange = (range: DateRange | undefined) => {
+    setActivePreset(null);
+    setFormData({ ...formData, dateRange: range });
+  };
+
+  // AC#2: Clear resets everything
+  const handleDateClear = () => {
+    setActivePreset(null);
+    setFormData({ ...formData, dateRange: undefined });
+  };
 
   const handleExport = async () => {
     try {
@@ -158,13 +194,28 @@ export function ExportForm() {
             </div>
           )}
 
-          {/* Date Range Filter (Task 2.2) */}
-          <div className="space-y-3">
-            <Label htmlFor="date-range">Date Range (Optional)</Label>
-            <DateRangePicker
-              value={formData.dateRange}
-              onChange={(range) => setFormData({ ...formData, dateRange: range })}
+          {/* Date Range Filter (Enhanced - Story 6.4) */}
+          <div className="space-y-3" data-testid="date-range-section">
+            <Label>Date Range</Label>
+            <ExportDatePresets
+              activePreset={activePreset}
+              onPresetSelect={handlePresetSelect}
             />
+            <ExportDateRangePicker
+              value={formData.dateRange}
+              onChange={handleCustomDateChange}
+              onClear={handleDateClear}
+              presetLabel={activePreset ? EXPORT_PRESETS.find((p) => p.type === activePreset)?.label : undefined}
+            />
+            <p className="text-sm text-muted-foreground" data-testid="record-count">
+              Estimated records:{' '}
+              <span className="font-medium">
+                {isCountLoading ? '...' : (recordCount?.toLocaleString() ?? '--')}
+              </span>
+              {hasCampaignFilter && (
+                <span className="ml-1 text-xs text-muted-foreground/70">(excludes campaign filter)</span>
+              )}
+            </p>
           </div>
 
           {/* Status Filter (Task 2.3) */}

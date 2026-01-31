@@ -1,12 +1,3 @@
-/**
- * Export Date Preset Utilities
- * Story 6.4: Custom Date Range
- *
- * Pure date calculation functions for export date presets.
- * AC#7: Preset date range calculations
- * AC#3: Max date range validation (1 year)
- */
-
 import {
   startOfMonth,
   endOfMonth,
@@ -31,14 +22,6 @@ export const EXPORT_PRESETS: ExportPreset[] = [
   { type: 'thisYear', label: 'This Year' },
 ];
 
-/**
- * Calculate date range for a given preset
- * AC#7: Correct date range calculations
- * - "This Month": 1st of current month to today
- * - "Last Month": 1st of previous month to last day of previous month
- * - "This Quarter": 1st day of current quarter to today
- * - "This Year": Jan 1 of current year to today
- */
 export function getExportDateRange(preset: ExportPresetType): DateRange {
   const now = new Date();
   switch (preset) {
@@ -57,13 +40,12 @@ export function getExportDateRange(preset: ExportPresetType): DateRange {
 
 const MAX_RANGE_DAYS = 365;
 
-/**
- * Validate a date range does not exceed 1 year
- * AC#3: Max Date Range Validation
- */
 export function validateDateRange(range: DateRange): { valid: boolean; error?: string } {
-  if (!range.from || !range.to) return { valid: true }; // incomplete range is OK
+  if (!range.from || !range.to) return { valid: true };
   const days = differenceInDays(range.to, range.from);
+  if (days < 0) {
+    return { valid: false, error: 'Start date must be before end date' };
+  }
   if (days > MAX_RANGE_DAYS) {
     return { valid: false, error: 'Date range cannot exceed 1 year' };
   }
