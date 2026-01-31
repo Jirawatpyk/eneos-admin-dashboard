@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { FileDown, FileSpreadsheet, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Eye, FileDown, FileSpreadsheet, FileText, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { useExport, type ExportFormat, type ExportStatus } from '@/hooks/use-export';
 import { useSalesOwners } from '@/hooks/use-sales-owners';
 import { useCampaigns } from '@/hooks/use-campaigns';
+import { PdfPreviewModal } from '@/components/export/pdf-preview-modal';
 import type { DateRange } from 'react-day-picker';
 
 interface ExportFormData {
@@ -28,173 +29,259 @@ export function ExportForm() {
     owner: 'all',
     campaign: 'all',
   });
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewFilename, setPreviewFilename] = useState('');
 
-  const { exportData, isExporting } = useExport();
+  const { exportData, previewPdf, isExporting, isPreviewing } = useExport();
   const { data: salesOwners, isLoading: isLoadingOwners } = useSalesOwners();
   const { data: campaigns, isLoading: isLoadingCampaigns } = useCampaigns();
+
+  // Cleanup blob on unmount to release memory (M1: large binary data)
+  useEffect(() => {
+    return () => {
+      setPreviewBlob(null);
+    };
+  }, []);
 
   const handleExport = async () => {
     try {
       await exportData(formData);
-    } catch (error) {
+    } catch {
       // Error already handled by useExport hook (toast notification)
-      console.error('Export failed:', error);
     }
   };
 
+  const handlePreviewPdf = async () => {
+    try {
+      const result = await previewPdf(formData);
+      setPreviewBlob(result.blob);
+      setPreviewFilename(result.filename);
+      setPreviewModalOpen(true);
+    } catch {
+      // Error already handled by useExport hook (toast notification)
+    }
+  };
+
+  const handleClosePreview = () => {
+    setPreviewModalOpen(false);
+    setPreviewBlob(null);
+    setPreviewFilename('');
+  };
+
+  const handleSwitchToExcel = () => {
+    setFormData({ ...formData, format: 'xlsx' });
+  };
+
+  const isPdfFormat = formData.format === 'pdf';
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Export Lead Data</CardTitle>
-        <CardDescription>
-          Select format and filters to export your lead data
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Format Selection (Task 2.1) */}
-        <div className="space-y-3">
-          <Label>Export Format</Label>
-          <RadioGroup
-            value={formData.format}
-            onValueChange={(value) => setFormData({ ...formData, format: value as ExportFormat })}
-            className="grid grid-cols-3 gap-4"
-          >
-            <div>
-              <RadioGroupItem
-                value="xlsx"
-                id="format-xlsx"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="format-xlsx"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-              >
-                <FileSpreadsheet className="mb-3 h-6 w-6" />
-                <span className="text-sm font-medium">Excel (.xlsx)</span>
-              </Label>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Export Lead Data</CardTitle>
+          <CardDescription>
+            Select format and filters to export your lead data
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Format Selection (Task 2.1) */}
+          <div className="space-y-3">
+            <Label>Export Format</Label>
+            <RadioGroup
+              value={formData.format}
+              onValueChange={(value) => setFormData({ ...formData, format: value as ExportFormat })}
+              className="grid grid-cols-3 gap-4"
+            >
+              <div>
+                <RadioGroupItem
+                  value="xlsx"
+                  id="format-xlsx"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="format-xlsx"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <FileSpreadsheet className="mb-3 h-6 w-6" />
+                  <span className="text-sm font-medium">Excel (.xlsx)</span>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="csv"
+                  id="format-csv"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="format-csv"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <FileText className="mb-3 h-6 w-6" />
+                  <span className="text-sm font-medium">CSV (.csv)</span>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem
+                  value="pdf"
+                  id="format-pdf"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="format-pdf"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                >
+                  <FileDown className="mb-3 h-6 w-6" />
+                  <span className="text-sm font-medium">PDF (.pdf)</span>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* AC#5: PDF Row Limit Warning */}
+          {isPdfFormat && (
+            <div className="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="text-sm">
+                <p className="text-blue-800 dark:text-blue-200">
+                  PDF limited to 100 rows. Use Excel/CSV for complete data.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSwitchToExcel}
+                  className="mt-1 text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                  aria-label="Switch to Excel"
+                >
+                  Switch to Excel
+                </button>
+              </div>
             </div>
-            <div>
-              <RadioGroupItem
-                value="csv"
-                id="format-csv"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="format-csv"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+          )}
+
+          {/* Date Range Filter (Task 2.2) */}
+          <div className="space-y-3">
+            <Label htmlFor="date-range">Date Range (Optional)</Label>
+            <DateRangePicker
+              value={formData.dateRange}
+              onChange={(range) => setFormData({ ...formData, dateRange: range })}
+            />
+          </div>
+
+          {/* Status Filter (Task 2.3) */}
+          <div className="space-y-3">
+            <Label htmlFor="status-filter">Lead Status</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => setFormData({ ...formData, status: value as ExportStatus })}
+            >
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="lost">Lost</SelectItem>
+                <SelectItem value="unreachable">Unreachable</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Owner Filter (Task 2.4) */}
+          <div className="space-y-3">
+            <Label htmlFor="owner-filter">Sales Owner</Label>
+            <Select
+              value={formData.owner}
+              onValueChange={(value) => setFormData({ ...formData, owner: value })}
+              disabled={isLoadingOwners}
+            >
+              <SelectTrigger id="owner-filter">
+                <SelectValue placeholder={isLoadingOwners ? 'Loading...' : 'Select owner'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sales</SelectItem>
+                {salesOwners
+                  ?.filter((owner) => owner.id && owner.id.trim() !== '')
+                  .map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Campaign Filter (Task 2.5) */}
+          <div className="space-y-3">
+            <Label htmlFor="campaign-filter">Campaign</Label>
+            <Select
+              value={formData.campaign}
+              onValueChange={(value) => setFormData({ ...formData, campaign: value })}
+              disabled={isLoadingCampaigns}
+            >
+              <SelectTrigger id="campaign-filter">
+                <SelectValue placeholder={isLoadingCampaigns ? 'Loading...' : 'Select campaign'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Campaigns</SelectItem>
+                {campaigns
+                  ?.filter((campaign) => campaign.id && campaign.id.trim() !== '')
+                  .map((campaign) => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            {/* AC#1: Preview PDF Button - visible only when PDF format selected */}
+            {isPdfFormat && (
+              <Button
+                variant="outline"
+                onClick={handlePreviewPdf}
+                disabled={isPreviewing}
+                className="flex-1"
+                size="lg"
               >
-                <FileText className="mb-3 h-6 w-6" />
-                <span className="text-sm font-medium">CSV (.csv)</span>
-              </Label>
-            </div>
-            <div>
-              <RadioGroupItem
-                value="pdf"
-                id="format-pdf"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="format-pdf"
-                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-              >
-                <FileDown className="mb-3 h-6 w-6" />
-                <span className="text-sm font-medium">PDF (.pdf)</span>
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
+                {isPreviewing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading Preview...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Preview PDF
+                  </>
+                )}
+              </Button>
+            )}
 
-        {/* Date Range Filter (Task 2.2) */}
-        <div className="space-y-3">
-          <Label htmlFor="date-range">Date Range (Optional)</Label>
-          <DateRangePicker
-            value={formData.dateRange}
-            onChange={(range) => setFormData({ ...formData, dateRange: range })}
-          />
-        </div>
+            {/* Export Button */}
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              className={isPdfFormat ? 'flex-1' : 'w-full'}
+              size="lg"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              {isExporting ? 'Exporting...' : `Export as ${formData.format.toUpperCase()}`}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Status Filter (Task 2.3) */}
-        <div className="space-y-3">
-          <Label htmlFor="status-filter">Lead Status</Label>
-          <Select
-            value={formData.status}
-            onValueChange={(value) => setFormData({ ...formData, status: value as ExportStatus })}
-          >
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="contacted">Contacted</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
-              <SelectItem value="lost">Lost</SelectItem>
-              <SelectItem value="unreachable">Unreachable</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Owner Filter (Task 2.4) */}
-        <div className="space-y-3">
-          <Label htmlFor="owner-filter">Sales Owner</Label>
-          <Select
-            value={formData.owner}
-            onValueChange={(value) => setFormData({ ...formData, owner: value })}
-            disabled={isLoadingOwners}
-          >
-            <SelectTrigger id="owner-filter">
-              <SelectValue placeholder={isLoadingOwners ? 'Loading...' : 'Select owner'} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sales</SelectItem>
-              {salesOwners
-                ?.filter((owner) => owner.id && owner.id.trim() !== '')
-                .map((owner) => (
-                  <SelectItem key={owner.id} value={owner.id}>
-                    {owner.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Campaign Filter (Task 2.5) */}
-        <div className="space-y-3">
-          <Label htmlFor="campaign-filter">Campaign</Label>
-          <Select
-            value={formData.campaign}
-            onValueChange={(value) => setFormData({ ...formData, campaign: value })}
-            disabled={isLoadingCampaigns}
-          >
-            <SelectTrigger id="campaign-filter">
-              <SelectValue placeholder={isLoadingCampaigns ? 'Loading...' : 'Select campaign'} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Campaigns</SelectItem>
-              {campaigns
-                ?.filter((campaign) => campaign.id && campaign.id.trim() !== '')
-                .map((campaign) => (
-                  <SelectItem key={campaign.id} value={campaign.id}>
-                    {campaign.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Note: Claimed and Grounding filters not supported by backend API */}
-
-        {/* Export Button (Task 2.8) */}
-        <Button
-          onClick={handleExport}
-          disabled={isExporting}
-          className="w-full"
-          size="lg"
-        >
-          <FileDown className="mr-2 h-4 w-4" />
-          {isExporting ? 'Exporting...' : `Export as ${formData.format.toUpperCase()}`}
-        </Button>
-      </CardContent>
-    </Card>
+      {/* PDF Preview Modal */}
+      <PdfPreviewModal
+        isOpen={previewModalOpen}
+        onClose={handleClosePreview}
+        pdfBlob={previewBlob}
+        filename={previewFilename}
+      />
+    </>
   );
 }
