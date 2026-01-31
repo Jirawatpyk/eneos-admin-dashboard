@@ -14,12 +14,25 @@ import { CampaignKPICard } from './campaign-kpi-card';
 import { CampaignKPICardsSkeleton } from './campaign-kpi-card-skeleton';
 import { CampaignsError } from './campaigns-error';
 import { useCampaignStats } from '@/hooks/use-campaign-stats';
+import { cn } from '@/lib/utils';
+
+/**
+ * Props for CampaignKPICardsGrid
+ * Story 5.8: Accept date filter params
+ */
+interface CampaignKPICardsGridProps {
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 /**
  * Grid of 4 Campaign KPI cards with loading and error states
  */
-export function CampaignKPICardsGrid() {
-  const { data, isLoading, isError, error, refetch } = useCampaignStats();
+export function CampaignKPICardsGrid({ dateFrom, dateTo }: CampaignKPICardsGridProps) {
+  const { data, isLoading, isFetching, isError, error, refetch } = useCampaignStats({
+    dateFrom,
+    dateTo,
+  });
 
   // AC#4: Show skeleton while loading
   if (isLoading) {
@@ -57,8 +70,12 @@ export function CampaignKPICardsGrid() {
           No campaign data available yet. Campaign metrics will appear here once Brevo sends events.
         </div>
       )}
+      {/* Story 5.8 Fix #7: Show dimmed opacity while refetching (AC#3 loading indicator) */}
       <div
-        className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+        className={cn(
+          'grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+          isFetching && !isLoading && 'opacity-70 transition-opacity'
+        )}
         data-testid="campaign-kpi-cards-grid"
       >
         <CampaignKPICard

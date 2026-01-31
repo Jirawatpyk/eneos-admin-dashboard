@@ -15,7 +15,7 @@
  */
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -42,7 +42,16 @@ import { CampaignsError } from './campaigns-error';
 import { CampaignDetailSheet } from './campaign-detail-sheet';
 import type { CampaignStatsItem, CampaignSortBy } from '@/types/campaigns';
 
-export function CampaignTable() {
+/**
+ * Props for CampaignTable
+ * Story 5.8: Accept date filter params
+ */
+interface CampaignTableProps {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export function CampaignTable({ dateFrom, dateTo }: CampaignTableProps) {
   // Pagination state (AC#3)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -55,12 +64,19 @@ export function CampaignTable() {
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignStatsItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Fetch data with TanStack Query
+  // Story 5.8 Fix #2: Reset page to 1 when date filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [dateFrom, dateTo]);
+
+  // Fetch data with TanStack Query (Story 5.8: pass date filter params)
   const { data, isLoading, isFetching, isError, error, refetch } = useCampaignsTable({
     page,
     limit: pageSize,
     sortBy,
     sortOrder,
+    dateFrom,
+    dateTo,
   });
 
   // Handle sort click (AC#4)

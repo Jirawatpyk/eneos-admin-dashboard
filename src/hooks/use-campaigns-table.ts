@@ -74,12 +74,15 @@ export function useCampaignsTable(
     limit = 20,
     sortBy = 'Last_Updated' as CampaignSortBy,
     sortOrder = 'desc',
+    dateFrom,
+    dateTo,
     enabled = true,
   } = options;
 
   const query = useQuery({
-    queryKey: ['campaigns', 'table', { page, limit, sortBy, sortOrder }],
-    queryFn: () => fetchCampaignStats({ page, limit, sortBy, sortOrder }),
+    // Story 5.8: Include date params in query key for cache separation
+    queryKey: ['campaigns', 'table', { page, limit, sortBy, sortOrder, dateFrom, dateTo }],
+    queryFn: () => fetchCampaignStats({ page, limit, sortBy, sortOrder, dateFrom, dateTo }),
     staleTime: 60 * 1000, // 1 minute - rate limit aware
     gcTime: 5 * 60 * 1000, // 5 minutes - garbage collection time (TanStack Query v5)
     retry: 2,

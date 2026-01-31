@@ -42,9 +42,20 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '100';
     const sortBy = searchParams.get('sortBy') || 'Last_Updated';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
 
-    // Forward request to Backend API with sorting params (Story 5-4)
-    const backendUrl = `${BACKEND_URL}/api/admin/campaigns/stats?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+    // Build backend URL with all params (Story 5-4 sorting + Story 5-8 date filter)
+    const backendParams = new URLSearchParams({
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    });
+    if (dateFrom) backendParams.set('dateFrom', dateFrom);
+    if (dateTo) backendParams.set('dateTo', dateTo);
+
+    const backendUrl = `${BACKEND_URL}/api/admin/campaigns/stats?${backendParams.toString()}`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',

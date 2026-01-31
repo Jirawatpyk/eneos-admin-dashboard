@@ -13,11 +13,14 @@ import type { CampaignAggregate } from '@/types/campaigns';
 
 export interface UseCampaignStatsOptions {
   enabled?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export interface UseCampaignStatsReturn {
   data: CampaignAggregate | undefined;
   isLoading: boolean;
+  isFetching: boolean;  // Story 5.8 Fix #7: For loading indicator during filter changes
   isError: boolean;
   error: CampaignApiError | null;
   refetch: () => void;
@@ -64,14 +67,15 @@ function getErrorMessage(error: unknown): string {
 export function useCampaignStats(
   options: UseCampaignStatsOptions = {}
 ): UseCampaignStatsReturn {
-  const { enabled = true } = options;
+  const { enabled = true, dateFrom, dateTo } = options;
 
   const query = useQuery({
-    queryKey: ['campaigns', 'stats'],
+    // Story 5.8: Include date params in query key for cache separation
+    queryKey: ['campaigns', 'stats', { dateFrom, dateTo }],
     queryFn: async () => {
       // Fetch all campaigns (set high limit to get all for aggregation)
       // NOTE: If >100 campaigns exist, consider pagination loop or backend summary endpoint
-      const response = await fetchCampaignStats({ limit: 100 });
+      const response = await fetchCampaignStats({ limit: 100, dateFrom, dateTo });
       // Extract campaigns array from nested response: { data: { data: [...] } }
       return aggregateCampaignStats(response.data.data);
     },
@@ -91,6 +95,7 @@ export function useCampaignStats(
   return {
     data: query.data,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,  // Story 5.8 Fix #7: For loading indicator during filter changes
     isError: query.isError,
     error: errorObj,
     refetch: query.refetch,

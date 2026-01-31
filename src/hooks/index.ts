@@ -43,3 +43,11 @@ export type {
   ActivityLogQueryParams,
   ChangedByOption,
 } from './use-activity-log';
+
+// Story 5.9: Campaign Export
+export { useExportCampaigns } from './use-export-campaigns';
+export type {
+  CampaignExportFormat,
+  UseExportCampaignsOptions,
+  UseExportCampaignsReturn,
+} from './use-export-campaigns';

@@ -184,12 +184,23 @@ function ChartEmptyState() {
 // Main Chart Component
 // ===========================================
 
-export function CampaignPerformanceChart() {
+/**
+ * Props for CampaignPerformanceChart
+ * Story 5.8: Accept date filter params for consistency with KPI cards and table
+ */
+interface CampaignPerformanceChartProps {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export function CampaignPerformanceChart({ dateFrom, dateTo }: CampaignPerformanceChartProps) {
   const { defaultLimit, fontSize, truncateLength } = useResponsiveChart();
   const [limit, setLimit] = useState(defaultLimit);
   const { data, isLoading, isError, error, refetch } = useCampaignChart({
     limit,
     truncateLength,
+    dateFrom,  // Story 5.8: Pass date filter
+    dateTo,    // Story 5.8: Pass date filter
   });
 
   // Sync limit when responsive default changes (resize/orientation)

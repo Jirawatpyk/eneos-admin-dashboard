@@ -30,7 +30,7 @@ const API_BASE_URL = '';
 export async function fetchCampaignStats(
   params: CampaignTableParams = {}
 ): Promise<CampaignStatsResponse> {
-  const { page = 1, limit = 20, sortBy, sortOrder } = params;
+  const { page = 1, limit = 20, sortBy, sortOrder, dateFrom, dateTo } = params;
 
   // Build query string
   const searchParams = new URLSearchParams({
@@ -41,6 +41,9 @@ export async function fetchCampaignStats(
   // Only add sorting params if provided (API has defaults)
   if (sortBy) searchParams.set('sortBy', sortBy);
   if (sortOrder) searchParams.set('sortOrder', sortOrder);
+  // Story 5.8: Date filter params
+  if (dateFrom) searchParams.set('dateFrom', dateFrom);
+  if (dateTo) searchParams.set('dateTo', dateTo);
 
   const url = `${API_BASE_URL}/api/admin/campaigns/stats?${searchParams.toString()}`;
 

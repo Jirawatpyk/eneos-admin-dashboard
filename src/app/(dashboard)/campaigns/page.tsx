@@ -3,20 +3,15 @@
  * Story 5.3: Campaign Summary Cards
  * Story 5.4: Campaign Table
  * Story 5.6: Campaign Performance Chart
+ * Story 5.8: Campaign Date Filter
  *
  * AC#1: Display 4 KPI cards for campaign metrics
  * AC#7: Responsive layout
+ * AC#1 (5.8): Date filter displayed above Campaign Table
  */
 
 import { Suspense } from 'react';
-import {
-  CampaignKPICardsGrid,
-  CampaignKPICardsSkeleton,
-  CampaignTable,
-  CampaignTableSkeleton,
-  CampaignPerformanceChart,
-  CampaignChartSkeleton,
-} from '@/components/campaigns';
+import { CampaignsContent } from '@/components/campaigns';
 
 export const metadata = {
   title: 'Campaigns | ENEOS Admin',
@@ -36,19 +31,9 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      {/* KPI Cards (Story 5.3) */}
-      <Suspense fallback={<CampaignKPICardsSkeleton />}>
-        <CampaignKPICardsGrid />
-      </Suspense>
-
-      {/* Campaign Table (Story 5.4) */}
-      <Suspense fallback={<CampaignTableSkeleton />}>
-        <CampaignTable />
-      </Suspense>
-
-      {/* Campaign Performance Chart (Story 5.6) */}
-      <Suspense fallback={<CampaignChartSkeleton />}>
-        <CampaignPerformanceChart />
+      {/* Story 5.8: All campaign content wrapped with date filter state */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <CampaignsContent />
       </Suspense>
     </div>
   );

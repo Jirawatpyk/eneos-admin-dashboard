@@ -1,6 +1,7 @@
 /**
  * Campaign Chart Hook
  * Story 5.6: Campaign Performance Chart
+ * Story 5.8: Added date filter support (dateFrom/dateTo)
  *
  * TanStack Query v5 hook for fetching and transforming campaign data for chart display.
  * Fetches all campaigns, sorts by openRate descending, and slices to limit.
@@ -19,6 +20,8 @@ export interface UseCampaignChartOptions {
   limit?: number;
   truncateLength?: number;
   enabled?: boolean;
+  dateFrom?: string;  // Story 5.8: ISO 8601 date filter
+  dateTo?: string;    // Story 5.8: ISO 8601 date filter
 }
 
 export interface UseCampaignChartReturn {
@@ -80,17 +83,20 @@ function getErrorMessage(error: unknown): string {
 export function useCampaignChart(
   options: UseCampaignChartOptions = {}
 ): UseCampaignChartReturn {
-  const { limit = 10, truncateLength = 25, enabled = true } = options;
+  const { limit = 10, truncateLength = 25, enabled = true, dateFrom, dateTo } = options;
 
   const query = useQuery({
-    // Single cache key - limit/truncation applied via `select` (no duplicate fetches)
-    queryKey: ['campaigns', 'chart'],
+    // Story 5.8: Include date params in query key for cache separation
+    queryKey: ['campaigns', 'chart', { dateFrom, dateTo }],
     queryFn: async (): Promise<ChartDataItem[]> => {
       // Fetch all campaigns sorted by Open_Rate descending
+      // Story 5.8: Pass date filter params
       const response = await fetchCampaignStats({
         limit: 100,
         sortBy: 'Open_Rate',
         sortOrder: 'desc',
+        dateFrom,
+        dateTo,
       });
 
       const campaigns = response.data?.data ?? [];

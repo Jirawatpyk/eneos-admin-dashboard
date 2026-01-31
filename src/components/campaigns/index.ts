@@ -44,3 +44,12 @@ export type { CampaignDateFilterProps } from './campaign-date-filter';
 export { CopyEmailButton } from './copy-email-button';
 export type { CopyEmailButtonProps } from './copy-email-button';
 export { CampaignEventsSkeleton } from './campaign-events-skeleton';
+
+// Campaign Period Filter & Content Wrapper (Story 5.8)
+export { CampaignPeriodFilter, CAMPAIGN_PERIOD_OPTIONS, isValidCampaignPeriod } from './campaign-period-filter';
+export { CampaignCustomDateRange } from './campaign-custom-date-range';
+export { CampaignsContent } from './campaigns-content';
+
+// Campaign Export (Story 5.9)
+export { CampaignExportDropdown } from './campaign-export-dropdown';
+export type { CampaignExportDropdownProps } from './campaign-export-dropdown';

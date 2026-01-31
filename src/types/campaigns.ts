@@ -105,6 +105,26 @@ export interface CampaignTableParams {
   limit?: number;
   sortBy?: CampaignSortBy;
   sortOrder?: 'asc' | 'desc';
+  dateFrom?: string;  // ISO 8601
+  dateTo?: string;    // ISO 8601
+}
+
+/**
+ * Story 5.8: Campaign Date Filter Types
+ */
+
+/**
+ * Valid period values for campaign date filter
+ */
+export type CampaignPeriod = 'allTime' | 'today' | 'week' | 'month' | 'lastMonth' | 'custom';
+
+/**
+ * Parameters returned by the campaign date filter hook
+ */
+export interface CampaignDateFilterParams {
+  period: CampaignPeriod;
+  dateFrom?: string;  // ISO 8601
+  dateTo?: string;    // ISO 8601
 }
 
 /**
