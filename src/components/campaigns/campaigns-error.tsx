@@ -22,11 +22,12 @@ interface CampaignsErrorProps {
  * AC#5: Show error message with Retry button
  */
 export function CampaignsError({ message, onRetry }: CampaignsErrorProps) {
-  // Log error for debugging
+  // Log error for debugging (development only)
   useEffect(() => {
-    // Development: log to console for debugging
-    // Production: consider integrating error tracking service (Sentry, etc.)
-    console.error('Campaigns error:', message);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Campaigns error:', message);
+    }
+    // Production: TODO - integrate error tracking service (Sentry, etc.)
   }, [message]);
 
   return (

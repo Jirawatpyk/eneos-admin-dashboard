@@ -1,9 +1,11 @@
 /**
- * Campaign Stats API Proxy Route
- * Story 5.3: Campaign Summary Cards
+ * Campaign Events API Proxy Route
+ * Story 5.7: Campaign Detail Sheet
  *
  * Proxies requests to Backend API with Google ID token authentication
- * GET /api/admin/campaigns/stats -> Backend /api/admin/campaigns/stats
+ * GET /api/admin/campaigns/:id/events -> Backend /api/admin/campaigns/:id/events
+ *
+ * Query params: page, limit, event, dateFrom, dateTo
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,8 +13,24 @@ import { getToken } from 'next-auth/jwt';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-export async function GET(request: NextRequest) {
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
+
+    // Validate campaign ID is a numeric string
+    if (!/^\d+$/.test(id)) {
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_ID', message: 'Invalid campaign ID' } },
+        { status: 400 }
+      );
+    }
+
     // Get JWT token from NextAuth session
     const token = await getToken({
       req: request,
@@ -39,12 +57,19 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') || '1';
-    const limit = searchParams.get('limit') || '100';
-    const sortBy = searchParams.get('sortBy') || 'Last_Updated';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const limit = searchParams.get('limit') || '20';
+    const event = searchParams.get('event');
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
 
-    // Forward request to Backend API with sorting params (Story 5-4)
-    const backendUrl = `${BACKEND_URL}/api/admin/campaigns/stats?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+    // Build backend query string
+    const backendParams = new URLSearchParams({ page, limit });
+    if (event) backendParams.set('event', event);
+    if (dateFrom) backendParams.set('dateFrom', dateFrom);
+    if (dateTo) backendParams.set('dateTo', dateTo);
+
+    // Forward request to Backend API
+    const backendUrl = `${BACKEND_URL}/api/admin/campaigns/${id}/events?${backendParams.toString()}`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',
@@ -60,7 +85,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
-    // Add cache headers for performance (private = user-specific, max-age=60 = 1 minute)
     return NextResponse.json(data, {
       status: 200,
       headers: {
@@ -68,7 +92,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[Campaign Stats API] Error:', error);
+    console.error('[Campaign Events API] Error:', error);
     return NextResponse.json(
       {
         success: false,

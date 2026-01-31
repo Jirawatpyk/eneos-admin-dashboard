@@ -1,13 +1,22 @@
 /**
  * Campaigns Page
  * Story 5.3: Campaign Summary Cards
+ * Story 5.4: Campaign Table
+ * Story 5.6: Campaign Performance Chart
  *
  * AC#1: Display 4 KPI cards for campaign metrics
  * AC#7: Responsive layout
  */
 
 import { Suspense } from 'react';
-import { CampaignKPICardsGrid, CampaignKPICardsSkeleton } from '@/components/campaigns';
+import {
+  CampaignKPICardsGrid,
+  CampaignKPICardsSkeleton,
+  CampaignTable,
+  CampaignTableSkeleton,
+  CampaignPerformanceChart,
+  CampaignChartSkeleton,
+} from '@/components/campaigns';
 
 export const metadata = {
   title: 'Campaigns | ENEOS Admin',
@@ -27,11 +36,20 @@ export default function CampaignsPage() {
         </div>
       </div>
 
+      {/* KPI Cards (Story 5.3) */}
       <Suspense fallback={<CampaignKPICardsSkeleton />}>
         <CampaignKPICardsGrid />
       </Suspense>
 
-      {/* Future: Campaign Table (Story 5-4), Charts (Story 5-6) */}
+      {/* Campaign Table (Story 5.4) */}
+      <Suspense fallback={<CampaignTableSkeleton />}>
+        <CampaignTable />
+      </Suspense>
+
+      {/* Campaign Performance Chart (Story 5.6) */}
+      <Suspense fallback={<CampaignChartSkeleton />}>
+        <CampaignPerformanceChart />
+      </Suspense>
     </div>
   );
 }

@@ -79,3 +79,99 @@ export class CampaignApiError extends Error {
     this.name = 'CampaignApiError';
   }
 }
+
+/**
+ * Story 5.4: Campaign Table Types
+ */
+
+/**
+ * Valid sort columns for campaign table
+ */
+export type CampaignSortBy =
+  | 'Last_Updated'
+  | 'First_Event'
+  | 'Campaign_Name'
+  | 'Delivered'
+  | 'Opened'
+  | 'Clicked'
+  | 'Open_Rate'
+  | 'Click_Rate';
+
+/**
+ * Parameters for campaign table API request
+ */
+export interface CampaignTableParams {
+  page?: number;
+  limit?: number;
+  sortBy?: CampaignSortBy;
+  sortOrder?: 'asc' | 'desc';
+}
+
+/**
+ * Story 5.6: Chart-specific type for campaign performance chart
+ */
+export interface ChartDataItem {
+  campaignName: string;
+  campaignId: number;
+  openRate: number;
+  clickRate: number;
+  delivered: number;
+}
+
+/**
+ * Story 5.7: Campaign Detail Sheet Types
+ */
+
+/**
+ * Individual campaign event from backend API
+ */
+export interface CampaignEventItem {
+  eventId: number;
+  email: string;
+  event: 'delivered' | 'opened' | 'click';
+  eventAt: string;
+  url: string | null;
+}
+
+/**
+ * API response for campaign events endpoint
+ */
+export interface CampaignEventsResponse {
+  success: boolean;
+  data: {
+    data: CampaignEventItem[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+
+/**
+ * Parameters for campaign events API request
+ */
+export interface CampaignEventsParams {
+  campaignId: number;
+  page?: number;
+  limit?: number;
+  event?: 'delivered' | 'opened' | 'click';
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+/**
+ * Event type filter options (includes 'all' for UI filter tabs)
+ */
+export type CampaignEventType = 'all' | 'delivered' | 'opened' | 'click';
+
+/**
+ * Combined filter state for campaign event log UI
+ */
+export interface CampaignEventsFilters {
+  eventType: CampaignEventType;
+  search: string;
+  dateFrom: string | null;
+  dateTo: string | null;
+}

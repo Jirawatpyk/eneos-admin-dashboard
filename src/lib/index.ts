@@ -122,6 +122,21 @@ export {
 } from './date-presets';
 
 // ===========================================
+// Campaign Benchmarks (Story 5.5)
+// ===========================================
+export {
+  RATE_BENCHMARKS,
+  classifyRatePerformance,
+  getRateBenchmarkType,
+  getRateTooltipMessage,
+  RATE_TOOLTIP_MESSAGES,
+  PERFORMANCE_LEVEL_CONFIG,
+  type RateType,
+  type RateBenchmarkType,
+  type RatePerformanceLevel,
+} from './campaign-benchmarks';
+
+// ===========================================
 // Auth Configuration (Server-side only)
 // Import directly: import { authOptions } from '@/lib/auth';
 // ===========================================

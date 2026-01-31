@@ -91,7 +91,7 @@ describe('fetchCampaignStats', () => {
             success: true,
             data: {
               data: [],
-              pagination: { page: 1, limit: 100, total: 0, totalPages: 0 },
+              pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
             },
           }),
       });
@@ -99,7 +99,7 @@ describe('fetchCampaignStats', () => {
       await fetchCampaignStats();
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('page=1&limit=100'),
+        expect.stringContaining('page=1&limit=20'),
         expect.any(Object)
       );
     });

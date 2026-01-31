@@ -8,7 +8,14 @@
  * - Handles { success, data, error } response pattern
  */
 
-import type { CampaignStatsResponse, CampaignAggregate, CampaignStatsItem } from '@/types/campaigns';
+import type {
+  CampaignStatsResponse,
+  CampaignAggregate,
+  CampaignStatsItem,
+  CampaignTableParams,
+  CampaignEventsParams,
+  CampaignEventsResponse,
+} from '@/types/campaigns';
 import { CampaignApiError } from '@/types/campaigns';
 
 // Use Next.js API route as proxy to Backend (handles authentication)
@@ -16,15 +23,26 @@ const API_BASE_URL = '';
 
 /**
  * Fetch campaign stats from backend API
- * @param params - Pagination parameters
+ * @param params - Pagination and sorting parameters
  * @returns Campaign stats response with array of campaigns
  * @throws CampaignApiError on failure
  */
 export async function fetchCampaignStats(
-  params: { page?: number; limit?: number } = {}
+  params: CampaignTableParams = {}
 ): Promise<CampaignStatsResponse> {
-  const { page = 1, limit = 100 } = params;
-  const url = `${API_BASE_URL}/api/admin/campaigns/stats?page=${page}&limit=${limit}`;
+  const { page = 1, limit = 20, sortBy, sortOrder } = params;
+
+  // Build query string
+  const searchParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  // Only add sorting params if provided (API has defaults)
+  if (sortBy) searchParams.set('sortBy', sortBy);
+  if (sortOrder) searchParams.set('sortOrder', sortOrder);
+
+  const url = `${API_BASE_URL}/api/admin/campaigns/stats?${searchParams.toString()}`;
 
   const response = await fetch(url, {
     method: 'GET',
@@ -107,6 +125,73 @@ export function aggregateCampaignStats(campaigns: CampaignStatsItem[]): Campaign
     openRate: Number(openRate.toFixed(1)),
     clickRate: Number(clickRate.toFixed(1)),
   };
+}
+
+/**
+ * Fetch campaign events for detail sheet
+ * Story 5.7: Campaign Detail Sheet (AC#3)
+ * @param params - Campaign ID, pagination, and filter parameters
+ * @returns Campaign events response with array of events
+ * @throws CampaignApiError on failure
+ */
+export async function fetchCampaignEvents(
+  params: CampaignEventsParams
+): Promise<CampaignEventsResponse> {
+  const { campaignId, page = 1, limit = 20, event, dateFrom, dateTo } = params;
+
+  const searchParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  if (event) searchParams.set('event', event);
+  if (dateFrom) searchParams.set('dateFrom', dateFrom);
+  if (dateTo) searchParams.set('dateTo', dateTo);
+
+  const url = `${API_BASE_URL}/api/admin/campaigns/${campaignId}/events?${searchParams.toString()}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (response.status === 503) {
+    throw new CampaignApiError(
+      'Campaign service temporarily unavailable',
+      503,
+      'SERVICE_UNAVAILABLE'
+    );
+  }
+
+  if (response.status === 404) {
+    throw new CampaignApiError(
+      'Campaign not found',
+      404,
+      'NOT_FOUND'
+    );
+  }
+
+  if (!response.ok) {
+    throw new CampaignApiError(
+      `Failed to fetch campaign events: ${response.statusText}`,
+      response.status
+    );
+  }
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new CampaignApiError(
+      result.error?.message || 'Unknown error occurred',
+      response.status,
+      result.error?.code
+    );
+  }
+
+  return result;
 }
 
 // Re-export for convenience
