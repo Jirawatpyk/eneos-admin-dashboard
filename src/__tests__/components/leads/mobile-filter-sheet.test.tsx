@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MobileFilterSheet } from '@/components/leads/mobile-filter-sheet'
 
@@ -103,16 +103,19 @@ describe('MobileFilterSheet', () => {
     })
 
     it('should show loading state during apply', async () => {
-      const user = userEvent.setup()
-      const slowApply = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+      // Use never-resolving promise to keep the component in loading state
+      const slowApply = vi.fn().mockReturnValue(new Promise(() => {}))
 
       render(<MobileFilterSheet {...defaultProps} onApply={slowApply} />)
 
       const applyButton = screen.getByRole('button', { name: /apply/i })
-      await user.click(applyButton)
+      // Use fireEvent (not userEvent.click) to avoid awaiting the full async chain
+      fireEvent.click(applyButton)
 
       // AC6, AC13: Loading state
-      expect(applyButton).toBeDisabled()
+      await waitFor(() => {
+        expect(applyButton).toBeDisabled()
+      })
     })
   })
 
