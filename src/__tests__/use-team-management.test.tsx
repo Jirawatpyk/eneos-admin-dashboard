@@ -147,7 +147,7 @@ describe('useUpdateTeamMember', () => {
   it('[P1] should call PATCH endpoint', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ success: true, data: { name: 'Updated' } }),
+      json: () => Promise.resolve({ success: true, data: { email: 'updated@co.th' } }),
     });
 
     const { result } = renderHook(
@@ -155,7 +155,7 @@ describe('useUpdateTeamMember', () => {
       { wrapper: createWrapper() }
     );
 
-    result.current.mutate({ lineUserId: 'U001', updates: { name: 'Updated' } });
+    result.current.mutate({ lineUserId: 'U001', updates: { email: 'updated@co.th' } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -163,7 +163,7 @@ describe('useUpdateTeamMember', () => {
       '/api/admin/sales-team/U001',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ name: 'Updated' }),
+        body: JSON.stringify({ email: 'updated@co.th' }),
       })
     );
   });

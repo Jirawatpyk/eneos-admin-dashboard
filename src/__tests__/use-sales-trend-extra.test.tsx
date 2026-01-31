@@ -42,7 +42,7 @@ describe('useSalesTrend', () => {
 
   afterEach(() => {
     vi.resetAllMocks();
-    process.env.NODE_ENV = originalNodeEnv;
+    (process.env as Record<string, string>).NODE_ENV = originalNodeEnv!;
   });
 
   describe('[P1] Successful API response', () => {
@@ -100,7 +100,7 @@ describe('useSalesTrend', () => {
 
   describe('[P1] Dev mode fallback', () => {
     it('should return mock data when API returns 404 in dev mode', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as Record<string, string>).NODE_ENV = 'development';
 
       mockFetch.mockResolvedValue({
         ok: false,
@@ -121,7 +121,7 @@ describe('useSalesTrend', () => {
     });
 
     it('should return mock data on network error in dev mode', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as Record<string, string>).NODE_ENV = 'development';
 
       mockFetch.mockRejectedValue(new Error('Network error'));
 
@@ -140,7 +140,7 @@ describe('useSalesTrend', () => {
 
   describe('[P1] Error recovery in dev mode', () => {
     it('should fallback to mock data on 500 error in dev', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as Record<string, string>).NODE_ENV = 'development';
 
       mockFetch.mockResolvedValue({
         ok: false,
@@ -157,7 +157,7 @@ describe('useSalesTrend', () => {
     });
 
     it('should fallback to mock data on network error in dev', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as Record<string, string>).NODE_ENV = 'development';
 
       mockFetch.mockRejectedValue(new Error('Connection refused'));
 
@@ -183,7 +183,7 @@ describe('useSalesTrend', () => {
     });
 
     it('should not fetch when userId is empty', () => {
-      const { result } = renderHook(
+      renderHook(
         () => useSalesTrend('', 30),
         { wrapper: createWrapper() }
       );
@@ -211,7 +211,7 @@ describe('useSalesTrend', () => {
 
   describe('[P1] Invalid API response', () => {
     it('should fallback to mock data on invalid response in dev', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as Record<string, string>).NODE_ENV = 'development';
 
       mockFetch.mockResolvedValue({
         ok: true,

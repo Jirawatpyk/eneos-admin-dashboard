@@ -62,7 +62,6 @@ describe('CustomDateRange', () => {
         to: '2026-01-31T00:00:00.000Z',
       });
 
-      vi.mocked(vi.fn()).mockImplementation;
       // Override searchParams for this test
       const useSearchParamsMock = vi.fn(() => params);
       vi.doMock('next/navigation', () => ({

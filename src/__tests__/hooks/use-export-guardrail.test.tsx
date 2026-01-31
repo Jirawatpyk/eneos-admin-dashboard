@@ -50,7 +50,7 @@ describe('useExport - Guardrail Tests', () => {
       if (tagName === 'a') {
         capturedLink = element as HTMLAnchorElement;
         // Mock click to prevent actual navigation
-        element.click = mockClick;
+        element.click = mockClick as unknown as typeof element.click;
       }
       return element;
     });

@@ -24,11 +24,13 @@ function createTestQueryClient() {
 
 function createWrapper() {
   const queryClient = createTestQueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return function TestWrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  };
 }
 
 const mockEventsResponse = {

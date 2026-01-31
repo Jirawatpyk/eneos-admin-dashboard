@@ -39,7 +39,7 @@ describe('[P1] SortableHeader Component (Fix #7 extraction)', () => {
   });
 
   it('should show unsorted icon when column is not active', () => {
-    const { container } = render(
+    render(
       <SortableHeader
         columnId="delivered"
         currentSortBy="Last_Updated"
@@ -243,11 +243,13 @@ function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return function TestWrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  };
 }
 
 // Generate N events with sequential emails
@@ -454,7 +456,7 @@ describe('[P2] createCampaignColumns Factory (Fix #7)', () => {
 
   it('should have correct accessor keys in order', () => {
     const columns = createCampaignColumns(defaultParams);
-    const keys = columns.map((c) => c.accessorKey ?? (c as { id?: string }).id);
+    const keys = columns.map((c) => (c as { accessorKey?: string }).accessorKey ?? (c as { id?: string }).id);
     expect(keys).toEqual([
       'campaignName',
       'delivered',

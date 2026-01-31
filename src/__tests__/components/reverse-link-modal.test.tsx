@@ -30,6 +30,7 @@ const mockLineAccount = {
   lineUserId: 'U1234567890abcdef',
   name: 'LINE User',
   displayName: 'LINE User',
+  createdAt: '2026-01-15T00:00:00Z',
 };
 
 describe('ReverseLinkModal', () => {

@@ -14,7 +14,7 @@ import { PdfViewer } from '@/components/export/pdf-viewer';
 
 // Mock react-pdf
 vi.mock('react-pdf', () => ({
-  Document: ({ children, file, loading, error, onLoadSuccess, onLoadError }: {
+  Document: ({ children, file, onLoadSuccess, onLoadError }: {
     children: React.ReactNode;
     file: Blob | null;
     loading?: React.ReactNode;

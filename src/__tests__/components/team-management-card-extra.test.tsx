@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 // Mock all hooks
 vi.mock('@/hooks', () => ({
@@ -14,9 +14,8 @@ vi.mock('@/hooks', () => ({
 
 // Mock child components to simplify testing
 vi.mock('@/components/settings/team-member-filter', () => ({
-  TeamMemberFilter: vi.fn(({ filter, onFilterChange, disabled }: {
+  TeamMemberFilter: vi.fn(({ filter, disabled }: {
     filter: { status: string; role: string };
-    onFilterChange: (f: unknown) => void;
     disabled: boolean;
   }) => (
     <div data-testid="mock-team-filter" data-disabled={disabled}>

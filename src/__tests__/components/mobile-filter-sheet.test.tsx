@@ -33,11 +33,12 @@ vi.mock('@/components/leads/lead-source-filter', () => ({
 }));
 
 import { MobileFilterSheet } from '@/components/leads/mobile-filter-sheet';
+import type { LeadStatus } from '@/types/lead';
 
 const defaultProps = {
   open: true,
   onOpenChange: vi.fn(),
-  status: [] as string[],
+  status: [] as LeadStatus[],
   owner: [] as string[],
   dateRange: null,
   leadSource: null,

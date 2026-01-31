@@ -251,7 +251,7 @@ describe('CampaignDetailSheet', () => {
 
   describe('[P1] First event display', () => {
     it('should show dash when firstEvent is null', () => {
-      const campaignNoFirstEvent = { ...mockCampaign, firstEvent: null };
+      const campaignNoFirstEvent = { ...mockCampaign, firstEvent: null } as unknown as CampaignStatsItem;
       render(
         <CampaignDetailSheet campaign={campaignNoFirstEvent} open={true} onOpenChange={vi.fn()} />
       );

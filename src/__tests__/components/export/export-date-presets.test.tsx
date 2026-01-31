@@ -5,7 +5,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ExportDatePresets } from '@/components/export/export-date-presets';
-import type { ExportPresetType } from '@/lib/export-date-presets';
 
 describe('ExportDatePresets', () => {
   const mockOnPresetSelect = vi.fn();
