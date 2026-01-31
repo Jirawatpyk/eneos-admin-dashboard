@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Call backend API (sales-team endpoint)
-    const apiUrl = `${BACKEND_URL}/api/admin/sales-team/list`;
+    // Call backend API (sales-team endpoint - returns { data: { team: [...] } })
+    const apiUrl = `${BACKEND_URL}/api/admin/sales-team`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',
