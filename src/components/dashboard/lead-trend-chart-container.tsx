@@ -9,17 +9,12 @@
 
 import { LeadTrendChart } from './lead-trend-chart';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
-import type { DashboardPeriod } from '@/types/dashboard';
-
-interface LeadTrendChartContainerProps {
-  period?: DashboardPeriod;
-}
 
 /**
  * Container component that fetches data and renders LeadTrendChart
  */
-export function LeadTrendChartContainer({ period = 'month' }: LeadTrendChartContainerProps) {
-  const { data, isLoading } = useDashboardData({ period });
+export function LeadTrendChartContainer() {
+  const { data, isLoading } = useDashboardData();
 
   return (
     <LeadTrendChart

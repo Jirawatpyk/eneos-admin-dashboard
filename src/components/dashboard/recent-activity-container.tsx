@@ -11,11 +11,7 @@ import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { RecentActivity } from './recent-activity';
 import { DashboardError } from './dashboard-error';
 import type { Activity, ActivityType } from './activity-item';
-import type { ApiActivityItem, DashboardPeriod } from '@/types/dashboard';
-
-interface RecentActivityContainerProps {
-  period?: DashboardPeriod;
-}
+import type { ApiActivityItem } from '@/types/dashboard';
 
 /**
  * Map API activity type to frontend activity type
@@ -78,8 +74,8 @@ function transformActivities(apiActivities: ApiActivityItem[]): Activity[] {
  * Recent Activity Container Component
  * Fetches dashboard data and renders RecentActivity with transformed data
  */
-export function RecentActivityContainer({ period = 'month' }: RecentActivityContainerProps) {
-  const { data, isLoading, isError, error, refetch } = useDashboardData({ period });
+export function RecentActivityContainer() {
+  const { data, isLoading, isError, error, refetch } = useDashboardData();
 
   // Error state
   if (isError && error) {

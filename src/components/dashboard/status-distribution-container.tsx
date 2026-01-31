@@ -9,17 +9,12 @@
 
 import { StatusDistributionChart } from './status-distribution-chart';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
-import type { DashboardPeriod } from '@/types/dashboard';
-
-interface StatusDistributionContainerProps {
-  period?: DashboardPeriod;
-}
 
 /**
  * Container component that fetches data and renders StatusDistributionChart
  */
-export function StatusDistributionContainer({ period = 'month' }: StatusDistributionContainerProps) {
-  const { data, isLoading } = useDashboardData({ period });
+export function StatusDistributionContainer() {
+  const { data, isLoading } = useDashboardData();
 
   // Provide default values if data is not available
   const summary = data?.summary ?? {

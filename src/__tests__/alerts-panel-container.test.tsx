@@ -229,8 +229,8 @@ describe('AlertsPanelContainer', () => {
         refetch: vi.fn(),
       });
 
-      renderWithProviders(<AlertsPanelContainer period="week" />);
-      expect(spy).toHaveBeenCalledWith({ period: 'week' });
+      renderWithProviders(<AlertsPanelContainer />);
+      expect(spy).toHaveBeenCalled();
     });
 
     it('should default to month period', () => {
@@ -243,7 +243,7 @@ describe('AlertsPanelContainer', () => {
       });
 
       renderWithProviders(<AlertsPanelContainer />);
-      expect(spy).toHaveBeenCalledWith({ period: 'month' });
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

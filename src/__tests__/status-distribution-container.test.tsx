@@ -187,7 +187,7 @@ describe('StatusDistributionContainer', () => {
 
       render(
         <TestWrapper>
-          <StatusDistributionContainer period="week" />
+          <StatusDistributionContainer />
         </TestWrapper>
       );
 

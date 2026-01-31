@@ -41,9 +41,13 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'month';
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
     // Forward request to Backend API
-    const backendUrl = `${BACKEND_URL}/api/admin/dashboard?period=${period}`;
+    let backendUrl = `${BACKEND_URL}/api/admin/dashboard?period=${period}`;
+    if (startDate) backendUrl += `&startDate=${encodeURIComponent(startDate)}`;
+    if (endDate) backendUrl += `&endDate=${encodeURIComponent(endDate)}`;
 
     console.log('[Dashboard API] Calling backend:', backendUrl);
 

@@ -26,14 +26,20 @@ export class DashboardApiError extends Error {
 
 /**
  * Fetch dashboard data from backend API
- * @param period - Time period filter (week, month, quarter, year)
+ * @param period - Time period filter (week, month, quarter, year, custom)
+ * @param startDate - Start date for custom period (ISO string)
+ * @param endDate - End date for custom period (ISO string)
  * @returns Dashboard data with summary and trends
  * @throws DashboardApiError on failure
  */
 export async function fetchDashboardData(
-  period: DashboardPeriod = 'month'
+  period: DashboardPeriod = 'month',
+  startDate?: string,
+  endDate?: string,
 ): Promise<DashboardData> {
-  const url = `${API_BASE_URL}/api/admin/dashboard?period=${period}`;
+  let url = `${API_BASE_URL}/api/admin/dashboard?period=${period}`;
+  if (period === 'custom' && startDate) url += `&startDate=${encodeURIComponent(startDate)}`;
+  if (period === 'custom' && endDate) url += `&endDate=${encodeURIComponent(endDate)}`;
 
   const response = await fetch(url, {
     method: 'GET',

@@ -9,14 +9,9 @@
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { TopSalesTable } from './top-sales-table';
 import { DashboardError } from './dashboard-error';
-import type { DashboardPeriod } from '@/types/dashboard';
 
-interface TopSalesTableContainerProps {
-  period?: DashboardPeriod;
-}
-
-export function TopSalesTableContainer({ period = 'month' }: TopSalesTableContainerProps) {
-  const { data, isLoading, isError, error, refetch } = useDashboardData({ period });
+export function TopSalesTableContainer() {
+  const { data, isLoading, isError, error, refetch } = useDashboardData();
 
   // Error state
   if (isError && error) {

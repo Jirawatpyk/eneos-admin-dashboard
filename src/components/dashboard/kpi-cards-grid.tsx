@@ -13,19 +13,12 @@ import { KPICard } from './kpi-card';
 import { KPICardsSkeletonGrid } from './kpi-card-skeleton';
 import { DashboardError } from './dashboard-error';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
-import type { DashboardPeriod } from '@/types/dashboard';
-
-interface KPICardsGridProps {
-  period?: DashboardPeriod;
-}
 
 /**
  * Grid of 4 KPI cards with loading and error states
  */
-export function KPICardsGrid({ period = 'month' }: KPICardsGridProps) {
-  const { data, isLoading, isError, error, refetch } = useDashboardData({
-    period,
-  });
+export function KPICardsGrid() {
+  const { data, isLoading, isError, error, refetch } = useDashboardData();
 
   // AC#5: Show skeleton while loading
   if (isLoading) {

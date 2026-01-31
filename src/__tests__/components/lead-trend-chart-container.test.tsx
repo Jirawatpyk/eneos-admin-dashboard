@@ -55,20 +55,12 @@ describe('LeadTrendChartContainer', () => {
     expect(callProps.isLoading).toBe(false);
   });
 
-  it('[P1] should use default period "month"', () => {
+  it('[P1] should call useDashboardData hook', () => {
     mockUseDashboardData.mockReturnValue({ data: undefined, isLoading: false });
 
     render(<LeadTrendChartContainer />);
 
-    expect(mockUseDashboardData).toHaveBeenCalledWith({ period: 'month' });
-  });
-
-  it('[P1] should pass custom period to hook', () => {
-    mockUseDashboardData.mockReturnValue({ data: undefined, isLoading: false });
-
-    render(<LeadTrendChartContainer period="week" />);
-
-    expect(mockUseDashboardData).toHaveBeenCalledWith({ period: 'week' });
+    expect(mockUseDashboardData).toHaveBeenCalled();
   });
 
   it('[P1] should handle undefined trends gracefully', () => {

@@ -10,18 +10,13 @@
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { AlertsPanel } from './alerts-panel';
 import { DashboardError } from './dashboard-error';
-import type { DashboardPeriod } from '@/types/dashboard';
-
-interface AlertsPanelContainerProps {
-  period?: DashboardPeriod;
-}
 
 /**
  * Alerts Panel Container Component
  * Fetches dashboard data and renders AlertsPanel with alerts
  */
-export function AlertsPanelContainer({ period = 'month' }: AlertsPanelContainerProps) {
-  const { data, isLoading, isError, error, refetch } = useDashboardData({ period });
+export function AlertsPanelContainer() {
+  const { data, isLoading, isError, error, refetch } = useDashboardData();
 
   // Error state
   if (isError && error) {

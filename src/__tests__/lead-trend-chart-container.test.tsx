@@ -189,7 +189,7 @@ describe('LeadTrendChartContainer', () => {
 
       render(
         <TestWrapper>
-          <LeadTrendChartContainer period="week" />
+          <LeadTrendChartContainer />
         </TestWrapper>
       );
 

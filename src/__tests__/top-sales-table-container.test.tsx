@@ -167,7 +167,7 @@ describe('TopSalesTableContainer', () => {
       refetch: vi.fn(),
     });
 
-    render(<TopSalesTableContainer period="week" />);
+    render(<TopSalesTableContainer />);
 
     expect(screen.getByTestId('top-sales-table')).toBeInTheDocument();
   });

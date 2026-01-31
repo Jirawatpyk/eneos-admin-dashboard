@@ -3,12 +3,13 @@
  * Story 2.7: Date Filter Integration
  * Story 2.8: Auto Refresh Integration
  *
- * Client component that reads period from URL and passes to all containers
+ * Client component that renders all dashboard containers.
+ * Period state is managed via URL params and read by useDashboardPeriod() hook
+ * inside each container — no prop drilling needed.
  */
 'use client';
 
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   KPICardsGrid,
   LeadTrendChartContainer,
@@ -28,31 +29,6 @@ import { StatusDistributionSkeleton } from './status-distribution-skeleton';
 import { TopSalesTableSkeleton } from './top-sales-table-skeleton';
 import { RecentActivitySkeleton } from './recent-activity-skeleton';
 import { AlertsPanelSkeleton } from './alerts-panel-skeleton';
-import type { Period } from './date-filter';
-import type { DashboardPeriod } from '@/types/dashboard';
-
-/**
- * Valid periods for the dashboard
- */
-const VALID_PERIODS: Period[] = ['today', 'week', 'month', 'lastMonth', 'custom'];
-
-/**
- * Map Period to DashboardPeriod (API expects specific values)
- */
-function mapPeriodToDashboardPeriod(period: Period): DashboardPeriod {
-  switch (period) {
-    case 'today':
-      return 'today';
-    case 'week':
-      return 'week';
-    case 'lastMonth':
-      return 'month'; // API might need adjustment
-    case 'custom':
-      return 'month'; // Custom handled separately
-    default:
-      return 'month';
-  }
-}
 
 interface DashboardHeaderProps {
   userName: string;
@@ -108,17 +84,11 @@ interface DashboardContentProps {
 
 /**
  * Dashboard Content Component
- * Reads period from URL and passes to all container components
+ * Renders all dashboard containers. Each container reads period from URL
+ * via useDashboardPeriod() hook internally — no props needed.
  * Integrates auto-refresh functionality (Story 2.8)
  */
 export function DashboardContent({ userName }: DashboardContentProps) {
-  const searchParams = useSearchParams();
-
-  // Get period from URL, validate, and map to API period
-  const urlPeriod = searchParams.get('period') as Period | null;
-  const period: Period = urlPeriod && VALID_PERIODS.includes(urlPeriod) ? urlPeriod : 'month';
-  const apiPeriod = mapPeriodToDashboardPeriod(period);
-
   // Auto refresh hook (Story 2.8)
   const {
     enabled: autoRefreshEnabled,
@@ -142,37 +112,37 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
       {/* KPI Cards - Story 2.1 */}
       <Suspense fallback={<KPICardsSkeletonGrid />}>
-        <KPICardsGrid period={apiPeriod} />
+        <KPICardsGrid />
       </Suspense>
 
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Lead Trend Chart - Story 2.2 */}
         <Suspense fallback={<LeadTrendChartSkeleton />}>
-          <LeadTrendChartContainer period={apiPeriod} />
+          <LeadTrendChartContainer />
         </Suspense>
 
         {/* Status Distribution Chart - Story 2.3 */}
         <Suspense fallback={<StatusDistributionSkeleton />}>
-          <StatusDistributionContainer period={apiPeriod} />
+          <StatusDistributionContainer />
         </Suspense>
       </div>
 
       {/* Top Sales Table - Story 2.4 */}
       <Suspense fallback={<TopSalesTableSkeleton />}>
-        <TopSalesTableContainer period={apiPeriod} />
+        <TopSalesTableContainer />
       </Suspense>
 
       {/* Bottom Section - Story 2.5 & 2.6 */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Recent Activity - Story 2.5 */}
         <Suspense fallback={<RecentActivitySkeleton />}>
-          <RecentActivityContainer period={apiPeriod} />
+          <RecentActivityContainer />
         </Suspense>
 
         {/* Alerts Panel - Story 2.6 */}
         <Suspense fallback={<AlertsPanelSkeleton />}>
-          <AlertsPanelContainer period={apiPeriod} />
+          <AlertsPanelContainer />
         </Suspense>
       </div>
     </div>
