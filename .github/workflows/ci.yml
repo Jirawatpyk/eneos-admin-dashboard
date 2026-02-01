@@ -1,0 +1,255 @@
+# ===========================================
+# ENEOS Admin Dashboard - CI/CD Pipeline
+# GitHub Actions for Next.js + Vitest + Playwright
+#
+# Pipeline: quality -> test (4 shards) -> test-e2e
+#                   -> burn-in (PR only)
+#                   -> build (deployment readiness)
+# ===========================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly full regression - Sunday 04:00 UTC
+    - cron: '0 4 * * 0'
+
+env:
+  NODE_VERSION: '20'
+
+# Cancel in-progress runs for the same PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================
+  # Quality Gate: Lint + Type Check (fail fast)
+  # ===========================================
+  quality:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run type-check
+
+  # ===========================================
+  # Unit Tests: Vitest with Sharding (4-way)
+  # 3,354 tests / 4 shards = ~1 min per shard
+  # ===========================================
+  test:
+    name: Unit Tests (Shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    needs: quality
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests (shard ${{ matrix.shard }}/4)
+        run: npx vitest run --shard=${{ matrix.shard }}/4
+
+      - name: Upload coverage (shard 1 only)
+        if: matrix.shard == 1
+        run: npx vitest run --coverage --shard=1/4
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: matrix.shard == 1 && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+  # ===========================================
+  # E2E Tests: Playwright (Chromium)
+  # ===========================================
+  test-e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: quality
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: true
+          NEXT_PUBLIC_E2E_TEST_MODE: 'true'
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
+          NEXTAUTH_URL: http://localhost:3001
+          NEXTAUTH_SECRET: ci-test-secret
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  # ===========================================
+  # Burn-In: Flaky Test Detection (PR only)
+  # ===========================================
+  burn-in:
+    name: Burn-In (Flaky Detection)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Detect changed test files
+        id: changed-tests
+        run: |
+          CHANGED_SPECS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'src/**/*.test.ts' 'src/**/*.test.tsx' || echo "")
+          echo "specs=${CHANGED_SPECS}" >> $GITHUB_OUTPUT
+          if [ -n "$CHANGED_SPECS" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed test files:"
+            echo "$CHANGED_SPECS" | sed 's/^/  - /'
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No test files changed - running full suite burn-in"
+          fi
+
+      - name: Run burn-in (5 iterations on changed tests)
+        if: steps.changed-tests.outputs.has_changes == 'true'
+        run: |
+          SPECS="${{ steps.changed-tests.outputs.specs }}"
+          echo "Running burn-in: 5 iterations on changed test files"
+          echo ""
+          for i in 1 2 3 4 5; do
+            echo "============================================"
+            echo "Burn-in iteration $i/5"
+            echo "============================================"
+            npx vitest run $SPECS || {
+              echo ""
+              echo "BURN-IN FAILED on iteration $i"
+              echo "Tests are flaky - fix before merging"
+              exit 1
+            }
+            echo "Iteration $i passed"
+            echo ""
+          done
+          echo "============================================"
+          echo "BURN-IN PASSED: 5/5 iterations successful"
+          echo "============================================"
+
+      - name: Run full burn-in (no changed tests - run full suite 2x)
+        if: steps.changed-tests.outputs.has_changes == 'false'
+        run: |
+          echo "No specific test changes - running full suite burn-in (2 iterations)"
+          echo ""
+          for i in 1 2; do
+            echo "============================================"
+            echo "Full burn-in iteration $i/2"
+            echo "============================================"
+            npx vitest run || {
+              echo ""
+              echo "BURN-IN FAILED on iteration $i"
+              exit 1
+            }
+            echo "Iteration $i passed"
+            echo ""
+          done
+          echo "============================================"
+          echo "FULL BURN-IN PASSED: 2/2 iterations successful"
+          echo "============================================"
+
+  # ===========================================
+  # Build: Next.js Production Build
+  # ===========================================
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: [test, test-e2e]
+    if: github.event_name == 'push'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.example.com
+          NEXTAUTH_URL: https://admin.example.com
+          NEXTAUTH_SECRET: build-check-secret
