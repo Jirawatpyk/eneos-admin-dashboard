@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Eye, FileDown, FileSpreadsheet, FileText, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useExport, type ExportFormat, type ExportStatus } from '@/hooks/use-export';
 import { useSalesOwners } from '@/hooks/use-sales-owners';
 import { useCampaigns } from '@/hooks/use-campaigns';
-import { PdfPreviewModal } from '@/components/export/pdf-preview-modal';
 import { ExportDatePresets } from '@/components/export/export-date-presets';
 import { ExportDateRangePicker } from '@/components/export/export-date-range-picker';
 import { ExportFieldSelector } from '@/components/export/export-field-selector';
@@ -19,6 +19,12 @@ import { getExportDateRange, EXPORT_PRESETS, type ExportPresetType } from '@/lib
 import { LEAD_EXPORT_COLUMNS } from '@/lib/export-leads';
 import type { Lead } from '@/types/lead';
 import type { DateRange } from 'react-day-picker';
+
+// Dynamic import to prevent SSR issues with pdf.js (DOMMatrix is browser-only)
+const PdfPreviewModal = dynamic(
+  () => import('@/components/export/pdf-preview-modal').then((mod) => mod.PdfPreviewModal),
+  { ssr: false }
+);
 
 interface ExportFormData {
   format: ExportFormat;
