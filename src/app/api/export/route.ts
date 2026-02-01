@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'all';
     const owner = searchParams.get('owner') || 'all';
     const campaign = searchParams.get('campaign') || 'all';
+    const fields = searchParams.get('fields');
 
     // Build backend API URL
     const apiUrl = new URL(`${BACKEND_URL}/api/admin/export`);
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
     if (status !== 'all') apiUrl.searchParams.append('status', status);
     if (owner !== 'all') apiUrl.searchParams.append('owner', owner);
     if (campaign !== 'all') apiUrl.searchParams.append('campaign', campaign);
+    if (fields) apiUrl.searchParams.append('fields', fields);
 
     // Call backend API with Google ID token
     const response = await fetch(apiUrl.toString(), {
@@ -105,7 +107,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Export API route error:', error);
+    // Log error in development only (Next.js will strip in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Export API route error:', error);
+    }
     return NextResponse.json(
       {
         success: false,

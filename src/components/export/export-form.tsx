@@ -13,8 +13,11 @@ import { useCampaigns } from '@/hooks/use-campaigns';
 import { PdfPreviewModal } from '@/components/export/pdf-preview-modal';
 import { ExportDatePresets } from '@/components/export/export-date-presets';
 import { ExportDateRangePicker } from '@/components/export/export-date-range-picker';
+import { ExportFieldSelector } from '@/components/export/export-field-selector';
 import { useRecordCount } from '@/hooks/use-record-count';
 import { getExportDateRange, EXPORT_PRESETS, type ExportPresetType } from '@/lib/export-date-presets';
+import { LEAD_EXPORT_COLUMNS } from '@/lib/export-leads';
+import type { Lead } from '@/types/lead';
 import type { DateRange } from 'react-day-picker';
 
 interface ExportFormData {
@@ -32,6 +35,9 @@ export function ExportForm() {
     owner: 'all',
     campaign: 'all',
   });
+  const [selectedFields, setSelectedFields] = useState<Set<keyof Lead>>(
+    new Set(LEAD_EXPORT_COLUMNS.map((c) => c.key))
+  );
   const [activePreset, setActivePreset] = useState<ExportPresetType | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
@@ -80,9 +86,14 @@ export function ExportForm() {
     setFormData({ ...formData, dateRange: undefined });
   };
 
+  // Convert Set<keyof Lead> to header strings for ExportParams
+  const selectedFieldHeaders = LEAD_EXPORT_COLUMNS
+    .filter((col) => selectedFields.has(col.key))
+    .map((col) => col.header);
+
   const handleExport = async () => {
     try {
-      await exportData(formData);
+      await exportData({ ...formData, fields: selectedFieldHeaders });
     } catch {
       // Error already handled by useExport hook (toast notification)
     }
@@ -90,7 +101,7 @@ export function ExportForm() {
 
   const handlePreviewPdf = async () => {
     try {
-      const result = await previewPdf(formData);
+      const result = await previewPdf({ ...formData, fields: selectedFieldHeaders });
       setPreviewBlob(result.blob);
       setPreviewFilename(result.filename);
       setPreviewModalOpen(true);
@@ -286,6 +297,13 @@ export function ExportForm() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Data Fields Selection (Story 6.5) */}
+          <ExportFieldSelector
+            selectedFields={selectedFields}
+            onFieldsChange={setSelectedFields}
+            isPdfFormat={isPdfFormat}
+          />
 
           {/* Action Buttons */}
           <div className="flex gap-3">

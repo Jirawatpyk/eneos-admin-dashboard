@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { LEAD_EXPORT_COLUMNS } from '@/lib/export-leads';
 import type { DateRange } from 'react-day-picker';
 
 export type ExportFormat = 'xlsx' | 'csv' | 'pdf';
@@ -11,6 +12,7 @@ export interface ExportParams {
   status: ExportStatus;
   owner: string;
   campaign: string;
+  fields?: string[];
 }
 
 export interface PreviewResult {
@@ -50,6 +52,11 @@ function buildQueryParams(params: ExportParams): URLSearchParams {
     const month = String(params.dateRange.to.getMonth() + 1).padStart(2, '0');
     const day = String(params.dateRange.to.getDate()).padStart(2, '0');
     queryParams.append('endDate', `${year}-${month}-${day}`);
+  }
+
+  // Add fields param if not all fields selected (optimization: omit when all selected)
+  if (params.fields && params.fields.length > 0 && params.fields.length < LEAD_EXPORT_COLUMNS.length) {
+    queryParams.append('fields', params.fields.join(','));
   }
 
   return queryParams;

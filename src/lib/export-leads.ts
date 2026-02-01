@@ -141,24 +141,29 @@ function escapeCSVValue(value: string): string {
  *
  * @param leads - Array of leads to export
  */
-export function exportLeadsToExcel(leads: Lead[]): void {
+export function exportLeadsToExcel(leads: Lead[], selectedFields?: Set<keyof Lead>): void {
+  // Filter columns if selectedFields provided
+  const columns = selectedFields
+    ? LEAD_EXPORT_COLUMNS.filter((col) => selectedFields.has(col.key))
+    : LEAD_EXPORT_COLUMNS;
+
   // Create workbook
   const wb = XLSX.utils.book_new();
 
   // Build header row
-  const headers = LEAD_EXPORT_COLUMNS.map((col) => col.header);
+  const headers = columns.map((col) => col.header);
 
   // Build data rows
   const rows = leads.map((lead) => {
     const formatted = formatLeadForExport(lead);
-    return LEAD_EXPORT_COLUMNS.map((col) => formatted[col.key] || '');
+    return columns.map((col) => formatted[col.key] || '');
   });
 
   // Create worksheet from array of arrays
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-  // Set column widths for better readability (derived from LEAD_EXPORT_COLUMNS)
-  ws['!cols'] = LEAD_EXPORT_COLUMNS.map((col) => ({ wch: col.width }));
+  // Set column widths for better readability (derived from filtered columns)
+  ws['!cols'] = columns.map((col) => ({ wch: col.width }));
 
   // Add worksheet to workbook
   XLSX.utils.book_append_sheet(wb, ws, 'Leads');
@@ -180,14 +185,19 @@ export function exportLeadsToExcel(leads: Lead[]): void {
  *
  * @param leads - Array of leads to export
  */
-export function exportLeadsToCSV(leads: Lead[]): void {
+export function exportLeadsToCSV(leads: Lead[], selectedFields?: Set<keyof Lead>): void {
+  // Filter columns if selectedFields provided
+  const columns = selectedFields
+    ? LEAD_EXPORT_COLUMNS.filter((col) => selectedFields.has(col.key))
+    : LEAD_EXPORT_COLUMNS;
+
   // Build header row
-  const headers = LEAD_EXPORT_COLUMNS.map((col) => col.header);
+  const headers = columns.map((col) => col.header);
 
   // Build data rows
   const rows = leads.map((lead) => {
     const formatted = formatLeadForExport(lead);
-    return LEAD_EXPORT_COLUMNS.map((col) => escapeCSVValue(formatted[col.key] || ''));
+    return columns.map((col) => escapeCSVValue(formatted[col.key] || ''));
   });
 
   // Join with commas and newlines
