@@ -91,10 +91,13 @@ export function ExportFieldSelector({
         {LEAD_EXPORT_COLUMNS.map((col) => (
           <label
             key={col.key}
+            htmlFor={`field-checkbox-${col.key}`}
             className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-accent"
             data-testid={`field-${col.key}`}
           >
             <Checkbox
+              id={`field-checkbox-${col.key}`}
+              aria-label={`Include ${col.header} field in export`}
               checked={selectedFields.has(col.key)}
               onCheckedChange={(checked) => handleToggleField(col.key, !!checked)}
               disabled={isPdfFormat}

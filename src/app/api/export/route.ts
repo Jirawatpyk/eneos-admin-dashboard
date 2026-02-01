@@ -107,7 +107,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Export API route error:', error);
+    // Log error in development only (Next.js will strip in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Export API route error:', error);
+    }
     return NextResponse.json(
       {
         success: false,
