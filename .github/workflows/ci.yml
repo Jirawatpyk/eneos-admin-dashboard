@@ -11,9 +11,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, master, develop]
   pull_request:
-    branches: [main]
+    branches: [main, master]
   schedule:
     # Weekly full regression - Sunday 04:00 UTC
     - cron: '0 4 * * 0'
