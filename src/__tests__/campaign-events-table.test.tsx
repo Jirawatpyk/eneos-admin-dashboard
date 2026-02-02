@@ -56,9 +56,10 @@ describe('CampaignEventsTable', () => {
   it('should render all event rows', () => {
     render(<CampaignEventsTable {...defaultProps} />);
 
-    expect(screen.getByTestId('event-row-1')).toBeInTheDocument();
-    expect(screen.getByTestId('event-row-2')).toBeInTheDocument();
-    expect(screen.getByTestId('event-row-3')).toBeInTheDocument();
+    // Composite key: eventId-eventType (Story 5-10 fix)
+    expect(screen.getByTestId('event-row-1-click')).toBeInTheDocument();
+    expect(screen.getByTestId('event-row-2-opened')).toBeInTheDocument();
+    expect(screen.getByTestId('event-row-3-delivered')).toBeInTheDocument();
   });
 
   it('should display email addresses', () => {
