@@ -221,7 +221,7 @@ test.describe('Lead Mobile Filters', () => {
       // Verify chips are displayed
       const statusChip = page.locator('[data-testid="filter-chip-status"]');
       await expect(statusChip).toBeVisible();
-      await expect(statusChip).toContainText('New');
+      await expect(statusChip).toContainText('ใหม่'); // Thai label
 
       const ownerChip = page.locator('[data-testid="filter-chip-owner"]');
       await expect(ownerChip).toBeVisible();
@@ -565,7 +565,7 @@ test.describe('Lead Mobile Filters', () => {
 
       // Verify filters pre-selected in bottom sheet
       const statusFilter = bottomSheet.locator('[data-testid="status-filter-trigger"]');
-      await expect(statusFilter).toContainText('New');
+      await expect(statusFilter).toContainText('ใหม่'); // Thai label
 
       const ownerFilter = bottomSheet.locator('[data-testid="owner-filter-trigger"]');
       await expect(ownerFilter).toContainText('John Doe');

@@ -92,8 +92,8 @@ test.describe('Lead Trend Chart', () => {
       await page.waitForTimeout(500);
 
       // Tremor tooltips appear as floating elements
-      // Check if any tooltip-like element appeared
-      const tooltipVisible = await page.locator('.recharts-tooltip-wrapper, [class*="tooltip"], [class*="Tooltip"]').isVisible();
+      // Check if any tooltip-like element appeared (use .first() for strict mode)
+      const tooltipVisible = await page.locator('.recharts-tooltip-wrapper, [class*="tooltip"], [class*="Tooltip"]').first().isVisible();
 
       // This is a soft assertion - tooltip behavior depends on chart rendering
       if (tooltipVisible) {
