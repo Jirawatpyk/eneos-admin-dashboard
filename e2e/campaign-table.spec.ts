@@ -133,9 +133,9 @@ test.describe('Campaign Table - Story 5.4', () => {
     await expect(page.locator('[data-testid="sort-header-clickRate"]')).toBeVisible();
     await expect(page.locator('[data-testid="sort-header-lastUpdated"]')).toBeVisible();
 
-    // AND: Campaign names are displayed
-    await expect(page.getByText('January Promo Campaign')).toBeVisible();
-    await expect(page.getByText('February Newsletter')).toBeVisible();
+    // AND: Campaign names are displayed (use .first() to avoid Recharts measurement span)
+    await expect(page.getByText('January Promo Campaign').first()).toBeVisible();
+    await expect(page.getByText('February Newsletter').first()).toBeVisible();
   });
 
   test('[P1] should display formatted numbers and percentages (AC#2)', async ({ page }) => {
