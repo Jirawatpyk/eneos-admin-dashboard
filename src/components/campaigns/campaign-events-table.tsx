@@ -79,7 +79,7 @@ export function CampaignEventsTable({
           </TableHeader>
           <TableBody>
             {events.map((event) => (
-              <TableRow key={event.eventId} data-testid={`event-row-${event.eventId}`}>
+              <TableRow key={`${event.eventId}-${event.event}`} data-testid={`event-row-${event.eventId}-${event.event}`}>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
                     <span className="truncate max-w-[200px]">{event.email}</span>
