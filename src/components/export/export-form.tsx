@@ -154,10 +154,11 @@ export function ExportForm() {
                 />
                 <Label
                   htmlFor="format-xlsx"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer min-h-[120px]"
                 >
                   <FileSpreadsheet className="mb-3 h-6 w-6" />
                   <span className="text-sm font-medium">Excel (.xlsx)</span>
+                  <span className="text-xs text-muted-foreground">Formatted spreadsheet with styling</span>
                 </Label>
               </div>
               <div>
@@ -168,10 +169,11 @@ export function ExportForm() {
                 />
                 <Label
                   htmlFor="format-csv"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer min-h-[120px]"
                 >
                   <FileText className="mb-3 h-6 w-6" />
                   <span className="text-sm font-medium">CSV (.csv)</span>
+                  <span className="text-xs text-muted-foreground">Plain text, universal compatibility</span>
                 </Label>
               </div>
               <div>
@@ -182,10 +184,11 @@ export function ExportForm() {
                 />
                 <Label
                   htmlFor="format-pdf"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer min-h-[120px]"
                 >
                   <FileDown className="mb-3 h-6 w-6" />
                   <span className="text-sm font-medium">PDF (.pdf)</span>
+                  <span className="text-xs text-muted-foreground">Print-ready document (max 100 rows)</span>
                 </Label>
               </div>
             </RadioGroup>

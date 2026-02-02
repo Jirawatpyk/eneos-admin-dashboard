@@ -74,30 +74,28 @@ describe('ExportForm - CSV Format (Story 6.8)', () => {
   // AC#1: Format Descriptions
   // Note: These tests are RED phase - they will fail until Story 6.8 is implemented
   describe('AC#1: Format Descriptions', () => {
-    it.skip('should render format description for Excel', async () => {
+    it('should render format description for Excel', async () => {
       // GIVEN: ExportForm is rendered
       render(<ExportForm />);
 
       // THEN: Excel format has description text
-      // Note: This test will FAIL until description is implemented
-      expect(screen.getByText(/formatted.*spreadsheet/i)).toBeInTheDocument();
+      expect(screen.getByText('Formatted spreadsheet with styling')).toBeInTheDocument();
     });
 
-    it.skip('should render format description for CSV', async () => {
+    it('should render format description for CSV', async () => {
       // GIVEN: ExportForm is rendered
       render(<ExportForm />);
 
       // THEN: CSV format has description text
-      // Note: This test will FAIL until description is implemented
-      expect(screen.getByText(/plain text.*universal/i)).toBeInTheDocument();
+      expect(screen.getByText('Plain text, universal compatibility')).toBeInTheDocument();
     });
 
     it('should render format description for PDF', async () => {
       // GIVEN: ExportForm is rendered
       render(<ExportForm />);
 
-      // THEN: PDF format has description text (already shows "max 100 rows" warning)
-      expect(screen.getByText(/pdf/i)).toBeInTheDocument();
+      // THEN: PDF format has description text
+      expect(screen.getByText('Print-ready document (max 100 rows)')).toBeInTheDocument();
     });
   });
 
@@ -192,6 +190,31 @@ describe('ExportForm - CSV Format (Story 6.8)', () => {
       // THEN: Export button has accessible name with format
       const exportButton = screen.getByRole('button', { name: /export as xlsx/i });
       expect(exportButton).toBeInTheDocument();
+    });
+  });
+
+  // AC#5: Field Selection with CSV (Story 6-5 integration)
+  describe('AC#5: Field Selection with CSV', () => {
+    it('should pass selected fields to exportData when CSV format is used', async () => {
+      // GIVEN: ExportForm with CSV selected
+      const user = userEvent.setup();
+      render(<ExportForm />);
+
+      // Select CSV format
+      const csvCard = screen.getByText('CSV (.csv)').closest('label');
+      await user.click(csvCard!);
+
+      // WHEN: Clicking export button
+      const exportButton = screen.getByRole('button', { name: /export as csv/i });
+      await user.click(exportButton);
+
+      // THEN: exportData is called with fields parameter
+      expect(mockExportData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          format: 'csv',
+          fields: expect.any(Array), // Selected field headers
+        })
+      );
     });
   });
 
