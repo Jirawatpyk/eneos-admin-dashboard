@@ -10,7 +10,7 @@
  * The existing report-card.test.tsx covers format selector functionality.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalendarDays } from 'lucide-react';
 import { ReportCard } from '@/components/export/report-card';
@@ -73,7 +73,7 @@ describe('ReportCard - CSV Format (Story 6.8)', () => {
 
     it('should render all three format options in SelectContent', () => {
       // GIVEN: ReportCard is rendered
-      const { container } = render(
+      render(
         <ReportCard preset={defaultPreset} stats={defaultStats} isLoading={false} />
       );
 
