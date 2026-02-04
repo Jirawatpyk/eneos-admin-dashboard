@@ -18,6 +18,9 @@ function createEvent(overrides: Partial<CampaignEventItem> = {}): CampaignEventI
     event: 'click',
     eventAt: '2026-01-30T10:00:00Z',
     url: null,
+    firstname: '',
+    lastname: '',
+    company: '',
     ...overrides,
   };
 }

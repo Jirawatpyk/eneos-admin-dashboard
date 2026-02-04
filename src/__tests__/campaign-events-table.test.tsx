@@ -17,6 +17,9 @@ const mockEvents: CampaignEventItem[] = [
     event: 'click',
     eventAt: '2026-01-30T10:00:00Z',
     url: 'https://example.com/promo',
+    firstname: 'John',
+    lastname: 'Doe',
+    company: 'Acme Corp',
   },
   {
     eventId: 2,
@@ -24,6 +27,9 @@ const mockEvents: CampaignEventItem[] = [
     event: 'opened',
     eventAt: '2026-01-30T09:00:00Z',
     url: null,
+    firstname: 'Jane',
+    lastname: 'Smith',
+    company: '',
   },
   {
     eventId: 3,
@@ -31,6 +37,9 @@ const mockEvents: CampaignEventItem[] = [
     event: 'delivered',
     eventAt: '2026-01-30T08:00:00Z',
     url: null,
+    firstname: '',
+    lastname: '',
+    company: '',
   },
 ];
 
@@ -48,6 +57,8 @@ describe('CampaignEventsTable', () => {
     render(<CampaignEventsTable {...defaultProps} />);
 
     expect(screen.getByText('Email')).toBeInTheDocument();
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Company')).toBeInTheDocument();
     expect(screen.getByText('Event')).toBeInTheDocument();
     expect(screen.getByText('Timestamp')).toBeInTheDocument();
     expect(screen.getByText('URL')).toBeInTheDocument();
@@ -203,5 +214,38 @@ describe('CampaignEventsTable', () => {
       'aria-label',
       'Go to next page'
     );
+  });
+
+  // Story 5-11: Contact data columns
+  it('AC7: should display Name column with firstname + lastname', () => {
+    render(<CampaignEventsTable {...defaultProps} />);
+
+    // John Doe
+    expect(screen.getByTestId('event-name-1-click')).toHaveTextContent('John Doe');
+    // Jane Smith
+    expect(screen.getByTestId('event-name-2-opened')).toHaveTextContent('Jane Smith');
+  });
+
+  it('AC7: should show dash for Name when no contact data', () => {
+    render(<CampaignEventsTable {...defaultProps} />);
+
+    // admin@test.com has no contact data
+    expect(screen.getByTestId('event-name-3-delivered')).toHaveTextContent('-');
+  });
+
+  it('AC7: should display Company column', () => {
+    render(<CampaignEventsTable {...defaultProps} />);
+
+    // Acme Corp
+    expect(screen.getByTestId('event-company-1-click')).toHaveTextContent('Acme Corp');
+  });
+
+  it('AC7: should show dash for Company when empty', () => {
+    render(<CampaignEventsTable {...defaultProps} />);
+
+    // jane has no company
+    expect(screen.getByTestId('event-company-2-opened')).toHaveTextContent('-');
+    // admin has no company
+    expect(screen.getByTestId('event-company-3-delivered')).toHaveTextContent('-');
   });
 });

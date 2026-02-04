@@ -72,6 +72,8 @@ export function CampaignEventsTable({
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Company</TableHead>
               <TableHead className="w-[120px]">Event</TableHead>
               <TableHead className="w-[180px]">Timestamp</TableHead>
               <TableHead>URL</TableHead>
@@ -85,6 +87,14 @@ export function CampaignEventsTable({
                     <span className="truncate max-w-[200px]">{event.email}</span>
                     <CopyEmailButton email={event.email} />
                   </div>
+                </TableCell>
+                <TableCell data-testid={`event-name-${event.eventId}-${event.event}`}>
+                  {event.firstname || event.lastname
+                    ? `${event.firstname} ${event.lastname}`.trim()
+                    : '-'}
+                </TableCell>
+                <TableCell data-testid={`event-company-${event.eventId}-${event.event}`}>
+                  {event.company || '-'}
                 </TableCell>
                 <TableCell>
                   <Badge
