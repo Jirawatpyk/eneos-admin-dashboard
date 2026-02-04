@@ -151,6 +151,10 @@ export interface CampaignEventItem {
   event: 'delivered' | 'opened' | 'click';
   eventAt: string;
   url: string | null;
+  // Contact data from Campaign_Contacts (Story 5-11)
+  firstname: string;
+  lastname: string;
+  company: string;
 }
 
 /**
