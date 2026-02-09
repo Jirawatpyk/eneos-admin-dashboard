@@ -260,7 +260,7 @@ export function SystemHealthCard() {
               <span>{formatUptime(data.uptime)}</span>
             </div>
           )}
-          {data?.timestamp && (
+          {data?.timestamp && !isNaN(new Date(data.timestamp).getTime()) && (
             <div className="flex justify-between" data-testid="metric-last-check">
               <span>Last Check</span>
               <span>

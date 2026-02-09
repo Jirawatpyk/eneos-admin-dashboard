@@ -70,7 +70,9 @@ function StatusRow({ lead }: StatusRowProps) {
           </Badge>
         </div>
         <span className="text-xs text-muted-foreground" data-testid="status-time">
-          {formatDistanceToNow(new Date(lead.updatedAt), { addSuffix: true })}
+          {!isNaN(new Date(lead.updatedAt).getTime())
+            ? formatDistanceToNow(new Date(lead.updatedAt), { addSuffix: true })
+            : '-'}
         </span>
       </div>
 

@@ -160,7 +160,7 @@ export function createCampaignColumns({
         const dateValue = row.getValue<string>('lastUpdated');
         return (
           <span className="text-right block whitespace-nowrap text-muted-foreground">
-            {dateValue
+            {dateValue && !isNaN(new Date(dateValue).getTime())
               ? formatDistanceToNow(new Date(dateValue), { addSuffix: true })
               : '-'}
           </span>
