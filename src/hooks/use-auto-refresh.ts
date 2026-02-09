@@ -14,6 +14,9 @@ import { useQueryClient } from '@tanstack/react-query';
 /** Refresh interval in milliseconds (60 seconds - per project rate limit) */
 export const REFRESH_INTERVAL = 60 * 1000;
 
+/** Minimum spinner display time for visual feedback */
+const MIN_SPINNER_MS = 500;
+
 /** Local storage key for auto-refresh preference */
 export const AUTO_REFRESH_STORAGE_KEY = 'dashboard-auto-refresh';
 
@@ -108,11 +111,13 @@ export function useAutoRefresh(
 
     try {
       // Invalidate all dashboard-related queries
-      await Promise.all(
-        queryKeys.map((key) =>
+      // MIN_SPINNER_MS ensures spinner is visible even when refetch is instant
+      await Promise.all([
+        ...queryKeys.map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] })
-        )
-      );
+        ),
+        new Promise((r) => setTimeout(r, MIN_SPINNER_MS)),
+      ]);
 
       if (isMountedRef.current) {
         setLastUpdated(new Date());
