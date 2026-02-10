@@ -43,7 +43,7 @@ const mockHealthyData = {
   version: '1.0.0',
   uptime: 90061, // 1d 1h 1m
   services: {
-    googleSheets: { status: 'up' as const, latency: 45 },
+    supabase: { status: 'up' as const, latency: 45 },
     geminiAI: { status: 'up' as const, latency: 120 },
     lineAPI: { status: 'up' as const, latency: 30 },
   },
@@ -62,7 +62,7 @@ const mockUnhealthyData = {
   ...mockHealthyData,
   status: 'unhealthy' as const,
   services: {
-    googleSheets: { status: 'down' as const, latency: 0 },
+    supabase: { status: 'down' as const, latency: 0 },
     geminiAI: { status: 'down' as const, latency: 0 },
     lineAPI: { status: 'down' as const, latency: 0 },
   },
@@ -183,9 +183,9 @@ describe('SystemHealthCard', () => {
       });
     });
 
-    it('displays Google Sheets status', () => {
+    it('displays Supabase status', () => {
       render(<SystemHealthCard />, { wrapper: createWrapper() });
-      expect(screen.getByText('Google Sheets')).toBeInTheDocument();
+      expect(screen.getByText('Supabase')).toBeInTheDocument();
       expect(screen.getByText('45ms')).toBeInTheDocument();
     });
 
@@ -231,7 +231,7 @@ describe('SystemHealthCard', () => {
         data: {
           ...mockHealthyData,
           services: {
-            googleSheets: { status: 'unknown' as const, latency: 0 },
+            supabase: { status: 'unknown' as const, latency: 0 },
             geminiAI: { status: 'up' as const, latency: 120 },
             lineAPI: { status: 'up' as const, latency: 30 },
           },
@@ -458,7 +458,7 @@ describe('SystemHealthCard', () => {
 
     it('has service row testids', () => {
       render(<SystemHealthCard />, { wrapper: createWrapper() });
-      expect(screen.getByTestId('service-row-google-sheets')).toBeInTheDocument();
+      expect(screen.getByTestId('service-row-supabase')).toBeInTheDocument();
       expect(screen.getByTestId('service-row-gemini-ai')).toBeInTheDocument();
       expect(screen.getByTestId('service-row-line-api')).toBeInTheDocument();
     });

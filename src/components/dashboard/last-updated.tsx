@@ -62,7 +62,7 @@ export function LastUpdated({
       {showIcon && (
         <Clock className="h-3 w-3" aria-hidden="true" />
       )}
-      <span>อัพเดตล่าสุด: {relativeTime}</span>
+      <span suppressHydrationWarning>อัพเดตล่าสุด: {relativeTime}</span>
     </div>
   );
 }

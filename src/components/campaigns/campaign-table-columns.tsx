@@ -60,7 +60,7 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums">
+        <span className="tabular-nums" suppressHydrationWarning>
           {row.getValue<number>('delivered').toLocaleString()}
         </span>
       ),
@@ -78,7 +78,7 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums">
+        <span className="tabular-nums" suppressHydrationWarning>
           {row.getValue<number>('uniqueOpens').toLocaleString()}
         </span>
       ),
@@ -96,7 +96,7 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums">
+        <span className="tabular-nums" suppressHydrationWarning>
           {row.getValue<number>('uniqueClicks').toLocaleString()}
         </span>
       ),
@@ -159,7 +159,7 @@ export function createCampaignColumns({
       cell: ({ row }) => {
         const dateValue = row.getValue<string>('lastUpdated');
         return (
-          <span className="text-right block whitespace-nowrap text-muted-foreground">
+          <span className="text-right block whitespace-nowrap text-muted-foreground" suppressHydrationWarning>
             {dateValue && !isNaN(new Date(dateValue).getTime())
               ? formatDistanceToNow(new Date(dateValue), { addSuffix: true })
               : '-'}

@@ -79,8 +79,9 @@ export function useCampaignStats(
       // Extract campaigns array from nested response: { data: { data: [...] } }
       return aggregateCampaignStats(response.data.data);
     },
-    staleTime: 60 * 1000, // 1 minute - rate limit aware
+    staleTime: 10 * 1000, // 10 seconds - near real-time
     gcTime: 5 * 60 * 1000, // 5 minutes - garbage collection time (TanStack Query v5)
+    refetchInterval: 10 * 1000, // Auto-refresh every 10 seconds
     retry: 2,
     enabled,
   });

@@ -27,7 +27,7 @@ interface HealthCheckResponse {
   error?: string;
   refreshed?: boolean;
   services: {
-    googleSheets: ServiceHealth;
+    supabase: ServiceHealth;
     geminiAI: ServiceHealth;
     lineAPI: ServiceHealth;
   };

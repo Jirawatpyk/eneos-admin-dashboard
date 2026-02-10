@@ -209,6 +209,7 @@ function DateRangeFilter({ value, onChange, disabled = false }: DateRangeFilterP
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'Asia/Bangkok',
     });
   };
 

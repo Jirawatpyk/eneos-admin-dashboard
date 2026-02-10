@@ -26,7 +26,7 @@ export async function GET() {
           error: errorData.error || 'Backend health refresh failed',
           refreshed: true,
           services: {
-            googleSheets: { status: 'unknown', latency: 0 },
+            supabase: { status: 'unknown', latency: 0 },
             geminiAI: { status: 'unknown', latency: 0 },
             lineAPI: { status: 'unknown', latency: 0 },
           },
@@ -46,7 +46,7 @@ export async function GET() {
         error: 'Backend unreachable',
         refreshed: true,
         services: {
-          googleSheets: { status: 'unknown', latency: 0 },
+          supabase: { status: 'unknown', latency: 0 },
           geminiAI: { status: 'unknown', latency: 0 },
           lineAPI: { status: 'unknown', latency: 0 },
         },

@@ -17,8 +17,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useState } from 'react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, formatDateSafe } from '@/lib/utils';
 import { useCampaignEvents } from '@/hooks/use-campaign-events';
 import { CampaignEventsTable } from './campaign-events-table';
 import { CampaignEventFilter } from './campaign-event-filter';
@@ -27,6 +26,14 @@ import { CampaignDateFilter } from './campaign-date-filter';
 import { CampaignEventsSkeleton } from './campaign-events-skeleton';
 import { CampaignsError } from './campaigns-error';
 import type { CampaignStatsItem, CampaignEventType } from '@/types/campaigns';
+
+/** Format Date as local YYYY-MM-DD for API query params (avoids UTC shift from toISOString) */
+function toLocalDateString(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 /** Page size constant for event log pagination */
 const EVENTS_PAGE_SIZE = 20;
@@ -70,8 +77,8 @@ export function CampaignDetailSheet({
     page: isSearching ? 1 : page,
     limit: isSearching ? SEARCH_ALL_LIMIT : EVENTS_PAGE_SIZE,
     event: eventFilter === 'all' ? undefined : eventFilter,
-    dateFrom: dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined,
-    dateTo: dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined,
+    dateFrom: dateFrom ? toLocalDateString(dateFrom) : undefined,
+    dateTo: dateTo ? toLocalDateString(dateTo) : undefined,
   });
 
   // Reset all filters when sheet opens with new campaign (AC#9)
@@ -143,13 +150,13 @@ export function CampaignDetailSheet({
         >
           <div>
             <p className="text-sm text-muted-foreground">Delivered</p>
-            <p className="text-lg font-semibold" data-testid="summary-delivered">
+            <p className="text-lg font-semibold" data-testid="summary-delivered" suppressHydrationWarning>
               {campaign.delivered.toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Opened</p>
-            <p className="text-lg font-semibold" data-testid="summary-opened">
+            <p className="text-lg font-semibold" data-testid="summary-opened" suppressHydrationWarning>
               {campaign.uniqueOpens.toLocaleString()}
               <span className="text-sm text-muted-foreground ml-1">
                 ({campaign.openRate.toFixed(1)}%)
@@ -158,7 +165,7 @@ export function CampaignDetailSheet({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Clicked</p>
-            <p className="text-lg font-semibold" data-testid="summary-clicked">
+            <p className="text-lg font-semibold" data-testid="summary-clicked" suppressHydrationWarning>
               {campaign.uniqueClicks.toLocaleString()}
               <span className="text-sm text-muted-foreground ml-1">
                 ({campaign.clickRate.toFixed(1)}%)
@@ -167,16 +174,16 @@ export function CampaignDetailSheet({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">First Event</p>
-            <p className="text-lg font-semibold" data-testid="summary-first-event">
+            <p className="text-lg font-semibold" data-testid="summary-first-event" suppressHydrationWarning>
               {campaign.firstEvent
-                ? new Date(campaign.firstEvent).toLocaleDateString()
+                ? formatDateSafe(campaign.firstEvent)
                 : '-'}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Last Updated</p>
-            <p className="text-lg font-semibold" data-testid="summary-last-updated">
-              {new Date(campaign.lastUpdated).toLocaleDateString()}
+            <p className="text-lg font-semibold" data-testid="summary-last-updated" suppressHydrationWarning>
+              {formatDateSafe(campaign.lastUpdated)}
             </p>
           </div>
         </div>

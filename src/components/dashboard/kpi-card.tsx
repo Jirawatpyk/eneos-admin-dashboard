@@ -47,7 +47,7 @@ export function KPICard({ title, value, change, changeLabel, icon, isRate = fals
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" data-testid={`kpi-value-${icon}`}>
+        <div className="text-2xl font-bold" data-testid={`kpi-value-${icon}`} suppressHydrationWarning>
           {value.toLocaleString()}
         </div>
         {change !== undefined && (

@@ -100,7 +100,7 @@ export function ChartTooltip({ active, payload }: CustomTooltipProps) {
           </span>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground mt-2 pt-1 border-t border-border">
+      <p className="text-xs text-muted-foreground mt-2 pt-1 border-t border-border" suppressHydrationWarning>
         Delivered: {data.delivered.toLocaleString()}
       </p>
     </div>

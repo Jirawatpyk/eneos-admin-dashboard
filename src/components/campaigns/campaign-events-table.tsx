@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDateSafe } from '@/lib/utils';
 import { CopyEmailButton } from './copy-email-button';
 import type { CampaignEventItem } from '@/types/campaigns';
 
@@ -104,8 +104,8 @@ export function CampaignEventsTable({
                     {event.event}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground whitespace-nowrap">
-                  {format(new Date(event.eventAt), 'yyyy-MM-dd HH:mm:ss')}
+                <TableCell className="text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
+                  {formatDateSafe(event.eventAt)}
                 </TableCell>
                 <TableCell>
                   {event.url && isSafeUrl(event.url) ? (

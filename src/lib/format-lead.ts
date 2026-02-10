@@ -3,9 +3,11 @@
  * Story 4.1: Lead List Table
  *
  * Utilities for formatting lead data for display
+ * NOTE: Date formatting uses Intl.DateTimeFormat with fixed timezone
+ *       to prevent SSR/Client hydration mismatch (server=UTC, client=local)
  */
 
-import { format } from 'date-fns';
+const TIMEZONE = 'Asia/Bangkok';
 
 /**
  * Format Thai phone number
@@ -35,6 +37,7 @@ export function formatThaiPhone(phone: string | null): string {
 
 /**
  * Format date as "DD MMM YYYY" (e.g., "15 Jan 2026")
+ * Uses fixed Bangkok timezone to prevent SSR/Client hydration mismatch
  * @param dateString - ISO date string
  * @returns Formatted date string
  */
@@ -43,7 +46,13 @@ export function formatLeadDate(dateString: string | null): string {
 
   try {
     const date = new Date(dateString);
-    return format(date, 'dd MMM yyyy');
+    if (isNaN(date.getTime())) return dateString;
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: TIMEZONE,
+    }).format(date);
   } catch {
     return dateString;
   }
@@ -51,6 +60,7 @@ export function formatLeadDate(dateString: string | null): string {
 
 /**
  * Format datetime as "DD MMM YYYY HH:mm" (e.g., "15 Jan 2026 14:30")
+ * Uses fixed Bangkok timezone to prevent SSR/Client hydration mismatch
  * @param dateString - ISO date string
  * @returns Formatted datetime string
  */
@@ -59,7 +69,16 @@ export function formatLeadDateTime(dateString: string | null): string {
 
   try {
     const date = new Date(dateString);
-    return format(date, 'dd MMM yyyy HH:mm');
+    if (isNaN(date.getTime())) return dateString;
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: TIMEZONE,
+    }).format(date);
   } catch {
     return dateString;
   }

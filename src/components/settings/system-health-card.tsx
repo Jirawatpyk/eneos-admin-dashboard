@@ -2,7 +2,7 @@
  * System Health Card Component
  * Story 7.5: System Health
  *
- * Displays backend service health status including Google Sheets, Gemini AI, and LINE API.
+ * Displays backend service health status including Supabase, Gemini AI, and LINE API.
  * Shows overall system status, individual service status with latency, and system metrics.
  *
  * AC#1: System Health Card - displays on Settings page
@@ -232,9 +232,9 @@ export function SystemHealthCard() {
             Services
           </p>
           <ServiceStatusRow
-            name="Google Sheets"
-            status={data?.services?.googleSheets?.status || 'unknown'}
-            latency={data?.services?.googleSheets?.latency}
+            name="Supabase"
+            status={data?.services?.supabase?.status || 'unknown'}
+            latency={data?.services?.supabase?.latency}
           />
           <ServiceStatusRow
             name="Gemini AI"
@@ -263,7 +263,7 @@ export function SystemHealthCard() {
           {data?.timestamp && !isNaN(new Date(data.timestamp).getTime()) && (
             <div className="flex justify-between" data-testid="metric-last-check">
               <span>Last Check</span>
-              <span>
+              <span suppressHydrationWarning>
                 {formatDistanceToNow(new Date(data.timestamp), {
                   addSuffix: true,
                 })}

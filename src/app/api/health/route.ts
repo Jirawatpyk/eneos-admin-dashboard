@@ -25,7 +25,7 @@ export async function GET() {
           timestamp: new Date().toISOString(),
           error: errorData.error || 'Backend health check failed',
           services: {
-            googleSheets: { status: 'unknown', latency: 0 },
+            supabase: { status: 'unknown', latency: 0 },
             geminiAI: { status: 'unknown', latency: 0 },
             lineAPI: { status: 'unknown', latency: 0 },
           },
@@ -44,7 +44,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         error: 'Backend unreachable',
         services: {
-          googleSheets: { status: 'unknown', latency: 0 },
+          supabase: { status: 'unknown', latency: 0 },
           geminiAI: { status: 'unknown', latency: 0 },
           lineAPI: { status: 'unknown', latency: 0 },
         },

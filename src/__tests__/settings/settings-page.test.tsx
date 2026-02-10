@@ -28,7 +28,7 @@ vi.mock('@/hooks/use-system-health', () => ({
       version: '1.0.0',
       uptime: 3600,
       services: {
-        googleSheets: { status: 'up', latency: 45 },
+        supabase: { status: 'up', latency: 45 },
         geminiAI: { status: 'up', latency: 120 },
         lineAPI: { status: 'up', latency: 30 },
       },

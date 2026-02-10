@@ -69,7 +69,7 @@ function StatusRow({ lead }: StatusRowProps) {
             {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
           </Badge>
         </div>
-        <span className="text-xs text-muted-foreground" data-testid="status-time">
+        <span className="text-xs text-muted-foreground" data-testid="status-time" suppressHydrationWarning>
           {!isNaN(new Date(lead.updatedAt).getTime())
             ? formatDistanceToNow(new Date(lead.updatedAt), { addSuffix: true })
             : '-'}

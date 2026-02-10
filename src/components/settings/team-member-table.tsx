@@ -40,6 +40,7 @@ function formatDate(dateString: string): string {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+      timeZone: 'Asia/Bangkok',
     });
   } catch {
     return dateString;

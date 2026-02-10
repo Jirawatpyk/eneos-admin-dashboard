@@ -6,31 +6,40 @@
  * - Recent (within 24h): relative time (e.g., "2 minutes ago")
  * - Older: date format (e.g., "Jan 12, 10:30 AM")
  */
-import { formatDistanceToNow, format, isWithinInterval, subHours, isValid } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+
+const TIMEZONE = 'Asia/Bangkok';
 
 /**
  * Formats activity timestamp based on age
+ * Uses fixed Bangkok timezone to prevent SSR/Client hydration mismatch.
  * @param timestamp - ISO date string
  * @returns Formatted time string, or fallback for invalid dates
  */
 export function formatActivityTime(timestamp: string): string {
   const date = new Date(timestamp);
 
-  // H-01 Fix: Validate date before processing
-  if (!isValid(date)) {
+  // Validate date before processing
+  if (isNaN(date.getTime())) {
     return 'Unknown time';
   }
 
   // Check if within last 24 hours
-  const isRecent = isWithinInterval(date, {
-    start: subHours(new Date(), 24),
-    end: new Date(),
-  });
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const isRecent = diff >= 0 && diff < 24 * 60 * 60 * 1000;
 
   if (isRecent) {
     return formatDistanceToNow(date, { addSuffix: true });
   }
 
-  // Older than 24 hours - show date format
-  return format(date, 'MMM d, h:mm a');
+  // Older than 24 hours - show date format with fixed timezone
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: TIMEZONE,
+  }).format(date);
 }

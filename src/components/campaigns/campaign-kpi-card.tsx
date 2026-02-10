@@ -48,7 +48,7 @@ export function CampaignKPICard({
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" data-testid={`campaign-kpi-value-${icon}`}>
+        <div className="text-2xl font-bold" data-testid={`campaign-kpi-value-${icon}`} suppressHydrationWarning>
           {value.toLocaleString()}
         </div>
         {rate !== undefined && (

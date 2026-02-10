@@ -83,8 +83,9 @@ export function useCampaignsTable(
     // Story 5.8: Include date params in query key for cache separation
     queryKey: ['campaigns', 'table', { page, limit, sortBy, sortOrder, dateFrom, dateTo }],
     queryFn: () => fetchCampaignStats({ page, limit, sortBy, sortOrder, dateFrom, dateTo }),
-    staleTime: 60 * 1000, // 1 minute - rate limit aware
+    staleTime: 10 * 1000, // 10 seconds - near real-time
     gcTime: 5 * 60 * 1000, // 5 minutes - garbage collection time (TanStack Query v5)
+    refetchInterval: 10 * 1000, // Auto-refresh every 10 seconds
     retry: 2,
     enabled,
     // Keep previous data while fetching new page/sort (UX improvement)

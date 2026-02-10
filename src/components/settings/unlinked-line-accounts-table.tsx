@@ -36,6 +36,7 @@ function formatDate(dateString: string): string {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+      timeZone: 'Asia/Bangkok',
     });
   } catch (e) {
     console.warn('Failed to parse date:', dateString, e);

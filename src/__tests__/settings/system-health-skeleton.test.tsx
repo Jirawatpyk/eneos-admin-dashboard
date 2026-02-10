@@ -57,7 +57,7 @@ describe('SystemHealthSkeleton', () => {
     expect(screen.getByTestId('skeleton-title')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-refresh-btn')).toBeInTheDocument();
 
-    // Should have 3 service rows (matching Google Sheets, Gemini AI, LINE API)
+    // Should have 3 service rows (matching Supabase, Gemini AI, LINE API)
     expect(screen.getByTestId('skeleton-service-row-1')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-service-row-2')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-service-row-3')).toBeInTheDocument();
