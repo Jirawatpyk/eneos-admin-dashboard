@@ -148,6 +148,29 @@ describe('CampaignEngagement', () => {
 
       expect(screen.queryByTestId('campaign-event-url')).not.toBeInTheDocument();
     });
+
+    it('does not render link for non-http URLs (XSS prevention)', () => {
+      const xssEvent: LeadCampaignEvent[] = [
+        {
+          campaignId: 'camp-1',
+          campaignName: 'Test',
+          event: 'click',
+          eventAt: '2026-02-01T03:00:00.000Z',
+          url: 'javascript:alert(1)',
+        },
+      ];
+
+      render(<CampaignEngagement events={xssEvent} />);
+
+      expect(screen.queryByTestId('campaign-event-url')).not.toBeInTheDocument();
+    });
+
+    it('renders link with aria-label for accessibility', () => {
+      render(<CampaignEngagement events={mockEvents} />);
+
+      const link = screen.getByTestId('campaign-event-url');
+      expect(link).toHaveAttribute('aria-label', 'Open link: https://example.com/promo');
+    });
   });
 
   describe('Multiple campaigns display', () => {
@@ -199,6 +222,33 @@ describe('CampaignEngagement', () => {
       expect(events[0]).toHaveTextContent('Delivered');
       expect(events[1]).toHaveTextContent('Opened');
       expect(events[2]).toHaveTextContent('Clicked');
+    });
+  });
+
+  describe('Invalid date edge case', () => {
+    it('does not crash when eventAt contains invalid date string', () => {
+      const invalidDateEvents: LeadCampaignEvent[] = [
+        {
+          campaignId: 'camp-1',
+          campaignName: 'Test',
+          event: 'delivered',
+          eventAt: 'not-a-date',
+          url: null,
+        },
+        {
+          campaignId: 'camp-1',
+          campaignName: 'Test',
+          event: 'opened',
+          eventAt: '2026-02-01T05:00:00.000Z',
+          url: null,
+        },
+      ];
+
+      // Should render without throwing
+      render(<CampaignEngagement events={invalidDateEvents} />);
+
+      const events = screen.getAllByTestId('campaign-event');
+      expect(events).toHaveLength(2);
     });
   });
 

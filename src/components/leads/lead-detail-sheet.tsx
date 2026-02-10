@@ -23,30 +23,27 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Mail,
   Phone,
-  Building2,
-  Globe,
   Briefcase,
   MapPin,
-  Calendar,
   Clock,
   User,
   MessageSquare,
-  ExternalLink,
+  Globe,
   Target,
   Tag,
-  FileText,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { formatThaiPhone, formatLeadDateTime } from '@/lib/format-lead';
+import { formatThaiPhone } from '@/lib/format-lead';
+import { DetailItem } from './detail-item';
 import { LeadStatusBadge } from './lead-status-badge';
 import { StatusHistory } from './status-history';
 import { LeadMetrics } from './lead-metrics';
 import { CampaignEngagement } from './campaign-engagement';
+import { LeadCompanyInfo } from './lead-company-info';
+import { LeadTimeline } from './lead-timeline';
 import { LeadDetailSkeleton } from './lead-detail-skeleton';
 import { LeadDetailError } from './lead-detail-error';
 import { useLead } from '@/hooks/use-lead';
@@ -56,31 +53,6 @@ interface LeadDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   lead: Lead | null;
-}
-
-interface DetailItemProps {
-  label: string;
-  value: string | React.ReactNode;
-  icon: React.ReactNode;
-  className?: string;
-}
-
-function DetailItem({ label, value, icon, className }: DetailItemProps) {
-  // Handle empty, null, undefined, '-', and whitespace-only string values
-  if (!value || value === '-') return null;
-  if (typeof value === 'string' && value.trim() === '') return null;
-
-  return (
-    <div className={cn('flex items-start gap-3', className)}>
-      <div className="p-2 rounded-lg bg-muted shrink-0" aria-hidden="true">
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <div className="font-medium break-words">{value}</div>
-      </div>
-    </div>
-  );
 }
 
 export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetProps) {
@@ -203,92 +175,8 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
             </Card>
           </section>
 
-          {/* Company Information */}
-          <section>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-              <Building2 className="h-4 w-4" aria-hidden="true" />
-              Company Information
-            </h3>
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                {/* 1. Company */}
-                <DetailItem
-                  label="Company"
-                  icon={<Building2 className="h-4 w-4 text-blue-500" />}
-                  value={lead.company}
-                />
-
-                {/* 2. DBD Sector */}
-                {(leadDetail?.dbdSector || lead.dbdSector) && (
-                  <DetailItem
-                    label="DBD Sector"
-                    icon={<Briefcase className="h-4 w-4 text-teal-500" />}
-                    value={
-                      <Badge variant="secondary">{leadDetail?.dbdSector || lead.dbdSector}</Badge>
-                    }
-                  />
-                )}
-
-                {/* 3. Industry (changed from "Industry (AI)") */}
-                {(leadDetail?.industry || lead.industryAI) && (
-                  <DetailItem
-                    label="Industry"
-                    icon={<Briefcase className="h-4 w-4 text-amber-500" />}
-                    value={leadDetail?.industry || lead.industryAI}
-                  />
-                )}
-
-                {/* 4. Juristic ID */}
-                {(leadDetail?.juristicId || lead.juristicId) && (
-                  <DetailItem
-                    label="Juristic ID"
-                    icon={<FileText className="h-4 w-4 text-indigo-500" />}
-                    value={leadDetail?.juristicId || lead.juristicId}
-                  />
-                )}
-
-                {/* 5. Capital */}
-                {(leadDetail?.capital || lead.capital) && (
-                  <DetailItem
-                    label="Capital"
-                    icon={<Building2 className="h-4 w-4 text-gray-500" />}
-                    value={leadDetail?.capital || lead.capital}
-                  />
-                )}
-
-                {/* 6. Website */}
-                {(leadDetail?.website || lead.website) && (
-                  <DetailItem
-                    label="Website"
-                    icon={<Globe className="h-4 w-4 text-green-500" />}
-                    value={
-                      <a
-                        href={(leadDetail?.website || lead.website || '').startsWith('http')
-                          ? (leadDetail?.website || lead.website || '')
-                          : `https://${leadDetail?.website || lead.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1"
-                        aria-label={`Visit website ${leadDetail?.website || lead.website}`}
-                      >
-                        {leadDetail?.website || lead.website}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    }
-                  />
-                )}
-
-                {/* 7. Address */}
-                {(leadDetail?.fullAddress || lead.fullAddress) && (
-                  <DetailItem
-                    label="Address"
-                    icon={<MapPin className="h-4 w-4 text-orange-500" />}
-                    value={leadDetail?.fullAddress || lead.fullAddress}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </section>
+          {/* Company Information — extracted to LeadCompanyInfo */}
+          <LeadCompanyInfo lead={lead} leadDetail={leadDetail} />
 
           {/* AC#4: Sales Information with owner contact details */}
           <section>
@@ -378,57 +266,8 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
             </section>
           )}
 
-          {/* Timeline - Basic timestamps from table data (graceful degradation) */}
-          <section>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-              <Calendar className="h-4 w-4" aria-hidden="true" />
-              Timeline
-            </h3>
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <span className="text-muted-foreground">Created:</span>
-                  <span className="font-medium">{formatLeadDateTime(lead.createdAt)}</span>
-                </div>
-                {lead.clickedAt && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-blue-500" aria-hidden="true" />
-                    <span className="text-muted-foreground">Clicked:</span>
-                    <span className="font-medium">{formatLeadDateTime(lead.clickedAt)}</span>
-                  </div>
-                )}
-                {lead.closedAt && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-green-500" aria-hidden="true" />
-                    <span className="text-muted-foreground">Closed:</span>
-                    <span className="font-medium">{formatLeadDateTime(lead.closedAt)}</span>
-                  </div>
-                )}
-                {lead.lostAt && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-red-500" aria-hidden="true" />
-                    <span className="text-muted-foreground">Lost:</span>
-                    <span className="font-medium">{formatLeadDateTime(lead.lostAt)}</span>
-                  </div>
-                )}
-                {lead.unreachableAt && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-gray-500" aria-hidden="true" />
-                    <span className="text-muted-foreground">Unreachable:</span>
-                    <span className="font-medium">{formatLeadDateTime(lead.unreachableAt)}</span>
-                  </div>
-                )}
-                {lead.updatedAt && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span className="text-muted-foreground">Updated:</span>
-                    <span className="font-medium">{formatLeadDateTime(lead.updatedAt)}</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+          {/* Timeline — extracted to LeadTimeline */}
+          <LeadTimeline lead={lead} />
 
           {/* Technical Info (collapsed by default) */}
           <section className="pt-4 border-t">

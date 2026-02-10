@@ -7,8 +7,6 @@
  * AC#3: Return null when no events
  * AC#4: Distinct visual indicators per event type
  */
-'use client';
-
 import { Mail, Eye, ExternalLink } from 'lucide-react';
 import { formatLeadDateTime } from '@/lib/format-lead';
 import type { LeadCampaignEvent } from '@/types/lead-detail';
@@ -90,18 +88,18 @@ export function CampaignEngagement({ events }: CampaignEngagementProps) {
                     <div className="flex items-center gap-2 text-sm flex-wrap">
                       <Icon className={`h-3.5 w-3.5 ${config.color}`} aria-hidden="true" />
                       <span className={config.color}>{config.label}</span>
-                      <span className="text-muted-foreground text-xs">
+                      <time dateTime={event.eventAt} className="text-muted-foreground text-xs">
                         {formatLeadDateTime(event.eventAt)}
-                      </span>
-                      {event.event === 'click' && event.url && (
+                      </time>
+                      {event.event === 'click' && event.url && event.url.startsWith('http') && (
                         <a
                           href={event.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline text-xs flex items-center gap-0.5"
+                          aria-label={`Open link: ${event.url}`}
                           data-testid="campaign-event-url"
                         >
-                          <ExternalLink className="h-3 w-3" />
                           Link
                         </a>
                       )}
