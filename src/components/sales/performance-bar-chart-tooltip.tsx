@@ -8,6 +8,8 @@
  * - Shows conversion rate
  */
 
+import { formatNumber } from '@/lib/utils';
+
 interface TooltipPayload {
   name: string;
   fullName: string;
@@ -36,7 +38,7 @@ export function PerformanceBarChartTooltip({ active, payload }: CustomTooltipPro
         {payload.map((entry) => (
           <p key={entry.name} style={{ color: entry.color }} className="flex justify-between gap-4">
             <span>{entry.name}:</span>
-            <span className="font-medium" suppressHydrationWarning>{entry.value.toLocaleString()}</span>
+            <span className="font-medium">{formatNumber(entry.value)}</span>
           </p>
         ))}
         <p className="text-muted-foreground pt-1 border-t mt-2 flex justify-between gap-4">

@@ -28,6 +28,14 @@ export function formatDateSafe(
 }
 
 /**
+ * Deterministic number formatter — uses explicit 'en-US' locale
+ * to prevent SSR/Client hydration mismatch from differing system locales.
+ */
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
+/**
  * Mask LINE User ID for display (Story 7-4, 7-4b)
  * Shows first 4 chars + ... + last 4 chars for privacy
  * @param lineUserId - The LINE User ID to mask

@@ -17,6 +17,7 @@ import { ExportFieldSelector } from '@/components/export/export-field-selector';
 import { useRecordCount } from '@/hooks/use-record-count';
 import { getExportDateRange, EXPORT_PRESETS, type ExportPresetType } from '@/lib/export-date-presets';
 import { LEAD_EXPORT_COLUMNS } from '@/lib/export-leads';
+import { formatNumber } from '@/lib/utils';
 import type { Lead } from '@/types/lead';
 import type { DateRange } from 'react-day-picker';
 
@@ -230,7 +231,7 @@ export function ExportForm() {
             <p className="text-sm text-muted-foreground" data-testid="record-count">
               Estimated records:{' '}
               <span className="font-medium">
-                {isCountLoading ? '...' : (recordCount?.toLocaleString() ?? '--')}
+                {isCountLoading ? '...' : (recordCount != null ? formatNumber(recordCount) : '--')}
               </span>
               {hasCampaignFilter && (
                 <span className="ml-1 text-xs text-muted-foreground/70">(excludes campaign filter)</span>

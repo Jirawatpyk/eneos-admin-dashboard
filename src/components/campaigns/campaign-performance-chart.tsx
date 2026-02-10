@@ -39,6 +39,7 @@ import { CampaignChartSkeleton } from './campaign-chart-skeleton';
 import { CampaignsError } from './campaigns-error';
 import { RATE_BENCHMARKS } from '@/lib/campaign-benchmarks';
 import { CHART_COLORS } from '@/lib/chart-config';
+import { formatNumber } from '@/lib/utils';
 import type { ChartDataItem } from '@/types/campaigns';
 
 // ===========================================
@@ -100,8 +101,8 @@ export function ChartTooltip({ active, payload }: CustomTooltipProps) {
           </span>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground mt-2 pt-1 border-t border-border" suppressHydrationWarning>
-        Delivered: {data.delivered.toLocaleString()}
+      <p className="text-xs text-muted-foreground mt-2 pt-1 border-t border-border">
+        Delivered: {formatNumber(data.delivered)}
       </p>
     </div>
   );

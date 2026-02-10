@@ -23,7 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Trophy } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 import { TopSalesTableSkeleton } from './top-sales-table-skeleton';
 import { TopSalesTableEmpty } from './top-sales-table-empty';
 import type { TopSalesPerson } from '@/types/dashboard';
@@ -155,13 +155,13 @@ export function TopSalesTable({ data, isLoading }: TopSalesTableProps) {
                 <TableCell className="font-medium">{person.name}</TableCell>
                 {/* Stats columns */}
                 <TableCell className="text-right">
-                  {person.claimed.toLocaleString()}
+                  {formatNumber(person.claimed)}
                 </TableCell>
                 <TableCell className="text-right">
-                  {person.contacted.toLocaleString()}
+                  {formatNumber(person.contacted)}
                 </TableCell>
                 <TableCell className="text-right">
-                  {person.closed.toLocaleString()}
+                  {formatNumber(person.closed)}
                 </TableCell>
                 {/* AC#5: Conversion rate with highlight */}
                 <TableCell className="text-right">

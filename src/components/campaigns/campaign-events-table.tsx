@@ -104,7 +104,7 @@ export function CampaignEventsTable({
                     {event.event}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
+                <TableCell className="text-muted-foreground whitespace-nowrap">
                   {formatDateSafe(event.eventAt)}
                 </TableCell>
                 <TableCell>

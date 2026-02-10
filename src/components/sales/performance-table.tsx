@@ -39,7 +39,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Users, ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 import {
   formatResponseTime,
   getConversionRateValue,
@@ -198,7 +198,7 @@ export function PerformanceTable({
         ),
         cell: ({ row }) => (
           <span className="text-right block">
-            {(row.getValue('claimed') as number).toLocaleString()}
+            {formatNumber(row.getValue('claimed') as number)}
           </span>
         ),
       },
@@ -215,7 +215,7 @@ export function PerformanceTable({
         ),
         cell: ({ row }) => (
           <span className="text-right block">
-            {(row.getValue('contacted') as number).toLocaleString()}
+            {formatNumber(row.getValue('contacted') as number)}
           </span>
         ),
       },
@@ -251,7 +251,7 @@ export function PerformanceTable({
           // Default: just show the number
           return (
             <span className="text-right block">
-              {closedValue.toLocaleString()}
+              {formatNumber(closedValue)}
             </span>
           );
         },
@@ -269,7 +269,7 @@ export function PerformanceTable({
         ),
         cell: ({ row }) => (
           <span className="text-right block">
-            {(row.getValue('lost') as number).toLocaleString()}
+            {formatNumber(row.getValue('lost') as number)}
           </span>
         ),
       },
@@ -286,7 +286,7 @@ export function PerformanceTable({
         ),
         cell: ({ row }) => (
           <span className="text-right block">
-            {(row.getValue('unreachable') as number).toLocaleString()}
+            {formatNumber(row.getValue('unreachable') as number)}
           </span>
         ),
       },

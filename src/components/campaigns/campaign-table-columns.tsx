@@ -8,9 +8,9 @@
 'use client';
 
 import { type ColumnDef } from '@tanstack/react-table';
-import { formatDistanceToNow } from 'date-fns';
 import { SortableHeader } from './sortable-header';
 import { RatePerformanceBadge } from './rate-performance-badge';
+import { formatDateSafe, formatNumber } from '@/lib/utils';
 import type { CampaignStatsItem, CampaignSortBy } from '@/types/campaigns';
 
 interface ColumnFactoryParams {
@@ -60,8 +60,8 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums" suppressHydrationWarning>
-          {row.getValue<number>('delivered').toLocaleString()}
+        <span className="tabular-nums">
+          {formatNumber(row.getValue<number>('delivered'))}
         </span>
       ),
     },
@@ -78,8 +78,8 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums" suppressHydrationWarning>
-          {row.getValue<number>('uniqueOpens').toLocaleString()}
+        <span className="tabular-nums">
+          {formatNumber(row.getValue<number>('uniqueOpens'))}
         </span>
       ),
     },
@@ -96,8 +96,8 @@ export function createCampaignColumns({
         </SortableHeader>
       ),
       cell: ({ row }) => (
-        <span className="tabular-nums" suppressHydrationWarning>
-          {row.getValue<number>('uniqueClicks').toLocaleString()}
+        <span className="tabular-nums">
+          {formatNumber(row.getValue<number>('uniqueClicks'))}
         </span>
       ),
     },
@@ -159,10 +159,8 @@ export function createCampaignColumns({
       cell: ({ row }) => {
         const dateValue = row.getValue<string>('lastUpdated');
         return (
-          <span className="text-right block whitespace-nowrap text-muted-foreground" suppressHydrationWarning>
-            {dateValue && !isNaN(new Date(dateValue).getTime())
-              ? formatDistanceToNow(new Date(dateValue), { addSuffix: true })
-              : '-'}
+          <span className="text-right block whitespace-nowrap text-muted-foreground">
+            {formatDateSafe(dateValue)}
           </span>
         );
       },

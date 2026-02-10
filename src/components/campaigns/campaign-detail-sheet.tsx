@@ -17,7 +17,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useState } from 'react';
-import { cn, formatDateSafe } from '@/lib/utils';
+import { cn, formatDateSafe, formatNumber } from '@/lib/utils';
 import { useCampaignEvents } from '@/hooks/use-campaign-events';
 import { CampaignEventsTable } from './campaign-events-table';
 import { CampaignEventFilter } from './campaign-event-filter';
@@ -150,14 +150,14 @@ export function CampaignDetailSheet({
         >
           <div>
             <p className="text-sm text-muted-foreground">Delivered</p>
-            <p className="text-lg font-semibold" data-testid="summary-delivered" suppressHydrationWarning>
-              {campaign.delivered.toLocaleString()}
+            <p className="text-lg font-semibold" data-testid="summary-delivered">
+              {formatNumber(campaign.delivered)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Opened</p>
-            <p className="text-lg font-semibold" data-testid="summary-opened" suppressHydrationWarning>
-              {campaign.uniqueOpens.toLocaleString()}
+            <p className="text-lg font-semibold" data-testid="summary-opened">
+              {formatNumber(campaign.uniqueOpens)}
               <span className="text-sm text-muted-foreground ml-1">
                 ({campaign.openRate.toFixed(1)}%)
               </span>
@@ -165,8 +165,8 @@ export function CampaignDetailSheet({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Clicked</p>
-            <p className="text-lg font-semibold" data-testid="summary-clicked" suppressHydrationWarning>
-              {campaign.uniqueClicks.toLocaleString()}
+            <p className="text-lg font-semibold" data-testid="summary-clicked">
+              {formatNumber(campaign.uniqueClicks)}
               <span className="text-sm text-muted-foreground ml-1">
                 ({campaign.clickRate.toFixed(1)}%)
               </span>
@@ -174,7 +174,7 @@ export function CampaignDetailSheet({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">First Event</p>
-            <p className="text-lg font-semibold" data-testid="summary-first-event" suppressHydrationWarning>
+            <p className="text-lg font-semibold" data-testid="summary-first-event">
               {campaign.firstEvent
                 ? formatDateSafe(campaign.firstEvent)
                 : '-'}
@@ -182,7 +182,7 @@ export function CampaignDetailSheet({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Last Updated</p>
-            <p className="text-lg font-semibold" data-testid="summary-last-updated" suppressHydrationWarning>
+            <p className="text-lg font-semibold" data-testid="summary-last-updated">
               {formatDateSafe(campaign.lastUpdated)}
             </p>
           </div>

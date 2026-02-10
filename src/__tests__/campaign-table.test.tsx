@@ -184,7 +184,7 @@ describe('CampaignTable', () => {
       expect(screen.getByText('700')).toBeInTheDocument();
     });
 
-    it('should format Last Updated as relative time', async () => {
+    it('should format Last Updated as formatted date', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockCampaignsResponse),
@@ -196,9 +196,10 @@ describe('CampaignTable', () => {
         expect(screen.getByTestId('campaign-table')).toBeInTheDocument();
       });
 
-      // Check that relative time is displayed with "ago" suffix (e.g., "X days ago" or "X months ago")
+      // formatDateSafe formats as DD/MM/YYYY, HH:mm:ss in Bangkok timezone
+      // '2026-01-20T10:00:00Z' → '20/01/2026, 17:00:00' (Bangkok UTC+7)
       const tableContent = screen.getByTestId('campaign-table').textContent;
-      expect(tableContent).toMatch(/ago/i); // formatDistanceToNow adds "ago" suffix
+      expect(tableContent).toMatch(/20\/01\/2026/);
     });
   });
 

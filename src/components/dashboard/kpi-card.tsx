@@ -10,7 +10,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUp, ArrowDown, Users, UserCheck, Phone, Trophy } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 
 export type KPIIconType = 'leads' | 'claimed' | 'contacted' | 'closed';
 
@@ -47,8 +47,8 @@ export function KPICard({ title, value, change, changeLabel, icon, isRate = fals
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" data-testid={`kpi-value-${icon}`} suppressHydrationWarning>
-          {value.toLocaleString()}
+        <div className="text-2xl font-bold" data-testid={`kpi-value-${icon}`}>
+          {formatNumber(value)}
         </div>
         {change !== undefined && (
           <p

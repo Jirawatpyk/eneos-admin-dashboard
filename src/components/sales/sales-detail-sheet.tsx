@@ -38,7 +38,7 @@ import {
   getConversionRateValue,
 } from '@/lib/format-sales';
 import type { SalesPersonMetrics } from '@/types/sales';
-import { cn } from '@/lib/utils';
+import { cn, formatNumber } from '@/lib/utils';
 import { IndividualTrendChart } from './individual-trend-chart';
 import { ExportDropdown } from './export-dropdown';
 
@@ -64,7 +64,7 @@ function MetricCard({ label, value, icon, colorClass }: MetricCardProps) {
           <div>
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className={cn('text-xl font-semibold', colorClass)}>
-              {typeof value === 'number' ? value.toLocaleString() : value}
+              {typeof value === 'number' ? formatNumber(value) : value}
             </p>
           </div>
         </div>

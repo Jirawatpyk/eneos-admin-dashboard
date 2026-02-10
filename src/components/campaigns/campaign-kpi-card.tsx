@@ -9,6 +9,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Send, Eye, MousePointerClick, type LucideIcon } from 'lucide-react';
+import { formatNumber } from '@/lib/utils';
 
 export type CampaignIconType = 'campaigns' | 'delivered' | 'opened' | 'clicked';
 
@@ -48,8 +49,8 @@ export function CampaignKPICard({
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" data-testid={`campaign-kpi-value-${icon}`} suppressHydrationWarning>
-          {value.toLocaleString()}
+        <div className="text-2xl font-bold" data-testid={`campaign-kpi-value-${icon}`}>
+          {formatNumber(value)}
         </div>
         {rate !== undefined && (
           <p
