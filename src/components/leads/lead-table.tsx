@@ -292,7 +292,6 @@ export function LeadTable({
                 {row.original.dbdSector}
               </Badge>
             )}
-            {/* Story 4.15 AC#3: Location moved to separate column */}
           </div>
         ),
       },
@@ -547,9 +546,7 @@ export function LeadTable({
                         key={header.id}
                         className={cn(
                           // Story 4.9 AC#1: Checkbox column sticky (40px width)
-                          index === 0 && 'sticky left-0 z-10 bg-background w-10',
-                          // AC#7: Sticky second column (Company) - positioned after checkbox
-                          index === 1 && 'sticky left-10 z-10 bg-background',
+                          index === 0 && 'sticky left-0 z-20 bg-background w-10',
                           index === header.getContext().table.getAllColumns().length - 1 && 'text-right',
                           // Story 4.16 AC#8: Mobile column visibility
                           mobileHeaderClass
@@ -597,9 +594,7 @@ export function LeadTable({
                         key={cell.id}
                         className={cn(
                           // Story 4.9 AC#1: Checkbox column sticky (40px width)
-                          index === 0 && 'sticky left-0 z-10 bg-card w-10',
-                          // AC#7: Sticky second column (Company)
-                          index === 1 && 'sticky left-10 z-10 bg-card',
+                          index === 0 && 'sticky left-0 z-20 bg-card w-10',
                           // Story 4.16 AC#8: Mobile column visibility
                           mobileCellClass
                         )}
