@@ -28,11 +28,13 @@ export function formatDateSafe(
 }
 
 /**
- * Deterministic number formatter — uses explicit 'en-US' locale
- * to prevent SSR/Client hydration mismatch from differing system locales.
+ * Deterministic number formatter — pure string manipulation (no Intl).
+ * Prevents SSR/Client hydration mismatch from differing ICU data between
+ * Node.js and browser Intl implementations.
  */
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-US').format(value);
+  if (!Number.isFinite(value)) return '0';
+  return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**

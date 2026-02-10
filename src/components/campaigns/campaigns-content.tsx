@@ -12,7 +12,7 @@
  */
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { CampaignPeriodFilter } from './campaign-period-filter';
 import { CampaignExportDropdown } from './campaign-export-dropdown';
 import { CampaignKPICardsGrid } from './campaign-kpi-cards-grid';
@@ -26,12 +26,25 @@ import { useCampaignStats } from '@/hooks/use-campaign-stats';
 
 /**
  * Client wrapper that manages date filter state and passes to child components
+ * Uses mounted check to prevent hydration mismatch from useSearchParams() + React Query
  */
 export function CampaignsContent() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const { dateFrom, dateTo } = useCampaignDateFilter();
   // Story 5.9: Get campaign stats for export count
   const { data: statsData, isLoading: isStatsLoading } = useCampaignStats({ dateFrom, dateTo });
   const campaignCount = statsData?.totalCampaigns ?? 0;
+
+  // Prevent hydration mismatch: server renders skeleton, client waits for mount
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        <CampaignKPICardsSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
