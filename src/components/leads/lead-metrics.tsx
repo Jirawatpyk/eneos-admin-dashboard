@@ -34,7 +34,7 @@ function MetricItem({ label, value, icon, description }: MetricItemProps) {
       </div>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="font-medium text-lg" title={description}>
+        <p className="font-medium text-base" title={description}>
           {value}
         </p>
       </div>

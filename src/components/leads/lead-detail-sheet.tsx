@@ -46,6 +46,7 @@ import { formatThaiPhone, formatLeadDateTime } from '@/lib/format-lead';
 import { LeadStatusBadge } from './lead-status-badge';
 import { StatusHistory } from './status-history';
 import { LeadMetrics } from './lead-metrics';
+import { CampaignEngagement } from './campaign-engagement';
 import { LeadDetailSkeleton } from './lead-detail-skeleton';
 import { LeadDetailError } from './lead-detail-error';
 import { useLead } from '@/hooks/use-lead';
@@ -330,7 +331,7 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
             </Card>
           </section>
 
-          {/* AC#7: Campaign Details Section */}
+          {/* AC#7: Campaign Information Section (Story 9.7: grouped engagement timeline) */}
           <section>
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
               <MessageSquare className="h-4 w-4" aria-hidden="true" />
@@ -338,26 +339,9 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
             </h3>
             <Card>
               <CardContent className="p-4 space-y-4">
-                <DetailItem
-                  label="Campaign Name"
-                  icon={<MessageSquare className="h-4 w-4 text-purple-500" />}
-                  value={leadDetail?.campaign?.name || lead.campaignName}
-                />
-                {(leadDetail?.campaign?.id || lead.campaignId) && (
-                  <DetailItem
-                    label="Campaign ID"
-                    icon={<MessageSquare className="h-4 w-4 text-gray-500" />}
-                    value={leadDetail?.campaign?.id || lead.campaignId}
-                  />
-                )}
-                {/* AC#7: Email Subject */}
-                {(leadDetail?.campaign?.subject || lead.emailSubject) && (
-                  <DetailItem
-                    label="Email Subject"
-                    icon={<Mail className="h-4 w-4 text-amber-500" />}
-                    value={leadDetail?.campaign?.subject || lead.emailSubject}
-                  />
-                )}
+                {/* Story 9.7: Campaign engagement timeline grouped by campaign */}
+                <CampaignEngagement events={leadDetail?.campaignEvents ?? []} />
+                {/* AC#5: Source and Lead Source remain at bottom */}
                 {lead.source && (
                   <DetailItem
                     label="Source"

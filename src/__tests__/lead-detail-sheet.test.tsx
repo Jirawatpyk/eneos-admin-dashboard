@@ -100,7 +100,29 @@ describe('LeadDetailSheet', () => {
       closingTime: 1335,
       age: 2880,
     },
-    campaignEvents: [],
+    campaignEvents: [
+      {
+        campaignId: 'campaign_001',
+        campaignName: 'Q1 2026 Promotion',
+        event: 'delivered',
+        eventAt: '2026-01-14T03:00:00.000Z',
+        url: null,
+      },
+      {
+        campaignId: 'campaign_001',
+        campaignName: 'Q1 2026 Promotion',
+        event: 'opened',
+        eventAt: '2026-01-15T07:30:00.000Z',
+        url: null,
+      },
+      {
+        campaignId: 'campaign_001',
+        campaignName: 'Q1 2026 Promotion',
+        event: 'click',
+        eventAt: '2026-01-15T08:30:00.000Z',
+        url: 'https://eneos.co.th/promo',
+      },
+    ],
     timeline: [],
   };
 
@@ -288,8 +310,8 @@ describe('LeadDetailSheet', () => {
     });
   });
 
-  describe('AC#7: Campaign Details', () => {
-    it('displays campaign name', () => {
+  describe('AC#7: Campaign Details (Story 9.7: Engagement Timeline)', () => {
+    it('displays campaign information section with engagement timeline', () => {
       mockUseLead.mockReturnValue({
         data: mockLeadDetail,
         isLoading: false,
@@ -302,10 +324,12 @@ describe('LeadDetailSheet', () => {
       );
 
       expect(screen.getByText('Campaign Information')).toBeInTheDocument();
+      // Campaign events rendered via CampaignEngagement component
+      expect(screen.getByTestId('campaign-engagement')).toBeInTheDocument();
       expect(screen.getByText('Q1 2026 Promotion')).toBeInTheDocument();
     });
 
-    it('displays email subject', () => {
+    it('displays Source and Lead Source at bottom of campaign section', () => {
       mockUseLead.mockReturnValue({
         data: mockLeadDetail,
         isLoading: false,
@@ -317,10 +341,29 @@ describe('LeadDetailSheet', () => {
         <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
       );
 
-      expect(screen.getByText('Email Subject')).toBeInTheDocument();
-      expect(
-        screen.getByText('พิเศษ! น้ำมันหล่อลื่น ENEOS ลด 20%')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Source')).toBeInTheDocument();
+      expect(screen.getByText('email_click')).toBeInTheDocument();
+      expect(screen.getByText('Lead Source')).toBeInTheDocument();
+      expect(screen.getByText('Brevo')).toBeInTheDocument();
+    });
+
+    it('shows only Source/Lead Source when no campaign events', () => {
+      const detailNoEvents = { ...mockLeadDetail, campaignEvents: [] };
+      mockUseLead.mockReturnValue({
+        data: detailNoEvents,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
+      );
+
+      expect(screen.getByText('Campaign Information')).toBeInTheDocument();
+      expect(screen.queryByTestId('campaign-engagement')).not.toBeInTheDocument();
+      expect(screen.getByText('Source')).toBeInTheDocument();
+      expect(screen.getByText('Lead Source')).toBeInTheDocument();
     });
   });
 
