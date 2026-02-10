@@ -20,11 +20,11 @@ export { LeadTrendChartSkeleton } from './lead-trend-chart-skeleton';
 export { LeadTrendChartEmpty } from './lead-trend-chart-empty';
 export { LeadTrendChartContainer } from './lead-trend-chart-container';
 
-// Status Distribution Chart (Story 2.3)
-export { StatusDistributionChart } from './status-distribution-chart';
-export { StatusDistributionSkeleton } from './status-distribution-skeleton';
-export { StatusDistributionEmpty } from './status-distribution-empty';
-export { StatusDistributionContainer } from './status-distribution-container';
+// Campaign Summary (Story 2.9 — replaces Status Distribution)
+export { CampaignSummary } from './campaign-summary';
+export { CampaignSummarySkeleton } from './campaign-summary-skeleton';
+export { CampaignSummaryEmpty } from './campaign-summary-empty';
+export { CampaignSummaryContainer } from './campaign-summary-container';
 
 // Top Sales Table (Story 2.4)
 export { TopSalesTable } from './top-sales-table';

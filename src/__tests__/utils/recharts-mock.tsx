@@ -21,7 +21,7 @@
  *
  * Available patterns:
  * - AREA_CHART_MOCK: For AreaChart tests (lead-trend-chart)
- * - PIE_CHART_MOCK: For PieChart tests (status-distribution-chart)
+ * - PIE_CHART_MOCK: For PieChart tests
  * - BAR_CHART_MOCK: For BarChart tests (future EPIC-03)
  */
 
@@ -58,7 +58,7 @@ vi.mock('recharts', () => mockRechartsAreaChart);
 
 /**
  * Pie Chart Mock Pattern
- * Use for: status-distribution-chart.test.tsx
+ * Use for: PieChart-based component tests
  */
 export const PIE_CHART_MOCK = `
 const mockRechartsPieChart = vi.hoisted(() => ({

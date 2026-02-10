@@ -13,7 +13,7 @@ import { Suspense } from 'react';
 import {
   KPICardsGrid,
   LeadTrendChartContainer,
-  StatusDistributionContainer,
+  CampaignSummaryContainer,
   TopSalesTableContainer,
   RecentActivityContainer,
   AlertsPanelContainer,
@@ -25,7 +25,7 @@ import {
 import { useAutoRefresh } from '@/hooks/use-auto-refresh';
 import { KPICardsSkeletonGrid } from './kpi-card-skeleton';
 import { LeadTrendChartSkeleton } from './lead-trend-chart-skeleton';
-import { StatusDistributionSkeleton } from './status-distribution-skeleton';
+import { CampaignSummarySkeleton } from './campaign-summary-skeleton';
 import { TopSalesTableSkeleton } from './top-sales-table-skeleton';
 import { RecentActivitySkeleton } from './recent-activity-skeleton';
 import { AlertsPanelSkeleton } from './alerts-panel-skeleton';
@@ -122,9 +122,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           <LeadTrendChartContainer />
         </Suspense>
 
-        {/* Status Distribution Chart - Story 2.3 */}
-        <Suspense fallback={<StatusDistributionSkeleton />}>
-          <StatusDistributionContainer />
+        {/* Campaign Summary - Story 2.9 */}
+        <Suspense fallback={<CampaignSummarySkeleton />}>
+          <CampaignSummaryContainer />
         </Suspense>
       </div>
 

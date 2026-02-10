@@ -74,9 +74,32 @@ export interface TopSalesPerson {
   rank: number;
 }
 
+/**
+ * Top Campaign Item (Dashboard Campaign Summary)
+ * Story 2.9: Ranked by click rate
+ */
+export interface TopCampaignItem {
+  campaignId: number;
+  campaignName: string;
+  clickRate: number;          // percentage (0-100)
+}
+
+/**
+ * Campaign Summary (Dashboard)
+ * Story 2.9: Aggregated campaign metrics
+ */
+export interface CampaignSummary {
+  totalCampaigns: number;
+  totalDelivered: number;
+  avgOpenRate: number;        // percentage (0-100), weighted average
+  avgClickRate: number;       // percentage (0-100), weighted average
+  topCampaigns: TopCampaignItem[];  // max 3, sorted by clickRate desc
+}
+
 export interface DashboardData {
   summary: DashboardSummary;
   trends: DashboardTrends;
+  campaignSummary?: CampaignSummary | null;
   topSales?: TopSalesPerson[];
   recentActivity?: ApiActivityItem[];
   alerts?: ApiAlert[];
