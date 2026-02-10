@@ -89,7 +89,7 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
     isLoading,
     isError,
     refetch,
-  } = useLead(lead?.row, { enabled: open && !!lead?.row });
+  } = useLead(lead?.leadUuid, { enabled: open && !!lead?.leadUuid });
 
   // Always render Sheet to maintain proper state management
   if (!lead) {
@@ -452,10 +452,7 @@ export function LeadDetailSheet({ open, onOpenChange, lead }: LeadDetailSheetPro
               Technical Information
             </h3>
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>Row ID: {lead.row}</p>
-              {(leadDetail?.leadUuid || lead.leadUuid) && (
-                <p>UUID: {leadDetail?.leadUuid || lead.leadUuid}</p>
-              )}
+              <p>UUID: {lead.leadUuid}</p>
               {(leadDetail?.leadId || lead.leadId) && (
                 <p>Lead ID: {leadDetail?.leadId || lead.leadId}</p>
               )}

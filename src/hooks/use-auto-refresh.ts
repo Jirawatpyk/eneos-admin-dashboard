@@ -72,8 +72,6 @@ export function useAutoRefresh(
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
 
-  // Use ref to track if component is mounted
-  const isMountedRef = useRef(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load preference from localStorage and set initial timestamp (client-side only)
@@ -88,10 +86,6 @@ export function useAutoRefresh(
         setEnabled(true);
       }
     }
-
-    return () => {
-      isMountedRef.current = false;
-    };
   }, []);
 
   // Save preference to localStorage
@@ -104,38 +98,30 @@ export function useAutoRefresh(
 
   // Manual refresh function
   const refresh = useCallback(async () => {
-    if (!isMountedRef.current) return;
-
     setIsRefreshing(true);
     onRefreshStart?.();
 
     try {
-      // Invalidate all dashboard-related queries
+      // Force refetch all dashboard-related queries
       // MIN_SPINNER_MS ensures spinner is visible even when refetch is instant
       await Promise.all([
         ...queryKeys.map((key) =>
-          queryClient.invalidateQueries({ queryKey: [key] })
+          queryClient.refetchQueries({ queryKey: [key] })
         ),
         new Promise((r) => setTimeout(r, MIN_SPINNER_MS)),
       ]);
 
-      if (isMountedRef.current) {
-        setLastUpdated(new Date());
-        setErrorCount(0);
-        onRefreshComplete?.();
-      }
+      setLastUpdated(new Date());
+      setErrorCount(0);
+      onRefreshComplete?.();
     } catch (error) {
       // AC#7: Log error silently, don't show to user unless persistent
       console.error('[Auto Refresh] Refresh failed:', error);
 
-      if (isMountedRef.current) {
-        setErrorCount((prev) => prev + 1);
-        onRefreshError?.(error instanceof Error ? error : new Error('Refresh failed'));
-      }
+      setErrorCount((prev) => prev + 1);
+      onRefreshError?.(error instanceof Error ? error : new Error('Refresh failed'));
     } finally {
-      if (isMountedRef.current) {
-        setIsRefreshing(false);
-      }
+      setIsRefreshing(false);
     }
   }, [queryClient, queryKeys, onRefreshStart, onRefreshComplete, onRefreshError]);
 

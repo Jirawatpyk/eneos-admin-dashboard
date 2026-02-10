@@ -139,6 +139,9 @@ export async function GET(request: NextRequest) {
             province: (lead.province as string) ?? null,
             fullAddress: (lead.fullAddress as string) ?? null,
 
+            // UUID — primary identifier from Supabase
+            leadUuid: (lead.leadUuid as string) ?? '',
+
             // Fields not provided in list response (available in detail endpoint)
             emailSubject: null,
             leadId: null,
@@ -146,7 +149,6 @@ export async function GET(request: NextRequest) {
             lostAt: null,
             unreachableAt: null,
             version: 1, // Default version for optimistic locking
-            leadUuid: null,
             createdAt: lead.date as string, // Use date as createdAt (same value)
             updatedAt: null,
           };

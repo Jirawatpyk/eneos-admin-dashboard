@@ -3,7 +3,7 @@
  * Story 4.1: Lead List Table
  *
  * Proxies requests to Backend API for single lead details
- * ID is the row number in Google Sheets
+ * ID is the Supabase UUID
  */
 
 import { NextRequest, NextResponse } from 'next/server';

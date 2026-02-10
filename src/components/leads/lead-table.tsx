@@ -69,12 +69,12 @@ interface LeadTableProps {
   onSortingChange: (columnId: string) => void;
   onRowClick: (lead: Lead) => void;
   // Story 4.9: Selection props
-  /** Set of selected row IDs */
-  selectedIds: Set<number>;
-  /** Called when a row checkbox is toggled */
-  onToggleSelection: (rowId: number) => void;
+  /** Set of selected lead UUIDs */
+  selectedIds: Set<string>;
+  /** Called when a lead checkbox is toggled */
+  onToggleSelection: (id: string) => void;
   /** Called when header checkbox is clicked */
-  onSelectAll: (rowIds: number[]) => void;
+  onSelectAll: (ids: string[]) => void;
   /** True if all visible rows are selected */
   isAllSelected: boolean;
   /** True if some (but not all) visible rows are selected */
@@ -89,9 +89,9 @@ interface LeadTableProps {
  * TanStack Table uses meta to pass arbitrary data to columns
  */
 interface TableMeta {
-  selectedIds: Set<number>;
-  onToggleSelection: (rowId: number) => void;
-  onSelectAll: (rowIds: number[]) => void;
+  selectedIds: Set<string>;
+  onToggleSelection: (id: string) => void;
+  onSelectAll: (ids: string[]) => void;
   isAllSelected: boolean;
   isSomeSelected: boolean;
 }
@@ -235,7 +235,7 @@ export function LeadTable({
         id: 'select',
         header: ({ table }) => {
           const meta = table.options.meta as TableMeta;
-          const allRowIds = table.getRowModel().rows.map((row) => row.original.row);
+          const allRowIds = table.getRowModel().rows.map((row) => row.original.leadUuid);
 
           // AC#3: Determine checked state: true | false | 'indeterminate'
           const checkedState = meta.isAllSelected
@@ -258,11 +258,11 @@ export function LeadTable({
           const meta = table.options.meta as TableMeta;
           return (
             <Checkbox
-              checked={meta.selectedIds.has(row.original.row)}
-              onCheckedChange={() => meta.onToggleSelection(row.original.row)}
+              checked={meta.selectedIds.has(row.original.leadUuid)}
+              onCheckedChange={() => meta.onToggleSelection(row.original.leadUuid)}
               aria-label={`Select ${row.original.company}`}
               onClick={(e) => e.stopPropagation()}
-              data-testid={`select-checkbox-${row.original.row}`}
+              data-testid={`select-checkbox-${row.original.leadUuid}`}
             />
           );
         },
@@ -573,7 +573,7 @@ export function LeadTable({
                   className={cn(
                     'cursor-pointer hover:bg-muted/50 transition-colors',
                     // Story 4.9 AC#2: Visual highlight for selected rows
-                    selectedIds.has(row.original.row) && 'bg-blue-50 dark:bg-blue-950/50'
+                    selectedIds.has(row.original.leadUuid) && 'bg-blue-50 dark:bg-blue-950/50'
                   )}
                   onClick={() => onRowClick(row.original)}
                   role="button"
@@ -584,8 +584,8 @@ export function LeadTable({
                       onRowClick(row.original);
                     }
                   }}
-                  data-testid={`lead-row-${row.original.row}`}
-                  data-selected={selectedIds.has(row.original.row)}
+                  data-testid={`lead-row-${row.original.leadUuid}`}
+                  data-selected={selectedIds.has(row.original.leadUuid)}
                 >
                   {row.getVisibleCells().map((cell, index) => {
                     // Story 4.16 AC#8: Extract mobile visibility classes from column meta

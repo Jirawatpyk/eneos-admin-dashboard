@@ -65,6 +65,7 @@ describe('LeadDetailSheet', () => {
 
   const mockLeadDetail: LeadDetail = {
     row: 42,
+    leadUuid: 'lead_uuid_123',
     date: '2026-01-15T08:30:00.000Z',
     customerName: 'สมชาย ใจดี',
     email: 'somchai@example.com',
@@ -99,6 +100,8 @@ describe('LeadDetailSheet', () => {
       closingTime: 1335,
       age: 2880,
     },
+    campaignEvents: [],
+    timeline: [],
   };
 
   beforeEach(() => {
@@ -650,7 +653,7 @@ describe('LeadDetailSheet', () => {
         <LeadDetailSheet open={true} onOpenChange={() => {}} lead={mockLead} />
       );
 
-      expect(mockUseLead).toHaveBeenCalledWith(42, { enabled: true });
+      expect(mockUseLead).toHaveBeenCalledWith('lead_uuid_123', { enabled: true });
     });
 
     it('disables query when sheet is closed', () => {
@@ -665,7 +668,7 @@ describe('LeadDetailSheet', () => {
         <LeadDetailSheet open={false} onOpenChange={() => {}} lead={mockLead} />
       );
 
-      expect(mockUseLead).toHaveBeenCalledWith(42, { enabled: false });
+      expect(mockUseLead).toHaveBeenCalledWith('lead_uuid_123', { enabled: false });
     });
   });
 });

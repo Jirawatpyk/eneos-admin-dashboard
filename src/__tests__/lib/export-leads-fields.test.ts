@@ -78,7 +78,7 @@ const createMockLead = (overrides: Partial<Lead> = {}): Lead => ({
   leadSource: 'Email',
   jobTitle: 'Manager',
   city: 'Bangkok',
-  leadUuid: null,
+  leadUuid: '',
   createdAt: '2026-01-15T10:00:00.000Z',
   updatedAt: null,
   juristicId: '0105556012345',

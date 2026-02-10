@@ -39,12 +39,12 @@ function isLeadsApiError(error: unknown): error is LeadsApiError {
  * Custom hook for single lead data with enhanced details
  * Story 4.8: AC#1, AC#5, AC#9
  *
- * @param id - Lead row number (undefined to skip query)
+ * @param id - Lead UUID (undefined to skip query)
  * @param options - Query options
  * @returns Query result with lead detail data, loading, error states
  */
 export function useLead(
-  id: number | undefined,
+  id: string | undefined,
   options: UseLeadOptions = {}
 ): UseLeadReturn {
   const { enabled = true } = options;
@@ -59,7 +59,7 @@ export function useLead(
     // AC#5: Retry logic (2 retries for transient failures)
     retry: 2,
     // AC#1: Only fetch when id is defined and enabled
-    enabled: enabled && id !== undefined,
+    enabled: enabled && !!id,
   });
 
   return {

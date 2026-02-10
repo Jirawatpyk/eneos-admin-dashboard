@@ -111,6 +111,9 @@ describe('Lead Detail Modal Integration', () => {
       closingTime: 0,
       age: 120,
     },
+    leadUuid: 'uuid_123',
+    campaignEvents: [],
+    timeline: [],
   };
 
   beforeEach(() => {
@@ -132,7 +135,7 @@ describe('Lead Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchLeadById).toHaveBeenCalledWith(42);
+        expect(mockFetchLeadById).toHaveBeenCalledWith('uuid_123');
       });
     });
 
@@ -287,11 +290,11 @@ describe('Lead Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchLeadById).toHaveBeenCalledWith(42);
+        expect(mockFetchLeadById).toHaveBeenCalledWith('uuid_123');
       });
 
-      const differentLead = { ...mockLead, row: 99 };
-      const differentDetail = { ...mockLeadDetail, row: 99 };
+      const differentLead = { ...mockLead, row: 99, leadUuid: 'uuid_different' };
+      const differentDetail = { ...mockLeadDetail, row: 99, leadUuid: 'uuid_different' };
       mockFetchLeadById.mockResolvedValue(differentDetail);
 
       rerender(
@@ -301,7 +304,7 @@ describe('Lead Detail Modal Integration', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchLeadById).toHaveBeenCalledWith(99);
+        expect(mockFetchLeadById).toHaveBeenCalledWith('uuid_different');
       });
     });
   });

@@ -200,11 +200,11 @@ export function LeadTableContainer() {
   const isSearchPending = searchInput !== debouncedSearch;
 
   // Story 4.9: Compute visible row IDs for select all functionality
-  const visibleRowIds = useMemo(() => data?.map((lead) => lead.row) ?? [], [data]);
+  const visibleRowIds = useMemo(() => data?.map((lead) => lead.leadUuid) ?? [], [data]);
 
   // Story 4.10: Get actual lead data for selected IDs (for export)
   const selectedLeads = useMemo(
-    () => data?.filter((lead) => selectedIds.has(lead.row)) ?? [],
+    () => data?.filter((lead) => selectedIds.has(lead.leadUuid)) ?? [],
     [data, selectedIds]
   );
 

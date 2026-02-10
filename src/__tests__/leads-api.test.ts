@@ -311,7 +311,7 @@ describe('fetchLeadById', () => {
           }),
       });
 
-      const result = await fetchLeadById(123);
+      const result = await fetchLeadById('test-uuid-123');
 
       expect(result).toEqual(mockLeadDetail);
     });
@@ -326,10 +326,10 @@ describe('fetchLeadById', () => {
           }),
       });
 
-      await fetchLeadById(456);
+      await fetchLeadById('test-uuid-456');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/admin/leads/456'),
+        expect.stringContaining('/api/admin/leads/test-uuid-456'),
         expect.any(Object)
       );
     });
@@ -344,7 +344,7 @@ describe('fetchLeadById', () => {
           }),
       });
 
-      await fetchLeadById(123);
+      await fetchLeadById('test-uuid-123');
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -364,7 +364,7 @@ describe('fetchLeadById', () => {
       });
 
       try {
-        await fetchLeadById(999);
+        await fetchLeadById('test-uuid-999');
         expect.fail('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(LeadsApiError);
@@ -382,7 +382,7 @@ describe('fetchLeadById', () => {
       });
 
       try {
-        await fetchLeadById(123);
+        await fetchLeadById('test-uuid-123');
         expect.fail('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(LeadsApiError);
@@ -399,7 +399,7 @@ describe('fetchLeadById', () => {
       });
 
       try {
-        await fetchLeadById(123);
+        await fetchLeadById('test-uuid-123');
         expect.fail('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(LeadsApiError);
@@ -419,7 +419,7 @@ describe('fetchLeadById', () => {
       });
 
       try {
-        await fetchLeadById(123);
+        await fetchLeadById('test-uuid-123');
         expect.fail('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(LeadsApiError);

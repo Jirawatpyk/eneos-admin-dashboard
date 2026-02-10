@@ -89,7 +89,7 @@ const mockSelectAll = vi.fn();
 const mockIsSelected = vi.fn(() => false);
 vi.mock('@/hooks/use-lead-selection', () => ({
   useLeadSelection: vi.fn(() => ({
-    selectedIds: new Set<number>(),
+    selectedIds: new Set<string>(),
     selectedCount: 0,
     isSelected: mockIsSelected,
     toggleSelection: mockToggleSelection,
@@ -260,7 +260,7 @@ describe('LeadTableContainer', () => {
     });
     // Story 4.9: Reset selection hook mock
     vi.mocked(useLeadSelection).mockReturnValue({
-      selectedIds: new Set<number>(),
+      selectedIds: new Set<string>(),
       selectedCount: 0,
       isSelected: mockIsSelected,
       toggleSelection: mockToggleSelection,
@@ -401,7 +401,7 @@ describe('LeadTableContainer', () => {
     it('opens detail sheet when row is clicked', async () => {
       renderWithProviders(<LeadTableContainer />);
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       fireEvent.click(row);
 
       await waitFor(() => {
@@ -412,7 +412,7 @@ describe('LeadTableContainer', () => {
     it('displays lead details in sheet', async () => {
       renderWithProviders(<LeadTableContainer />);
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       fireEvent.click(row);
 
       // Sheet renders in a portal, check that it's in the document
@@ -446,7 +446,7 @@ describe('LeadTableContainer', () => {
         renderWithProviders(<LeadTableContainer />);
 
         // Find the checkbox for row 1
-        const checkbox = screen.getByTestId('select-checkbox-1');
+        const checkbox = screen.getByTestId('select-checkbox-lead_uuid_1');
         fireEvent.click(checkbox);
 
         // Wait a tick to ensure any async operations complete
@@ -459,10 +459,10 @@ describe('LeadTableContainer', () => {
       it('calls toggleSelection when checkbox is clicked', () => {
         renderWithProviders(<LeadTableContainer />);
 
-        const checkbox = screen.getByTestId('select-checkbox-1');
+        const checkbox = screen.getByTestId('select-checkbox-lead_uuid_1');
         fireEvent.click(checkbox);
 
-        expect(mockToggleSelection).toHaveBeenCalledWith(1);
+        expect(mockToggleSelection).toHaveBeenCalledWith('lead_uuid_1');
       });
     });
 
@@ -471,7 +471,7 @@ describe('LeadTableContainer', () => {
       it('clears selection when status filter changes', async () => {
         // Start with some selections
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1]),
+          selectedIds: new Set(['lead_uuid_1']),
           selectedCount: 1,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,
@@ -507,7 +507,7 @@ describe('LeadTableContainer', () => {
 
       it('clears selection when owner filter changes', async () => {
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1, 2]),
+          selectedIds: new Set(['lead_uuid_1', 'lead_uuid_2']),
           selectedCount: 2,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,
@@ -541,7 +541,7 @@ describe('LeadTableContainer', () => {
 
       it('shows toast notification when selection is cleared due to filter change', async () => {
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1]),
+          selectedIds: new Set(['lead_uuid_1']),
           selectedCount: 1,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,
@@ -582,7 +582,7 @@ describe('LeadTableContainer', () => {
     describe('AC#7: search change clears selection', () => {
       it('clears selection when search term changes', async () => {
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1]),
+          selectedIds: new Set(['lead_uuid_1']),
           selectedCount: 1,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,
@@ -619,7 +619,7 @@ describe('LeadTableContainer', () => {
     describe('selection toolbar', () => {
       it('renders selection toolbar when items are selected', () => {
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1, 2]),
+          selectedIds: new Set(['lead_uuid_1', 'lead_uuid_2']),
           selectedCount: 2,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,
@@ -643,7 +643,7 @@ describe('LeadTableContainer', () => {
 
       it('calls clearSelection when clear button is clicked', () => {
         vi.mocked(useLeadSelection).mockReturnValue({
-          selectedIds: new Set([1]),
+          selectedIds: new Set(['lead_uuid_1']),
           selectedCount: 1,
           isSelected: mockIsSelected,
           toggleSelection: mockToggleSelection,

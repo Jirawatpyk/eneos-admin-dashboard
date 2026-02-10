@@ -228,7 +228,9 @@ describe('useAutoRefresh', () => {
       // Wait a bit to ensure time difference
       await act(async () => {
         vi.advanceTimersByTime(100);
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500); // MIN_SPINNER_MS
+        await refreshPromise;
       });
 
       // After refresh, lastUpdated should be a Date
@@ -246,7 +248,9 @@ describe('useAutoRefresh', () => {
       });
 
       await act(async () => {
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500);
+        await refreshPromise;
       });
 
       // After refresh completes, isRefreshing should be false
@@ -270,9 +274,9 @@ describe('useAutoRefresh', () => {
       // Set tab as hidden
       mockVisibilityState = 'hidden';
 
-      // Advance time by 30 seconds
+      // Advance time past refresh interval + spinner delay
       await act(async () => {
-        vi.advanceTimersByTime(REFRESH_INTERVAL);
+        vi.advanceTimersByTime(REFRESH_INTERVAL + 500);
       });
 
       // lastUpdated should not have changed
@@ -304,7 +308,9 @@ describe('useAutoRefresh', () => {
       });
 
       await act(async () => {
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500);
+        await refreshPromise;
       });
 
       expect(result.current.errorCount).toBe(0);
@@ -319,7 +325,9 @@ describe('useAutoRefresh', () => {
       );
 
       await act(async () => {
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500);
+        await refreshPromise;
       });
 
       expect(onRefreshStart).toHaveBeenCalled();
@@ -334,7 +342,9 @@ describe('useAutoRefresh', () => {
       );
 
       await act(async () => {
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500);
+        await refreshPromise;
       });
 
       expect(onRefreshComplete).toHaveBeenCalled();
@@ -352,9 +362,9 @@ describe('useAutoRefresh', () => {
         },
       });
 
-      // Mock invalidateQueries to throw
-      const originalInvalidateQueries = errorQueryClient.invalidateQueries.bind(errorQueryClient);
-      errorQueryClient.invalidateQueries = vi.fn().mockRejectedValue(new Error('Network error'));
+      // Mock refetchQueries to throw
+      const originalRefetchQueries = errorQueryClient.refetchQueries.bind(errorQueryClient);
+      errorQueryClient.refetchQueries = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const errorWrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={errorQueryClient}>
@@ -368,7 +378,9 @@ describe('useAutoRefresh', () => {
       );
 
       await act(async () => {
-        await result.current.refresh();
+        const refreshPromise = result.current.refresh();
+        vi.advanceTimersByTime(500);
+        await refreshPromise;
       });
 
       expect(onRefreshError).toHaveBeenCalledWith(expect.any(Error));
@@ -377,7 +389,7 @@ describe('useAutoRefresh', () => {
       }));
 
       // Restore original
-      errorQueryClient.invalidateQueries = originalInvalidateQueries;
+      errorQueryClient.refetchQueries = originalRefetchQueries;
     });
   });
 
@@ -416,9 +428,9 @@ describe('useAutoRefresh', () => {
 
       const lastUpdated = result.current.lastUpdated;
 
-      // Advance time
+      // Advance time past refresh interval + spinner delay
       await act(async () => {
-        vi.advanceTimersByTime(REFRESH_INTERVAL);
+        vi.advanceTimersByTime(REFRESH_INTERVAL + 500);
       });
 
       // lastUpdated should not have changed

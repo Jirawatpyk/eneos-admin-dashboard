@@ -4,7 +4,7 @@
  *
  * Features:
  * - AC#2: Toggle individual row selection
- * - AC#6: Selection persists across page changes (stored by row ID)
+ * - AC#6: Selection persists across page changes (stored by lead UUID)
  * - AC#7: Clear selection when needed (external trigger for filter changes)
  * - AC#9: Exposes selectedIds for Story 4-10 (Quick Export)
  */
@@ -17,22 +17,22 @@ import { useState, useCallback, useMemo } from 'react';
 // ===========================================
 
 export interface UseLeadSelectionReturn {
-  /** Set of selected row IDs */
-  selectedIds: Set<number>;
+  /** Set of selected lead UUIDs */
+  selectedIds: Set<string>;
   /** Number of selected rows */
   selectedCount: number;
-  /** Check if a specific row is selected */
-  isSelected: (rowId: number) => boolean;
-  /** Toggle selection for a single row */
-  toggleSelection: (rowId: number) => void;
-  /** Select/deselect all visible rows (toggles based on current state) */
-  selectAll: (rowIds: number[]) => void;
+  /** Check if a specific lead is selected */
+  isSelected: (id: string) => boolean;
+  /** Toggle selection for a single lead */
+  toggleSelection: (id: string) => void;
+  /** Select/deselect all visible leads (toggles based on current state) */
+  selectAll: (ids: string[]) => void;
   /** Clear all selections */
   clearSelection: () => void;
-  /** Check if all visible rows are selected */
-  isAllSelected: (visibleRowIds: number[]) => boolean;
-  /** Check if some (but not all) visible rows are selected (for indeterminate state) */
-  isSomeSelected: (visibleRowIds: number[]) => boolean;
+  /** Check if all visible leads are selected */
+  isAllSelected: (visibleIds: string[]) => boolean;
+  /** Check if some (but not all) visible leads are selected (for indeterminate state) */
+  isSomeSelected: (visibleIds: string[]) => boolean;
 }
 
 // ===========================================
@@ -57,58 +57,58 @@ export interface UseLeadSelectionReturn {
  *   isSomeSelected,
  * } = useLeadSelection();
  *
- * // Check if row 5 is selected
- * const isRow5Selected = isSelected(5);
+ * // Check if lead is selected
+ * const isLeadSelected = isSelected('uuid-123');
  *
- * // Toggle selection for row 5
- * toggleSelection(5);
+ * // Toggle selection
+ * toggleSelection('uuid-123');
  *
- * // Select all visible rows
- * const visibleRowIds = leads.map(lead => lead.row);
- * selectAll(visibleRowIds);
+ * // Select all visible leads
+ * const visibleIds = leads.map(lead => lead.leadUuid);
+ * selectAll(visibleIds);
  * ```
  */
 export function useLeadSelection(): UseLeadSelectionReturn {
-  // Store selected row IDs in a Set for O(1) lookup
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  // Store selected lead UUIDs in a Set for O(1) lookup
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // AC#9: Expose selection count for export
   const selectedCount = useMemo(() => selectedIds.size, [selectedIds]);
 
-  // AC#2: Check if a specific row is selected
+  // AC#2: Check if a specific lead is selected
   const isSelected = useCallback(
-    (rowId: number) => selectedIds.has(rowId),
+    (id: string) => selectedIds.has(id),
     [selectedIds]
   );
 
-  // AC#2: Toggle selection for a single row
-  const toggleSelection = useCallback((rowId: number) => {
+  // AC#2: Toggle selection for a single lead
+  const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(rowId)) {
-        next.delete(rowId);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(rowId);
+        next.add(id);
       }
       return next;
     });
   }, []);
 
-  // AC#3: Select/deselect all visible rows
-  // If all visible rows are selected, deselect them
-  // Otherwise, select all visible rows (preserving other selections)
-  const selectAll = useCallback((rowIds: number[]) => {
+  // AC#3: Select/deselect all visible leads
+  // If all visible leads are selected, deselect them
+  // Otherwise, select all visible leads (preserving other selections)
+  const selectAll = useCallback((ids: string[]) => {
     setSelectedIds((prev) => {
-      const allSelected = rowIds.every((id) => prev.has(id));
+      const allSelected = ids.every((id) => prev.has(id));
       if (allSelected) {
-        // Deselect all visible rows (keep selections from other pages)
+        // Deselect all visible leads (keep selections from other pages)
         const next = new Set(prev);
-        rowIds.forEach((id) => next.delete(id));
+        ids.forEach((id) => next.delete(id));
         return next;
       } else {
-        // Select all visible rows (add to existing selections)
+        // Select all visible leads (add to existing selections)
         const next = new Set(prev);
-        rowIds.forEach((id) => next.add(id));
+        ids.forEach((id) => next.add(id));
         return next;
       }
     });
@@ -119,21 +119,21 @@ export function useLeadSelection(): UseLeadSelectionReturn {
     setSelectedIds(new Set());
   }, []);
 
-  // AC#3: Check if all visible rows are selected (for header checkbox checked state)
+  // AC#3: Check if all visible leads are selected (for header checkbox checked state)
   const isAllSelected = useCallback(
-    (visibleRowIds: number[]) => {
-      if (visibleRowIds.length === 0) return false;
-      return visibleRowIds.every((id) => selectedIds.has(id));
+    (visibleIds: string[]) => {
+      if (visibleIds.length === 0) return false;
+      return visibleIds.every((id) => selectedIds.has(id));
     },
     [selectedIds]
   );
 
-  // AC#3: Check if some (but not all) visible rows are selected (for indeterminate state)
+  // AC#3: Check if some (but not all) visible leads are selected (for indeterminate state)
   const isSomeSelected = useCallback(
-    (visibleRowIds: number[]) => {
-      if (visibleRowIds.length === 0) return false;
-      const selectedOnPage = visibleRowIds.filter((id) => selectedIds.has(id)).length;
-      return selectedOnPage > 0 && selectedOnPage < visibleRowIds.length;
+    (visibleIds: string[]) => {
+      if (visibleIds.length === 0) return false;
+      const selectedOnPage = visibleIds.filter((id) => selectedIds.has(id)).length;
+      return selectedOnPage > 0 && selectedOnPage < visibleIds.length;
     },
     [selectedIds]
   );

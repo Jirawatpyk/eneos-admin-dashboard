@@ -7,6 +7,26 @@
 
 import type { LeadStatus } from './lead';
 
+/** Campaign event for lead detail timeline (Story 9-5) */
+export interface LeadCampaignEvent {
+  campaignId: string;
+  campaignName: string;
+  event: string;         // 'delivered' | 'opened' | 'click'
+  eventAt: string;       // ISO 8601
+  url: string | null;    // URL for click events
+}
+
+/** Unified timeline entry (Story 9-5) */
+export interface TimelineEntry {
+  type: 'campaign_event' | 'status_change';
+  timestamp: string;     // ISO 8601
+  event?: string;
+  campaignName?: string;
+  url?: string | null;
+  status?: LeadStatus;
+  changedBy?: string;
+}
+
 /**
  * Status history entry for lead timeline
  * AC#2: Status History Section
@@ -67,8 +87,10 @@ export interface LeadDetailCampaign {
  * Extends basic Lead with history, metrics, and enriched owner/campaign data
  */
 export interface LeadDetail {
-  /** Row number in Google Sheets - Primary Key */
+  /** @deprecated Legacy row number — always 0 in Supabase era */
   row: number;
+  /** Supabase UUID — primary identifier for API calls */
+  leadUuid: string;
   /** Created date (ISO string) */
   date: string;
   /** Customer/contact name */
@@ -107,8 +129,6 @@ export interface LeadDetail {
   jobTitle?: string;
   /** Contact's city */
   city?: string;
-  /** UUID for Supabase migration */
-  leadUuid?: string;
   /** Optimistic locking version */
   version?: number;
   // Google Search Grounding fields (added 2026-01-26)
@@ -120,4 +140,8 @@ export interface LeadDetail {
   province?: string | null;
   /** Full address - ที่อยู่เต็มของบริษัท */
   fullAddress?: string | null;
+  /** Campaign engagement events (Story 9-5) */
+  campaignEvents: LeadCampaignEvent[];
+  /** Unified timeline of campaign events and status changes (Story 9-5) */
+  timeline: TimelineEntry[];
 }

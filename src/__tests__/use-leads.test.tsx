@@ -58,7 +58,7 @@ const mockLeadsResponse = {
       leadSource: null,
       jobTitle: null,
       city: null,
-      leadUuid: null,
+      leadUuid: 'lead_1',
       createdAt: '2026-01-15T10:30:00Z',
       updatedAt: null,
     },

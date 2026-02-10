@@ -22,10 +22,10 @@ export type LeadStatus =
 
 /**
  * Lead entity from backend API
- * Row number = Primary Key (Google Sheets)
+ * UUID = Primary Key (Supabase)
  */
 export interface Lead {
-  /** Row number in Google Sheets - Primary Key */
+  /** @deprecated Legacy row number — always 0 in Supabase era. Use leadUuid instead. */
   row: number;
   /** Created date (ISO string) */
   date: string;
@@ -79,8 +79,8 @@ export interface Lead {
   jobTitle: string | null;
   /** Contact's city */
   city: string | null;
-  /** UUID for Supabase migration */
-  leadUuid: string | null;
+  /** Supabase UUID — primary identifier for API calls */
+  leadUuid: string;
   /** Created timestamp (ISO 8601) */
   createdAt: string;
   /** Updated timestamp (ISO 8601) */

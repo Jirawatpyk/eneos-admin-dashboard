@@ -14,7 +14,7 @@ export interface ActivityEntry {
   id: string;
   /** Lead UUID */
   leadUUID: string;
-  /** Row number in Leads sheet - for Lead Detail Modal */
+  /** @deprecated Legacy row number — always 0 in Supabase era. Use leadUUID instead. */
   rowNumber: number;
   /** Company name from Leads sheet */
   companyName: string;

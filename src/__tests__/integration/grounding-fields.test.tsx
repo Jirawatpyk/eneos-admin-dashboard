@@ -106,6 +106,9 @@ describe('Grounding Fields Integration', () => {
         province: 'กรุงเทพมหานคร',
         fullAddress:
           '123/45 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+        leadUuid: 'lead_100',
+        campaignEvents: [],
+        timeline: [],
       };
 
       mockFetchLeadById.mockResolvedValue(detailWithGrounding);
@@ -122,7 +125,7 @@ describe('Grounding Fields Integration', () => {
 
       // Verify API was called
       await waitFor(() => {
-        expect(mockFetchLeadById).toHaveBeenCalledWith(100);
+        expect(mockFetchLeadById).toHaveBeenCalledWith('lead_100');
       });
 
       // Verify all grounding fields are displayed
@@ -186,6 +189,9 @@ describe('Grounding Fields Integration', () => {
           closingTime: 0,
           age: 30,
         },
+        leadUuid: 'lead_200',
+        campaignEvents: [],
+        timeline: [],
       };
 
       mockFetchLeadById.mockResolvedValue(detailWithoutGrounding);
@@ -313,6 +319,9 @@ describe('Grounding Fields Integration', () => {
         dbdSector: 'Manufacturing',
         province: 'สมุทรปราการ',
         fullAddress: '88/88 ถนนทดสอบ ต. ทดสอบ อ. ทดสอบ สมุทรปราการ 10000',
+        leadUuid: 'lead_999',
+        campaignEvents: [],
+        timeline: [],
       };
 
       mockFetchLeadById.mockResolvedValue(detailWithAllFields);
@@ -329,7 +338,7 @@ describe('Grounding Fields Integration', () => {
 
       // Verify API call
       await waitFor(() => {
-        expect(mockFetchLeadById).toHaveBeenCalledWith(999);
+        expect(mockFetchLeadById).toHaveBeenCalledWith('lead_999');
       });
 
       // Verify all sections loaded

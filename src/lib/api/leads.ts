@@ -128,13 +128,13 @@ export async function fetchLeads(
 }
 
 /**
- * Fetch single lead by ID (row number)
+ * Fetch single lead by ID
  * Story 4.8: Returns LeadDetail with history and metrics
- * @param id - Lead row number
+ * @param id - Lead UUID (Supabase primary key)
  * @returns Lead details with history and metrics
  * @throws LeadsApiError on failure
  */
-export async function fetchLeadById(id: number): Promise<LeadDetail> {
+export async function fetchLeadById(id: string): Promise<LeadDetail> {
   const url = `${API_BASE_URL}/api/admin/leads/${id}`;
 
   const response = await fetch(url, {

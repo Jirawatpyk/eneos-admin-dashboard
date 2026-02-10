@@ -147,7 +147,7 @@ describe('LeadTable', () => {
 
   // Story 4.9: Default selection props
   const defaultSelectionProps = {
-    selectedIds: new Set<number>(),
+    selectedIds: new Set<string>(),
     onToggleSelection: mockOnToggleSelection,
     onSelectAll: mockOnSelectAll,
     isAllSelected: false,
@@ -323,7 +323,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       fireEvent.click(row);
 
       expect(mockOnRowClick).toHaveBeenCalledWith(mockLeadsData[0]);
@@ -340,7 +340,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-2');
+      const row = screen.getByTestId('lead-row-lead_uuid_2');
       fireEvent.keyDown(row, { key: 'Enter' });
 
       expect(mockOnRowClick).toHaveBeenCalledWith(mockLeadsData[1]);
@@ -357,7 +357,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-3');
+      const row = screen.getByTestId('lead-row-lead_uuid_3');
       fireEvent.keyDown(row, { key: ' ' });
 
       expect(mockOnRowClick).toHaveBeenCalledWith(mockLeadsData[2]);
@@ -374,7 +374,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       expect(row).toHaveClass('cursor-pointer');
     });
 
@@ -389,7 +389,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       expect(row).toHaveClass('hover:bg-muted/50');
     });
 
@@ -404,7 +404,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       expect(row).toHaveAttribute('role', 'button');
     });
 
@@ -419,7 +419,7 @@ describe('LeadTable', () => {
         />
       );
 
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       expect(row).toHaveAttribute('tabIndex', '0');
     });
   });
@@ -463,7 +463,7 @@ describe('LeadTable', () => {
       expect(companyHeader).toHaveClass('sticky', 'left-10');
 
       // Check cells have sticky class
-      const row = screen.getByTestId('lead-row-1');
+      const row = screen.getByTestId('lead-row-lead_uuid_1');
       const companyCell = within(row).getByText('ABC Corp').closest('td');
       expect(companyCell).toHaveClass('sticky', 'left-10');
     });
@@ -742,7 +742,7 @@ describe('LeadTable', () => {
 
         // Row 2 has dbdSector, so industryAI 'Logistics' should NOT be displayed as badge
         // The 'Logistics' text should not appear in Company column context
-        const row = screen.getByTestId('lead-row-2');
+        const row = screen.getByTestId('lead-row-lead_uuid_2');
         const companyCell = within(row).getByText('XYZ Ltd').closest('td');
         expect(companyCell).not.toHaveTextContent('Logistics');
       });
@@ -759,7 +759,7 @@ describe('LeadTable', () => {
         );
 
         // Row 1 has dbdSector = null, so no sector badge
-        const row = screen.getByTestId('lead-row-1');
+        const row = screen.getByTestId('lead-row-lead_uuid_1');
         const companyCell = within(row).getByText('ABC Corp').closest('td');
         // Should only have company name, no badge
         expect(companyCell?.textContent).toBe('ABC Corp');
@@ -809,7 +809,7 @@ describe('LeadTable', () => {
         );
 
         // Row 3 has capital = null, should show "-"
-        const row = screen.getByTestId('lead-row-3');
+        const row = screen.getByTestId('lead-row-lead_uuid_3');
         const cells = within(row).getAllByRole('cell');
         // Capital is the 3rd column (after checkbox, company)
         const capitalCell = cells[2];
@@ -890,7 +890,7 @@ describe('LeadTable', () => {
         );
 
         // Row 3 has province = null, city = null
-        const row = screen.getByTestId('lead-row-3');
+        const row = screen.getByTestId('lead-row-lead_uuid_3');
         const cells = within(row).getAllByRole('cell');
         // Location is the 4th column (after checkbox, company, capital)
         const locationCell = cells[3];
@@ -931,7 +931,7 @@ describe('LeadTable', () => {
         );
 
         // Row 1 has all grounding fields null - should not crash
-        const row = screen.getByTestId('lead-row-1');
+        const row = screen.getByTestId('lead-row-lead_uuid_1');
         expect(row).toBeInTheDocument();
 
         // Row 1 should have company name visible
@@ -952,13 +952,13 @@ describe('LeadTable', () => {
         );
 
         // Row 2 has all grounding fields populated
-        const row2 = screen.getByTestId('lead-row-2');
+        const row2 = screen.getByTestId('lead-row-lead_uuid_2');
         expect(within(row2).getByText('F&B-M')).toBeInTheDocument();
         expect(within(row2).getByText('796,362,800 บาท')).toBeInTheDocument();
         expect(within(row2).getByText('กรุงเทพมหานคร')).toBeInTheDocument();
 
         // Row 3 has all grounding fields null
-        const row3 = screen.getByTestId('lead-row-3');
+        const row3 = screen.getByTestId('lead-row-lead_uuid_3');
         const cells = within(row3).getAllByRole('cell');
         expect(cells[2]).toHaveTextContent('-'); // Capital
         expect(cells[3]).toHaveTextContent('-'); // Location
@@ -987,8 +987,8 @@ describe('LeadTable', () => {
         expect(checkboxHeader).not.toHaveClass('hidden');
 
         // Checkbox cell should not have hidden class
-        const row = screen.getByTestId('lead-row-1');
-        const checkboxCell = within(row).getByTestId('select-checkbox-1').closest('td');
+        const row = screen.getByTestId('lead-row-lead_uuid_1');
+        const checkboxCell = within(row).getByTestId('select-checkbox-lead_uuid_1').closest('td');
         expect(checkboxCell).not.toHaveClass('hidden');
       });
 
@@ -1008,7 +1008,7 @@ describe('LeadTable', () => {
         expect(companyHeader).not.toHaveClass('hidden');
 
         // Company cell should not have hidden class
-        const row = screen.getByTestId('lead-row-1');
+        const row = screen.getByTestId('lead-row-lead_uuid_1');
         const companyCell = within(row).getByText('ABC Corp').closest('td');
         expect(companyCell).not.toHaveClass('hidden');
       });
@@ -1061,7 +1061,7 @@ describe('LeadTable', () => {
         expect(capitalHeader).toHaveClass('hidden', 'md:table-cell');
 
         // Capital cell should have hidden md:table-cell classes
-        const row = screen.getByTestId('lead-row-2');
+        const row = screen.getByTestId('lead-row-lead_uuid_2');
         const capitalCell = within(row).getByText('796,362,800 บาท').closest('td');
         expect(capitalCell).toHaveClass('hidden', 'md:table-cell');
       });
@@ -1158,7 +1158,7 @@ describe('LeadTable', () => {
         );
 
         // Click on row should still trigger onRowClick
-        const row = screen.getByTestId('lead-row-1');
+        const row = screen.getByTestId('lead-row-lead_uuid_1');
         fireEvent.click(row);
 
         expect(mockOnRowClick).toHaveBeenCalledWith(mockLeadsData[0]);
