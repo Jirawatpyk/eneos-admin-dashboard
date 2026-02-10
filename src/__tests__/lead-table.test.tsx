@@ -442,7 +442,7 @@ describe('LeadTable', () => {
       expect(table.parentElement).toHaveClass('overflow-auto');
     });
 
-    it('has sticky checkbox column (first) and Company column (second)', () => {
+    it('has sticky checkbox column (first) and non-sticky Company column (second)', () => {
       renderWithProviders(
         <LeadTable
           data={mockLeadsData}
@@ -456,16 +456,16 @@ describe('LeadTable', () => {
       // Story 4.9: Check checkbox header is sticky at left-0
       const selectAllCheckbox = screen.getByTestId('select-all-checkbox');
       const checkboxHeader = selectAllCheckbox.closest('th');
-      expect(checkboxHeader).toHaveClass('sticky', 'left-0');
+      expect(checkboxHeader).toHaveClass('sticky', 'left-0', 'z-20');
 
-      // Check Company header has sticky class at left-10 (after checkbox column)
+      // Company header is NOT sticky (removed to prevent Capital column overlap on notebook screens)
       const companyHeader = screen.getByText('Company').closest('th');
-      expect(companyHeader).toHaveClass('sticky', 'left-10');
+      expect(companyHeader).not.toHaveClass('sticky');
 
-      // Check cells have sticky class
+      // Company cells are NOT sticky
       const row = screen.getByTestId('lead-row-lead_uuid_1');
       const companyCell = within(row).getByText('ABC Corp').closest('td');
-      expect(companyCell).toHaveClass('sticky', 'left-10');
+      expect(companyCell).not.toHaveClass('sticky');
     });
   });
 
