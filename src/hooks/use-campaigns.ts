@@ -5,12 +5,17 @@ export interface Campaign {
   name: string;
 }
 
+export interface UseCampaignsOptions {
+  /** Filter campaigns by period (e.g. 'month', 'quarter'). Omit for backend default. */
+  period?: string;
+}
+
 /**
- * Fetch campaigns for filter dropdown
- * Task 5: Filter Application Logic
+ * Fetch campaigns from backend (leads grouped by brevoCampaignId)
  */
-async function fetchCampaigns(): Promise<Campaign[]> {
-  const response = await fetch('/api/admin/campaigns');
+async function fetchCampaigns(period?: string): Promise<Campaign[]> {
+  const params = period ? `?period=${period}` : '';
+  const response = await fetch(`/api/admin/campaigns${params}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch campaigns');
@@ -22,10 +27,11 @@ async function fetchCampaigns(): Promise<Campaign[]> {
   return result.data?.campaigns || [];
 }
 
-export function useCampaigns() {
+export function useCampaigns(options?: UseCampaignsOptions) {
+  const { period } = options || {};
   return useQuery({
-    queryKey: ['campaigns'],
-    queryFn: fetchCampaigns,
+    queryKey: ['campaigns', { period }],
+    queryFn: () => fetchCampaigns(period),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

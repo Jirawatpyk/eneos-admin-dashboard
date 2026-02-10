@@ -14,25 +14,11 @@ vi.mock('@/hooks/use-dashboard-data', () => ({
   useDashboardData: (...args: unknown[]) => mockUseDashboardData(...args),
 }));
 
-// Mock useCampaignStats
-const mockUseCampaignStats = vi.fn();
-vi.mock('@/hooks/use-campaign-stats', () => ({
-  useCampaignStats: (...args: unknown[]) => mockUseCampaignStats(...args),
+// Mock useCampaigns (campaigns from leads grouped by brevoCampaignId)
+const mockUseCampaigns = vi.fn();
+vi.mock('@/hooks/use-campaigns', () => ({
+  useCampaigns: (...args: unknown[]) => mockUseCampaigns(...args),
 }));
-
-// Mock date utils to have deterministic dates
-vi.mock('@/lib/report-date-utils', async () => {
-  const actual = await vi.importActual('@/lib/report-date-utils');
-  return {
-    ...actual,
-    getReportDateRange: (type: string) => {
-      if (type === 'monthly') {
-        return { from: new Date(2026, 0, 1), to: new Date(2026, 0, 31) };
-      }
-      return { from: new Date(2026, 0, 31), to: new Date(2026, 0, 31) };
-    },
-  };
-});
 
 const createDashboardData = (overrides = {}) => ({
   summary: {
@@ -63,7 +49,7 @@ describe('useQuickReports', () => {
       }
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -77,7 +63,7 @@ describe('useQuickReports', () => {
       }
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -95,7 +81,9 @@ describe('useQuickReports', () => {
       }
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: { totalCampaigns: 12 } });
+    // useCampaigns returns Campaign[] (leads grouped by brevoCampaignId)
+    const mockCampaigns = Array.from({ length: 12 }, (_, i) => ({ id: `camp-${i}`, name: `Campaign ${i}` }));
+    mockUseCampaigns.mockReturnValue({ data: mockCampaigns });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -104,11 +92,13 @@ describe('useQuickReports', () => {
       conversionRate: 18,
       totalCampaigns: 12,
     });
+    // Verify month period is passed (H-01 fix)
+    expect(mockUseCampaigns).toHaveBeenCalledWith({ period: 'month' });
   });
 
   it('should return null for daily when data is not loaded', () => {
     mockUseDashboardData.mockReturnValue({ data: undefined, isLoading: true });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -123,7 +113,7 @@ describe('useQuickReports', () => {
       if (opts.period === 'week') return { data: createDashboardData(), isLoading: false };
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -150,7 +140,7 @@ describe('useQuickReports', () => {
       if (opts.period === 'week') return { data: dataWithoutTopSales, isLoading: false };
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
@@ -162,30 +152,16 @@ describe('useQuickReports', () => {
       if (opts.period === 'month') return { data: createDashboardData(), isLoading: false };
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 
     expect(result.current.monthly?.totalCampaigns).toBe(0);
   });
 
-  it('should pass correct date range to useCampaignStats', () => {
-    mockUseDashboardData.mockReturnValue({ data: undefined, isLoading: true });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
-
-    renderHook(() => useQuickReports());
-
-    expect(mockUseCampaignStats).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dateFrom: '2026-01-01',
-        dateTo: '2026-01-31',
-      })
-    );
-  });
-
   it('should call useDashboardData with correct period for each report', () => {
     mockUseDashboardData.mockReturnValue({ data: undefined, isLoading: true });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     renderHook(() => useQuickReports());
 
@@ -211,7 +187,7 @@ describe('useQuickReports', () => {
       if (opts.period === 'week') return { data: dataWithUndefinedTopSales, isLoading: false };
       return { data: undefined, isLoading: true };
     });
-    mockUseCampaignStats.mockReturnValue({ data: undefined });
+    mockUseCampaigns.mockReturnValue({ data: undefined });
 
     const { result } = renderHook(() => useQuickReports());
 

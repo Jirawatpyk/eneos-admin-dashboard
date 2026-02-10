@@ -33,8 +33,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Forward request to Backend API
-    const backendUrl = `${BACKEND_URL}/api/admin/campaigns`;
+    // Forward query params to Backend API
+    const { searchParams } = new URL(request.url);
+    const queryString = searchParams.toString();
+    const backendUrl = `${BACKEND_URL}/api/admin/campaigns${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',

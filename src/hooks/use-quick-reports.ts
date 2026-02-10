@@ -3,12 +3,10 @@
  * Story 6.3: Quick Reports - Task 3
  *
  * Fetches preview data for Daily, Weekly, Monthly report cards.
- * Uses existing useDashboardData and useCampaignStats hooks.
+ * Uses existing useDashboardData and useCampaigns hooks.
  */
-import { format } from 'date-fns';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
-import { useCampaignStats } from '@/hooks/use-campaign-stats';
-import { getReportDateRange } from '@/lib/report-date-utils';
+import { useCampaigns } from '@/hooks/use-campaigns';
 
 interface DailyPreview {
   totalLeads: number;
@@ -41,12 +39,8 @@ export function useQuickReports(): QuickReportPreviewData {
   const { data: weeklyData, isLoading: weeklyLoading } = useDashboardData({ period: 'week' });
   const { data: monthlyData, isLoading: monthlyLoading } = useDashboardData({ period: 'month' });
 
-  // Campaign stats for monthly report
-  const monthRange = getReportDateRange('monthly');
-  const { data: campaignData } = useCampaignStats({
-    dateFrom: monthRange.from ? format(monthRange.from, 'yyyy-MM-dd') : undefined,
-    dateTo: monthRange.to ? format(monthRange.to, 'yyyy-MM-dd') : undefined,
-  });
+  // Campaign count from leads grouped by brevoCampaignId (GET /api/admin/campaigns?period=month)
+  const { data: campaignsData } = useCampaigns({ period: 'month' });
 
   return {
     daily: dailyData
@@ -67,7 +61,7 @@ export function useQuickReports(): QuickReportPreviewData {
       ? {
           totalLeads: monthlyData.summary.totalLeads,
           conversionRate: monthlyData.summary.conversionRate,
-          totalCampaigns: campaignData?.totalCampaigns ?? 0,
+          totalCampaigns: campaignsData?.length ?? 0,
         }
       : null,
     isLoading: {
