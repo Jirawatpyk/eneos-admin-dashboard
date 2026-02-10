@@ -123,11 +123,14 @@ export function LeadProcessingStatusCard() {
   const { data, total, isLoading, isError, refetch } = useAllLeadStatus();
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  // AC#3: Handle manual refresh with loading state
+  // AC#3: Handle manual refresh with loading state + minimum spin duration
   const handleRefresh = async () => {
     setIsManualRefreshing(true);
     try {
-      await refetch();
+      await Promise.all([
+        refetch(),
+        new Promise((r) => setTimeout(r, 600)), // Minimum spin for visual feedback
+      ]);
     } catch (error) {
       console.error('[LeadProcessingStatus] Manual refetch failed:', error);
       // Error will be shown via isError state from query
