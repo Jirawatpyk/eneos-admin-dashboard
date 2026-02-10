@@ -92,9 +92,9 @@ describe('CampaignEventsTable', () => {
   it('should format timestamps correctly', () => {
     render(<CampaignEventsTable {...defaultProps} />);
 
-    // date-fns format: yyyy-MM-dd HH:mm:ss (rendered in local timezone)
-    // Check that timestamp cells contain date pattern instead of exact values
-    const cells = screen.getAllByText(/^2026-01-30 \d{2}:\d{2}:\d{2}$/);
+    // formatDateSafe uses Intl.DateTimeFormat('en-GB') with Asia/Bangkok timezone
+    // Output format: DD/MM/YYYY, HH:mm:ss
+    const cells = screen.getAllByText(/^30\/01\/2026, \d{2}:\d{2}:\d{2}$/);
     expect(cells.length).toBeGreaterThanOrEqual(2);
   });
 
