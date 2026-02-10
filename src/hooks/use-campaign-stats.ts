@@ -19,7 +19,8 @@ export interface UseCampaignStatsOptions {
 
 export interface UseCampaignStatsReturn {
   data: CampaignAggregate | undefined;
-  isLoading: boolean;
+  isPending: boolean;   // SSR-safe: true when no data yet (consistent server/client)
+  isLoading: boolean;   // true only when isPending AND actively fetching (client-only)
   isFetching: boolean;  // Story 5.8 Fix #7: For loading indicator during filter changes
   isError: boolean;
   error: CampaignApiError | null;
@@ -95,6 +96,7 @@ export function useCampaignStats(
 
   return {
     data: query.data,
+    isPending: query.isPending,
     isLoading: query.isLoading,
     isFetching: query.isFetching,  // Story 5.8 Fix #7: For loading indicator during filter changes
     isError: query.isError,

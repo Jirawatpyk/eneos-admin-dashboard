@@ -26,6 +26,7 @@ export interface UseCampaignChartOptions {
 
 export interface UseCampaignChartReturn {
   data: ChartDataItem[] | undefined;
+  isPending: boolean;
   isLoading: boolean;
   isError: boolean;
   error: CampaignApiError | null;
@@ -130,6 +131,7 @@ export function useCampaignChart(
 
   return {
     data: query.data,
+    isPending: query.isPending,
     isLoading: query.isLoading,
     isError: query.isError,
     error: errorObj,

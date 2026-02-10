@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCampaignChart } from '@/hooks/use-campaign-chart';
+import { useCampaignDateFilter } from '@/hooks/use-campaign-date-filter';
 import { CampaignChartSkeleton } from './campaign-chart-skeleton';
 import { CampaignsError } from './campaigns-error';
 import { RATE_BENCHMARKS } from '@/lib/campaign-benchmarks';
@@ -194,7 +195,11 @@ interface CampaignPerformanceChartProps {
   dateTo?: string;
 }
 
-export function CampaignPerformanceChart({ dateFrom, dateTo }: CampaignPerformanceChartProps) {
+export function CampaignPerformanceChart(props: CampaignPerformanceChartProps) {
+  const filter = useCampaignDateFilter();
+  const dateFrom = props.dateFrom ?? filter.dateFrom;
+  const dateTo = props.dateTo ?? filter.dateTo;
+
   const { defaultLimit, fontSize, truncateLength } = useResponsiveChart();
   const [limit, setLimit] = useState(defaultLimit);
   const { data, isLoading, isError, error, refetch } = useCampaignChart({

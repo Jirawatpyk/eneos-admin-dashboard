@@ -49,6 +49,7 @@ export { CampaignEventsSkeleton } from './campaign-events-skeleton';
 export { CampaignPeriodFilter, CAMPAIGN_PERIOD_OPTIONS, isValidCampaignPeriod } from './campaign-period-filter';
 export { CampaignCustomDateRange } from './campaign-custom-date-range';
 export { CampaignsContent } from './campaigns-content';
+export { CampaignsHeader } from './campaigns-header';
 
 // Campaign Export (Story 5.9)
 export { CampaignExportDropdown } from './campaign-export-dropdown';

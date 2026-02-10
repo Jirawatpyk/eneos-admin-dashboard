@@ -34,6 +34,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useCampaignsTable } from '@/hooks/use-campaigns-table';
+import { useCampaignDateFilter } from '@/hooks/use-campaign-date-filter';
 import { COLUMN_TO_SORT_BY } from './sortable-header';
 import { createCampaignColumns } from './campaign-table-columns';
 import { CampaignTablePagination } from './campaign-table-pagination';
@@ -51,7 +52,11 @@ interface CampaignTableProps {
   dateTo?: string;
 }
 
-export function CampaignTable({ dateFrom, dateTo }: CampaignTableProps) {
+export function CampaignTable(props: CampaignTableProps) {
+  const filter = useCampaignDateFilter();
+  const dateFrom = props.dateFrom ?? filter.dateFrom;
+  const dateTo = props.dateTo ?? filter.dateTo;
+
   // Pagination state (AC#3)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

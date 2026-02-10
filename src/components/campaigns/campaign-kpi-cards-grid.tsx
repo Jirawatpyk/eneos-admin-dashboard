@@ -14,11 +14,12 @@ import { CampaignKPICard } from './campaign-kpi-card';
 import { CampaignKPICardsSkeleton } from './campaign-kpi-card-skeleton';
 import { CampaignsError } from './campaigns-error';
 import { useCampaignStats } from '@/hooks/use-campaign-stats';
+import { useCampaignDateFilter } from '@/hooks/use-campaign-date-filter';
 import { cn } from '@/lib/utils';
 
 /**
  * Props for CampaignKPICardsGrid
- * Story 5.8: Accept date filter params
+ * Story 5.8: Accept date filter params (optional — falls back to URL params via hook)
  */
 interface CampaignKPICardsGridProps {
   dateFrom?: string;
@@ -28,7 +29,11 @@ interface CampaignKPICardsGridProps {
 /**
  * Grid of 4 Campaign KPI cards with loading and error states
  */
-export function CampaignKPICardsGrid({ dateFrom, dateTo }: CampaignKPICardsGridProps) {
+export function CampaignKPICardsGrid(props: CampaignKPICardsGridProps) {
+  const filter = useCampaignDateFilter();
+  const dateFrom = props.dateFrom ?? filter.dateFrom;
+  const dateTo = props.dateTo ?? filter.dateTo;
+
   const { data, isLoading, isFetching, isError, error, refetch } = useCampaignStats({
     dateFrom,
     dateTo,

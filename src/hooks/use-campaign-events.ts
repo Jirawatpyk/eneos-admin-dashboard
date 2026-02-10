@@ -16,6 +16,7 @@ import type {
 
 export interface UseCampaignEventsReturn {
   data: CampaignEventsResponse | undefined;
+  isPending: boolean;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -71,6 +72,7 @@ export function useCampaignEvents(
 
   return {
     data: query.data,
+    isPending: query.isPending,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,

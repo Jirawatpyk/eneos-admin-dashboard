@@ -21,6 +21,7 @@ export interface UseCampaignsTableOptions extends CampaignTableParams {
 
 export interface UseCampaignsTableReturn {
   data: CampaignStatsResponse | undefined;
+  isPending: boolean;
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -101,6 +102,7 @@ export function useCampaignsTable(
 
   return {
     data: query.data,
+    isPending: query.isPending,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
