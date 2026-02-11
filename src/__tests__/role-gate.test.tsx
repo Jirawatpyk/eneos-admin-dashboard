@@ -92,6 +92,23 @@ describe('RoleGate Component', () => {
     });
   });
 
+  describe('Loading state', () => {
+    it('should render nothing while auth is loading', () => {
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: true, isAuthenticated: false, user: null,
+      });
+
+      const { container } = render(
+        <RoleGate allowedRoles={['admin']}>
+          <button>Export Data</button>
+        </RoleGate>
+      );
+
+      expect(container.innerHTML).toBe('');
+      expect(screen.queryByText('Export Data')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Default behavior', () => {
     it('should default to viewer role when unauthenticated', () => {
       mockUseAuth.mockReturnValue({

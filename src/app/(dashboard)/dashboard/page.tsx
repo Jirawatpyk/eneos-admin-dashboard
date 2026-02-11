@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 import { DashboardContent } from '@/components/dashboard';
 
 /**
@@ -10,10 +9,13 @@ import { DashboardContent } from '@/components/dashboard';
  * Story 2.7: Date Filter Integration
  * - DateFilter in header syncs with URL
  * - All components receive period from URL params
+ *
+ * Story 11-4: Migrated from NextAuth getServerSession to Supabase getUser
  */
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-  const userName = session?.user?.name || 'User';
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const userName = user?.user_metadata?.name || user?.email || 'User';
 
   return (
     <Suspense

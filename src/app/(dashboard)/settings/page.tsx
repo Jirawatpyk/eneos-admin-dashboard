@@ -16,11 +16,11 @@ import {
   LeadProcessingStatusCard,
 } from '@/components/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { isAdmin, type Role } from '@/config/roles';
+import { isAdmin } from '@/config/roles';
 
 export default function SettingsPage() {
   const { role, isLoading } = useAuth();
-  const userIsAdmin = role && isAdmin(role as Role);
+  const userIsAdmin = role && isAdmin(role);
 
   return (
     <div className="space-y-6" data-testid="settings-page">

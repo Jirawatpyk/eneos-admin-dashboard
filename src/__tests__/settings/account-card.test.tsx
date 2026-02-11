@@ -7,6 +7,7 @@
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useAuth } from '@/hooks/use-auth';
+import type { Role } from '@/config/roles';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { User } from '@supabase/supabase-js';
 
@@ -66,7 +67,7 @@ function createMockAuth(overrides: {
 
   return {
     user,
-    role: overrides.role ?? 'admin',
+    role: (overrides.role ?? 'admin') as Role,
     isLoading: false,
     isAuthenticated: true,
   };
@@ -83,7 +84,7 @@ function createExpiredAuth() {
 
   return {
     user,
-    role: 'admin',
+    role: 'admin' as const,
     isLoading: false,
     isAuthenticated: false,
   };

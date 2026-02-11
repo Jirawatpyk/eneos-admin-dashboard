@@ -38,9 +38,12 @@ export function RoleGate({
   showTooltip = false,
   tooltipMessage = 'Contact admin for export access',
 }: RoleGateProps) {
-  const { role: authRole } = useAuth();
+  const { role: authRole, isLoading } = useAuth();
 
-  const userRole: Role = (authRole as Role) || ROLES.VIEWER;
+  // While auth is loading, don't render children or fallback to avoid flash
+  if (isLoading) return null;
+
+  const userRole: Role = authRole || ROLES.VIEWER;
 
   if (allowedRoles.includes(userRole)) {
     return <>{children}</>;

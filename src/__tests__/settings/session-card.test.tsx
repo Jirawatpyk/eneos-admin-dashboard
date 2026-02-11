@@ -56,7 +56,7 @@ function createMockAuth(overrides: { provider?: string } = {}) {
 
   return {
     user,
-    role: 'admin',
+    role: 'admin' as const,
     isLoading: false,
     isAuthenticated: true,
   };
@@ -73,7 +73,7 @@ function createExpiredAuth() {
 
   return {
     user,
-    role: 'admin',
+    role: 'admin' as const,
     isLoading: false,
     isAuthenticated: false,
   };

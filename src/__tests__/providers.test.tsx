@@ -87,7 +87,7 @@ describe('Providers - Story 11-4: Supabase Auth', () => {
       authStateCallback?.('SIGNED_OUT', null);
     });
 
-    expect(mockPush).toHaveBeenCalledWith('/login');
+    expect(mockPush).toHaveBeenCalledWith('/login?signedOut=true');
   });
 
   it('should refresh router on TOKEN_REFRESHED event', () => {

@@ -15,7 +15,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { TeamManagementCard, TeamManagementCardSkeleton } from '@/components/settings';
 import { useToast } from '@/hooks/use-toast';
-import { isAdmin, type Role } from '@/config/roles';
+import { isAdmin } from '@/config/roles';
 
 export default function TeamManagementPage() {
   const { role, isLoading } = useAuth();
@@ -23,7 +23,7 @@ export default function TeamManagementPage() {
   const { toast } = useToast();
 
   // Check if user is admin
-  const hasAccess = role && isAdmin(role as Role);
+  const hasAccess = role && isAdmin(role);
 
   // AC#10: Redirect non-admin users to dashboard with toast
   useEffect(() => {

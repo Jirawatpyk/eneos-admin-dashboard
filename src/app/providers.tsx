@@ -25,7 +25,7 @@ function SupabaseAuthListener({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === 'SIGNED_OUT') {
-          router.push('/login');
+          router.push('/login?signedOut=true');
         }
         if (event === 'TOKEN_REFRESHED') {
           router.refresh();

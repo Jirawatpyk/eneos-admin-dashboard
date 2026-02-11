@@ -1,12 +1,11 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { ROLES } from '@/config/roles';
 import { UserNav } from '@/components/layout/user-nav';
 import { Sidebar } from '@/components/layout/sidebar';
 import { MobileSidebar } from '@/components/layout/mobile-sidebar';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
-import { SessionWarning } from '@/components/shared/session-warning';
-import { SessionSync } from '@/components/shared/session-sync';
 import { PermissionErrorHandler } from '@/components/shared/permission-error-handler';
 
 /**
@@ -27,7 +26,7 @@ function getMockUser() {
   return {
     id: 'e2e-test-user',
     email: 'e2e@eneos.co.th',
-    app_metadata: { role: 'admin' },
+    app_metadata: { role: ROLES.ADMIN },
     user_metadata: { name: 'E2E Test User', avatar_url: null },
   };
 }
@@ -52,7 +51,7 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  const role = user.app_metadata?.role || 'viewer';
+  const role = user.app_metadata?.role || ROLES.VIEWER;
   const userName = user.user_metadata?.name || user.email;
   const userImage = user.user_metadata?.avatar_url || null;
 
@@ -82,8 +81,6 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-      <SessionWarning />
-      <SessionSync />
       <PermissionErrorHandler />
     </div>
   );

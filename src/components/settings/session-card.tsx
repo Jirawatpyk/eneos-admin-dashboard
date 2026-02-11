@@ -25,6 +25,7 @@ export function SessionCard() {
       router.push('/login?signedOut=true');
     } catch (error) {
       console.error('Sign out error:', error);
+    } finally {
       setIsLoading(false);
     }
   }, [supabase, router]);

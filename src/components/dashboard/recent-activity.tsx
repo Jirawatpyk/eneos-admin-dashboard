@@ -5,6 +5,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
+import { ROLES } from '@/config/roles';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,7 +21,7 @@ interface RecentActivityProps {
 export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
   const { role, isAuthenticated } = useAuth();
 
-  const isAdmin = isAuthenticated && role === 'admin';
+  const isAdmin = isAuthenticated && role === ROLES.ADMIN;
 
   if (isLoading) {
     return <RecentActivitySkeleton />;

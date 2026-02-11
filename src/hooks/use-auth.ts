@@ -3,10 +3,11 @@
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { ROLES, type Role } from '@/config/roles';
 
 export interface AuthState {
   user: User | null;
-  role: string;
+  role: Role;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -21,6 +22,8 @@ export function useAuth(): AuthState {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
     });
 
     // Listen for changes
@@ -34,7 +37,7 @@ export function useAuth(): AuthState {
 
   return {
     user,
-    role: user?.app_metadata?.role || 'viewer',
+    role: user?.app_metadata?.role === ROLES.ADMIN ? ROLES.ADMIN : ROLES.VIEWER,
     isLoading,
     isAuthenticated: !!user,
   };

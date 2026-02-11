@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 import { LogOut, Loader2, Shield, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { Role } from '@/config/roles';
+import { ROLES, type Role } from '@/config/roles';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -53,6 +53,7 @@ export function UserNav({ user }: UserNavProps) {
       router.push('/login?signedOut=true');
     } catch (error) {
       console.error('Sign out error:', error);
+    } finally {
       setIsLoading(false);
     }
   }, [supabase, router]);
@@ -88,11 +89,11 @@ export function UserNav({ user }: UserNavProps) {
                 {user.name || 'User'}
               </p>
               <Badge
-                variant={user.role === 'admin' ? 'default' : 'secondary'}
+                variant={user.role === ROLES.ADMIN ? 'default' : 'secondary'}
                 className="text-[10px] px-1.5 py-0"
                 data-testid="user-role-badge"
               >
-                {user.role === 'admin' ? (
+                {user.role === ROLES.ADMIN ? (
                   <>
                     <Shield className="w-3 h-3 mr-0.5" />
                     Admin

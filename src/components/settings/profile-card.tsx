@@ -40,7 +40,7 @@ export function ProfileCard() {
   const email = user.email;
   const image = user.user_metadata?.avatar_url || null;
   const initials = getInitials(name);
-  const roleConfig = getRoleBadgeConfig(role as Role);
+  const roleConfig = getRoleBadgeConfig(role);
   const RoleIcon = roleConfig.icon;
 
   return (

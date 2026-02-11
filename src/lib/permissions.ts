@@ -45,7 +45,7 @@ export interface PermissionsResult {
 export function usePermissions(): PermissionsResult {
   const { role: authRole, isLoading } = useAuth();
 
-  const role: Role = (authRole as Role) || ROLES.VIEWER;
+  const role: Role = authRole || ROLES.VIEWER;
 
   return {
     role,

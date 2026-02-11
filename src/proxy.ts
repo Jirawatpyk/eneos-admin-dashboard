@@ -11,6 +11,7 @@
 
 import { NextResponse, type NextRequest, type NextFetchEvent } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { ROLES } from '@/config/roles';
 
 // ===========================================
 // Public Routes (no auth required)
@@ -83,8 +84,8 @@ export async function proxy(req: NextRequest, _event: NextFetchEvent) {
 
   // Admin route protection: redirect non-admin users
   if (user && isAdminRoute(pathname)) {
-    const role = user.app_metadata?.role || 'viewer';
-    if (role !== 'admin') {
+    const role = user.app_metadata?.role || ROLES.VIEWER;
+    if (role !== ROLES.ADMIN) {
       const url = req.nextUrl.clone();
       url.pathname = '/dashboard';
       url.searchParams.set('error', 'Unauthorized');

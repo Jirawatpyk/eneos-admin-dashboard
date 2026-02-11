@@ -49,6 +49,7 @@ export function AccountCard() {
       router.push('/login?signedOut=true');
     } catch (error) {
       console.error('Sign out error:', error);
+    } finally {
       setIsLoading(false);
     }
   }, [supabase, router]);
@@ -59,7 +60,7 @@ export function AccountCard() {
   const email = user.email;
   const image = user.user_metadata?.avatar_url || null;
   const initials = getInitials(name);
-  const roleConfig = getRoleBadgeConfig(role as Role);
+  const roleConfig = getRoleBadgeConfig(role);
   const RoleIcon = roleConfig.icon;
   const provider = user.app_metadata?.provider || 'email';
   const providerDisplay = provider === 'google' ? 'Google' : 'Email';
