@@ -30,9 +30,9 @@ const EXPORT_UI_DELAY_MS = 100;
 
 /**
  * Maximum number of campaigns to fetch for export
- * Set high to export all campaigns matching filter
+ * Backend MAX_LIMIT is 100 — exceeding this causes 400 Bad Request
  */
-const EXPORT_FETCH_LIMIT = 1000;
+const EXPORT_FETCH_LIMIT = 100;
 
 // ===========================================
 // Types

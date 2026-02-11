@@ -94,9 +94,9 @@ async function fetchLeadsPage(
   }
 
   return {
-    leads: result.data,
-    total: result.pagination.total,
-    totalPages: result.pagination.totalPages,
+    leads: result.data.leads,
+    total: result.data.pagination.total,
+    totalPages: result.data.pagination.totalPages,
   };
 }
 

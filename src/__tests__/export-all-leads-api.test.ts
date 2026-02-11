@@ -42,19 +42,29 @@ describe('fetchAllLeadsForExport', () => {
       status: 'new',
     }));
 
+  /**
+   * Helper to create a mock fetch response matching the real Next.js proxy format:
+   * { success: true, data: { leads: [...], pagination: {...} } }
+   */
+  const createMockResponse = (leads: unknown[], pagination: Record<string, unknown>) => ({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        success: true,
+        data: {
+          leads,
+          pagination,
+        },
+      }),
+  });
+
   describe('[P1] Single page export', () => {
     it('should fetch all leads when total fits in one page', async () => {
       const mockLeads = createMockLeads(50);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: mockLeads,
-            pagination: { page: 1, limit: 100, total: 50, totalPages: 1 },
-          }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(mockLeads, { page: 1, limit: 100, total: 50, totalPages: 1 })
+      );
 
       const result = await fetchAllLeadsForExport({});
 
@@ -64,15 +74,9 @@ describe('fetchAllLeadsForExport', () => {
     });
 
     it('should include credentials for auth', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: [],
-            pagination: { page: 1, limit: 100, total: 0, totalPages: 1 },
-          }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse([], { page: 1, limit: 100, total: 0, totalPages: 1 })
+      );
 
       await fetchAllLeadsForExport({});
 
@@ -88,15 +92,9 @@ describe('fetchAllLeadsForExport', () => {
       const mockLeads = createMockLeads(30);
       const onProgress = vi.fn();
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: mockLeads,
-            pagination: { page: 1, limit: 100, total: 30, totalPages: 1 },
-          }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(mockLeads, { page: 1, limit: 100, total: 30, totalPages: 1 })
+      );
 
       await fetchAllLeadsForExport({}, onProgress);
 
@@ -110,24 +108,12 @@ describe('fetchAllLeadsForExport', () => {
       const page2Leads = createMockLeads(50, 101);
 
       mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page1Leads,
-              pagination: { page: 1, limit: 100, total: 150, totalPages: 2 },
-            }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page2Leads,
-              pagination: { page: 2, limit: 100, total: 150, totalPages: 2 },
-            }),
-        });
+        .mockResolvedValueOnce(
+          createMockResponse(page1Leads, { page: 1, limit: 100, total: 150, totalPages: 2 })
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(page2Leads, { page: 2, limit: 100, total: 150, totalPages: 2 })
+        );
 
       const result = await fetchAllLeadsForExport({});
 
@@ -143,33 +129,15 @@ describe('fetchAllLeadsForExport', () => {
       const onProgress = vi.fn();
 
       mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page1Leads,
-              pagination: { page: 1, limit: 100, total: 250, totalPages: 3 },
-            }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page2Leads,
-              pagination: { page: 2, limit: 100, total: 250, totalPages: 3 },
-            }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page3Leads,
-              pagination: { page: 3, limit: 100, total: 250, totalPages: 3 },
-            }),
-        });
+        .mockResolvedValueOnce(
+          createMockResponse(page1Leads, { page: 1, limit: 100, total: 250, totalPages: 3 })
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(page2Leads, { page: 2, limit: 100, total: 250, totalPages: 3 })
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(page3Leads, { page: 3, limit: 100, total: 250, totalPages: 3 })
+        );
 
       await fetchAllLeadsForExport({}, onProgress);
 
@@ -182,15 +150,9 @@ describe('fetchAllLeadsForExport', () => {
 
   describe('[P1] Query parameters', () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: [],
-            pagination: { page: 1, limit: 100, total: 0, totalPages: 1 },
-          }),
-      });
+      mockFetch.mockResolvedValue(
+        createMockResponse([], { page: 1, limit: 100, total: 0, totalPages: 1 })
+      );
     });
 
     it('should include status filter', async () => {
@@ -309,15 +271,9 @@ describe('fetchAllLeadsForExport', () => {
       const page1Leads = createMockLeads(100, 1);
 
       mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              success: true,
-              data: page1Leads,
-              pagination: { page: 1, limit: 100, total: 200, totalPages: 2 },
-            }),
-        })
+        .mockResolvedValueOnce(
+          createMockResponse(page1Leads, { page: 1, limit: 100, total: 200, totalPages: 2 })
+        )
         .mockResolvedValueOnce({
           ok: false,
           status: 503,
@@ -330,15 +286,9 @@ describe('fetchAllLeadsForExport', () => {
 
   describe('[P2] Edge cases', () => {
     it('should handle empty result', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: [],
-            pagination: { page: 1, limit: 100, total: 0, totalPages: 0 },
-          }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse([], { page: 1, limit: 100, total: 0, totalPages: 0 })
+      );
 
       const result = await fetchAllLeadsForExport({});
 
@@ -347,15 +297,9 @@ describe('fetchAllLeadsForExport', () => {
     });
 
     it('should not call progress callback if not provided', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            data: createMockLeads(10),
-            pagination: { page: 1, limit: 100, total: 10, totalPages: 1 },
-          }),
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(createMockLeads(10), { page: 1, limit: 100, total: 10, totalPages: 1 })
+      );
 
       // Should not throw even without onProgress
       await expect(fetchAllLeadsForExport({})).resolves.not.toThrow();

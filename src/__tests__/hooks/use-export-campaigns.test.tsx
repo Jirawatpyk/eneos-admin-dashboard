@@ -59,7 +59,7 @@ const createMockResponse = (campaigns: CampaignStatsItem[]): CampaignStatsRespon
     data: campaigns,
     pagination: {
       page: 1,
-      limit: 1000,
+      limit: 100,
       total: campaigns.length,
       totalPages: 1,
     },
@@ -118,7 +118,7 @@ describe('useExportCampaigns', () => {
     });
 
     expect(mockFetchCampaignStats).toHaveBeenCalledWith({
-      limit: 1000,
+      limit: 100,
       dateFrom: '2026-01-01',
       dateTo: '2026-01-31',
     });
@@ -281,7 +281,7 @@ describe('useExportCampaigns', () => {
     });
 
     expect(mockFetchCampaignStats).toHaveBeenCalledWith(
-      expect.objectContaining({ limit: 1000 })
+      expect.objectContaining({ limit: 100 })
     );
   });
 
@@ -293,7 +293,7 @@ describe('useExportCampaigns', () => {
     });
 
     expect(mockFetchCampaignStats).toHaveBeenCalledWith({
-      limit: 1000,
+      limit: 100,
       dateFrom: undefined,
       dateTo: undefined,
     });
