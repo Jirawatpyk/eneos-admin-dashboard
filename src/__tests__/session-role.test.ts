@@ -80,13 +80,13 @@ describe('Session Role Enhancement', () => {
       );
     });
 
-    it('should assign manager role from backend', async () => {
-      // Mock backend API returning manager role
+    it('should default non-admin roles to viewer (D4b: manager removed)', async () => {
+      // Mock backend API returning a non-admin role
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: true,
-          data: { email: 'manager@eneos.co.th', name: 'Manager User', role: 'manager' },
+          data: { email: 'sales@eneos.co.th', name: 'Sales User', role: 'sales' },
         }),
       });
 
@@ -94,24 +94,24 @@ describe('Session Role Enhancement', () => {
       const jwtCallback = authOptions.callbacks?.jwt;
 
       const result = await jwtCallback!({
-        token: { sub: 'user-manager' },
+        token: { sub: 'user-sales' },
         account: {
           access_token: 'test-access-token',
           refresh_token: 'test-refresh-token',
           id_token: 'test-id-token',
           provider: 'google',
           type: 'oauth',
-          providerAccountId: 'google-manager',
+          providerAccountId: 'google-sales',
         },
         user: {
-          id: 'user-manager',
-          email: 'manager@eneos.co.th',
-          name: 'Manager User',
+          id: 'user-sales',
+          email: 'sales@eneos.co.th',
+          name: 'Sales User',
         },
         trigger: 'signIn',
       });
 
-      expect(result.role).toBe('manager');
+      expect(result.role).toBe('viewer');
     });
 
     it('should assign viewer role for non-admin users', async () => {

@@ -1,22 +1,28 @@
 /**
  * Settings Page Tests
- * Story 7.1: User Profile (Consolidated)
+ * Story 7.1 / Story 11-4: Migrated to useAuth
  * Story 7.5: System Health (Admin-only visibility)
  *
  * Tests for AC#1 (Settings Page Access), AC#6 (Responsive Design), AC#7 (Loading State)
- * Story 7.5 AC#7: Admin Only Access - System Health visible to admins only
- *
- * Note: ProfileCard + SessionCard consolidated into AccountCard
  */
 import { render, screen } from '@testing-library/react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock next-auth/react
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(),
-  signOut: vi.fn(),
+// Mock useAuth
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: vi.fn(),
+}));
+
+// Mock Supabase client (used by AccountCard)
+const mockSignOut = vi.fn().mockResolvedValue({});
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      signOut: mockSignOut,
+    },
+  }),
 }));
 
 // Mock useSystemHealth for testing page integration
@@ -42,8 +48,31 @@ vi.mock('@/hooks/use-system-health', () => ({
   formatUptime: (seconds: number) => `${Math.floor(seconds / 3600)}h`,
 }));
 
+// Mock next/navigation (used by AccountCard signOut redirect)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/settings',
+}));
+
 // Import page after mocking
 import SettingsPage from '@/app/(dashboard)/settings/page';
+import type { User } from '@supabase/supabase-js';
+
+// Reusable mock admin user (Supabase shape)
+const mockAdminUser = {
+  id: 'user-123',
+  email: 'admin@eneos.co.th',
+  user_metadata: { name: 'Admin User', avatar_url: null },
+  app_metadata: { role: 'admin', provider: 'google' },
+} as unknown as User;
 
 // Test wrapper with QueryClient
 function createWrapper() {
@@ -60,24 +89,6 @@ function createWrapper() {
   return Wrapper;
 }
 
-// Helper to create mock session (only admin can access Settings page)
-function createMockSession() {
-  return {
-    data: {
-      user: {
-        id: 'user-123',
-        name: 'Admin User',
-        email: 'admin@eneos.co.th',
-        image: null,
-        role: 'admin' as const,
-      },
-      expires: '2026-01-20T00:00:00.000Z',
-    },
-    status: 'authenticated' as const,
-    update: vi.fn(),
-  };
-}
-
 describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -85,14 +96,18 @@ describe('SettingsPage', () => {
 
   describe('AC#1: Settings Page Access', () => {
     it('renders Settings page with header', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument();
     });
 
     it('renders description text', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByText(/manage your account settings/i)).toBeInTheDocument();
@@ -100,24 +115,19 @@ describe('SettingsPage', () => {
   });
 
   describe('AC#7: Loading State', () => {
-    it('shows AccountCardSkeleton and SystemHealthCard during session loading', () => {
-      vi.mocked(useSession).mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: vi.fn(),
+    it('shows AccountCardSkeleton and SystemHealthCard during loading', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: null, role: 'viewer', isLoading: true, isAuthenticated: false,
       });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByTestId('account-card-skeleton')).toBeInTheDocument();
-      // SystemHealthCard shows during loading (has its own internal skeleton via useSystemHealth)
       expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
     });
 
-    it('uses 2-column grid during loading to prevent layout shift', () => {
-      vi.mocked(useSession).mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: vi.fn(),
+    it('uses multi-column grid during loading to prevent layout shift', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: null, role: 'viewer', isLoading: true, isAuthenticated: false,
       });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
@@ -125,8 +135,10 @@ describe('SettingsPage', () => {
       expect(gridContainer).toHaveClass('md:grid-cols-2');
     });
 
-    it('shows actual cards when session is loaded', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+    it('shows actual cards when loaded', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByTestId('account-card')).toBeInTheDocument();
@@ -135,53 +147,52 @@ describe('SettingsPage', () => {
 
   describe('AC#6: Responsive Design', () => {
     it('renders with responsive grid classes', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       const gridContainer = screen.getByTestId('settings-grid');
       expect(gridContainer).toHaveClass('grid');
     });
 
-    it('renders with 2-column grid for admin users (AccountCard + SystemHealth)', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+    it('renders with multi-column grid for admin users', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       const gridContainer = screen.getByTestId('settings-grid');
       expect(gridContainer).toHaveClass('md:grid-cols-2');
     });
-
-    // Note: Viewer cannot access Settings page (blocked by middleware)
-    // So grid is always 2 columns for admin users
   });
 
   describe('Story 7.5 AC#7: Admin Only Access - System Health', () => {
     it('shows System Health card for admin users', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
       expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
       expect(screen.getByText('System Health')).toBeInTheDocument();
     });
 
-    // Note: Viewer cannot access Settings page (blocked by middleware)
-    // So we don't need to test hiding System Health for viewer/manager
-
-    it('shows System Health card during loading (has internal skeleton via useSystemHealth)', () => {
-      vi.mocked(useSession).mockReturnValue({
-        data: null,
-        status: 'loading',
-        update: vi.fn(),
+    it('shows System Health card during loading', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: null, role: 'viewer', isLoading: true, isAuthenticated: false,
       });
 
       render(<SettingsPage />, { wrapper: createWrapper() });
-      // SystemHealthCard handles its own loading state internally via useSystemHealth hook
       expect(screen.getByTestId('system-health-card')).toBeInTheDocument();
     });
   });
 
   describe('data-testid attributes', () => {
     beforeEach(() => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue({
+        user: mockAdminUser, role: 'admin', isLoading: false, isAuthenticated: true,
+      });
     });
 
     it('has settings-page testid', () => {

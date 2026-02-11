@@ -1,60 +1,110 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { Spinner } from '@/components/ui/spinner';
 
 function LoginContent() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const error = searchParams.get('error');
-  const signedOut = searchParams.get('signedOut');
   const currentYear = new Date().getFullYear();
 
-  // Initialize state based on URL params
-  const shouldShowMessage = signedOut === 'true' && !error;
-  const [showSignedOutMessage, setShowSignedOutMessage] = useState(shouldShowMessage);
+  const urlError = searchParams.get('error');
+  const urlMessage = searchParams.get('message');
+  const signedOut = searchParams.get('signedOut');
 
-  // Handle signed out message with auto-dismiss (AC6)
+  // Initialize state based on URL params
+  const shouldShowSignedOut = signedOut === 'true' && !urlError;
+  const [showSignedOutMessage, setShowSignedOutMessage] = useState(shouldShowSignedOut);
+
+  // Handle URL-based messages
   useEffect(() => {
-    if (shouldShowMessage) {
+    if (urlError === 'auth_error') {
+      setErrorMessage('Login failed. Please try again or contact your admin.');
+    }
+  }, [urlError]);
+
+  // Show password updated message
+  const showPasswordUpdated = urlMessage === 'password_updated';
+
+  // Handle signed out message with auto-dismiss
+  useEffect(() => {
+    if (shouldShowSignedOut) {
       setShowSignedOutMessage(true);
-      // Clean URL immediately
       router.replace('/login', { scroll: false });
-      // Auto-dismiss after 5 seconds
       const timer = setTimeout(() => {
         setShowSignedOutMessage(false);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [shouldShowMessage, router]);
+  }, [shouldShowSignedOut, router]);
 
-  const handleGoogleSignIn = async () => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
+
     try {
-      await signIn('google', { callbackUrl: '/dashboard' });
-    } catch (error) {
-      console.error('Sign in error:', error);
+      const supabase = createClient();
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setErrorMessage('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          setErrorMessage('Account not found. Contact your admin.');
+        } else {
+          setErrorMessage('Account not found. Contact your admin.');
+        }
+        return;
+      }
+
+      router.push('/dashboard');
+      router.refresh();
+    } catch {
+      setErrorMessage('Login failed. Please try again or contact your admin.');
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const getErrorMessage = (errorCode: string | null) => {
-    switch (errorCode) {
-      case 'AccessDenied':
-        return 'Access denied. Only authorized company accounts are allowed.';
-      case 'OAuthCallback':
-        return 'Authentication failed. Please try again.';
-      case 'SessionExpired':
-        return 'Your session has expired. Please log in again.';
-      default:
-        return errorCode ? 'An error occurred during sign in.' : null;
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setErrorMessage('Login failed. Please try again or contact your admin.');
+      }
+    } catch {
+      setErrorMessage('Login failed. Please try again or contact your admin.');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
-  const errorMessage = getErrorMessage(error);
+  const anyLoading = isLoading || isGoogleLoading;
 
   return (
     <>
@@ -75,12 +125,12 @@ function LoginContent() {
           Sales Dashboard
         </h1>
 
-        {/* Domain Restriction Message */}
+        {/* Subtitle */}
         <p className="text-sm text-muted-foreground text-center mb-6">
-          Only authorized company accounts are allowed
+          Sign in to your account
         </p>
 
-        {/* Success Message - Signed Out (AC6) */}
+        {/* Success Message - Signed Out */}
         {showSignedOutMessage && (
           <div
             className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm"
@@ -88,6 +138,17 @@ function LoginContent() {
             role="status"
           >
             You have been signed out successfully.
+          </div>
+        )}
+
+        {/* Success Message - Password Updated */}
+        {showPasswordUpdated && (
+          <div
+            className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm"
+            data-testid="password-updated-message"
+            role="status"
+          >
+            Password updated. Please log in.
           </div>
         )}
 
@@ -102,34 +163,91 @@ function LoginContent() {
           </div>
         )}
 
-        {/* Sign In Button */}
+        {/* Email + Password Form */}
+        <form onSubmit={handleEmailSignIn} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              required
+              disabled={anyLoading}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-eneos-red focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="email-input"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+              disabled={anyLoading}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-eneos-red focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="password-input"
+            />
+          </div>
+
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link
+              href="/reset-password"
+              className="text-sm text-eneos-red hover:underline"
+              data-testid="forgot-password-link"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={anyLoading}
+            className="w-full flex items-center justify-center gap-2 bg-eneos-red text-white rounded-lg px-4 py-3 font-medium hover:bg-eneos-red/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eneos-red disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            data-testid="signin-button"
+          >
+            {isLoading ? (
+              <>
+                <Spinner />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              <span>Sign In</span>
+            )}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-card text-muted-foreground">or</span>
+          </div>
+        </div>
+
+        {/* Google OAuth Button */}
         <button
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={anyLoading}
           className="w-full flex items-center justify-center gap-3 bg-card border border-border rounded-lg px-4 py-3 text-foreground font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eneos-red disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          data-testid="google-signin-button"
         >
-          {isLoading ? (
+          {isGoogleLoading ? (
             <>
-              <svg
-                className="animate-spin h-5 w-5 text-muted-foreground"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
+              <Spinner className="h-5 w-5 text-muted-foreground" />
               <span>Signing in...</span>
             </>
           ) : (
@@ -178,6 +296,7 @@ export default function LoginPage() {
           <div className="h-12 bg-muted rounded mb-6 mx-auto w-32" />
           <div className="h-8 bg-muted rounded mb-2" />
           <div className="h-4 bg-muted rounded mb-6 w-3/4 mx-auto" />
+          <div className="h-12 bg-muted rounded mb-4" />
           <div className="h-12 bg-muted rounded" />
         </div>
       }

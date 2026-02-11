@@ -1,15 +1,7 @@
 /**
  * Recent Activity Feed Tests
- * Story 2.5: Recent Activity Feed
+ * Story 2.5 / Story 11-4: Migrated to useAuth
  * Story 2.5.1: View All Activity Link Fix
- *
- * AC#1: Activity Feed Display - panel with latest 10 activities
- * AC#2: Activity Types - different types with distinct icon/color
- * AC#3: Activity Details - icon, description, timestamp
- * AC#4: Timestamp Formatting - relative vs date format
- * AC#5: View All Link - navigation to activity log (admin only - Story 2.5.1)
- * AC#6: Color Coding - specific icons for each type
- * AC#7: Loading & Empty States
  */
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -19,10 +11,10 @@ import { RecentActivitySkeleton } from '@/components/dashboard/recent-activity-s
 import { formatActivityTime } from '@/lib/format-activity-time';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-// Story 2.5.1: Mock useSession from next-auth/react
-const mockUseSession = vi.fn();
-vi.mock('next-auth/react', () => ({
-  useSession: () => mockUseSession(),
+// Story 2.5.1: Mock useAuth
+const mockUseAuth = vi.fn();
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 // Mock next/link - pass through all props including aria-label
@@ -86,10 +78,9 @@ describe('RecentActivity', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(FIXED_NOW);
-    // Story 2.5.1: Default to admin session for existing tests
-    mockUseSession.mockReturnValue({
-      data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-      status: 'authenticated',
+    // Story 2.5.1: Default to admin auth for existing tests
+    mockUseAuth.mockReturnValue({
+      role: 'admin', isLoading: false, isAuthenticated: true, user: null,
     });
   });
 
@@ -122,7 +113,6 @@ describe('RecentActivity', () => {
       expect(screen.getByTestId('recent-activity-panel')).toBeInTheDocument();
     });
 
-    // M-02 Fix: Edge case - empty array
     it('handles empty activity array correctly', () => {
       renderWithProvider(<RecentActivity activities={[]} />);
       expect(screen.getByText('No recent activity')).toBeInTheDocument();
@@ -133,7 +123,6 @@ describe('RecentActivity', () => {
     it('displays different icons for each activity type', () => {
       renderWithProvider(<RecentActivity activities={mockActivities} />);
 
-      // Check for different activity types
       expect(screen.getByTestId('activity-item-1')).toBeInTheDocument();
       expect(screen.getByTestId('activity-item-2')).toBeInTheDocument();
       expect(screen.getByTestId('activity-item-3')).toBeInTheDocument();
@@ -142,12 +131,10 @@ describe('RecentActivity', () => {
   });
 
   describe('AC#5: View All Link', () => {
-    // Story 2.5.1: Admin role tests
     describe('Story 2.5.1 AC#1: Admin sees link', () => {
       it('displays View All Activity link for admin', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'admin', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         const link = screen.getByRole('link', { name: /view all/i });
@@ -155,9 +142,8 @@ describe('RecentActivity', () => {
       });
 
       it('navigates to /settings/activity page for admin', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'admin', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         const link = screen.getByRole('link', { name: /view all/i });
@@ -165,9 +151,8 @@ describe('RecentActivity', () => {
       });
 
       it('has accessible aria-label on link', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'admin', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         const link = screen.getByRole('link', { name: /view all/i });
@@ -175,66 +160,56 @@ describe('RecentActivity', () => {
       });
     });
 
-    // Story 2.5.1: Viewer role tests
     describe('Story 2.5.1 AC#2: Viewer does NOT see link', () => {
       it('hides View All Activity link for viewer role', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'viewer@eneos.co.th', role: 'viewer' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
       });
 
       it('does not show CardFooter for viewer role', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'viewer@eneos.co.th', role: 'viewer' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         expect(screen.queryByText('View All Activity')).not.toBeInTheDocument();
       });
     });
 
-    // Story 2.5.1: Loading state tests
-    describe('Story 2.5.1: Link hidden during session loading', () => {
-      it('hides View All Activity link when session is loading', () => {
-        mockUseSession.mockReturnValue({
-          data: null,
-          status: 'loading',
+    describe('Story 2.5.1: Link hidden during auth loading', () => {
+      it('hides View All Activity link when auth is loading', () => {
+        mockUseAuth.mockReturnValue({
+          role: 'viewer', isLoading: true, isAuthenticated: false, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
       });
 
       it('hides link when unauthenticated', () => {
-        mockUseSession.mockReturnValue({
-          data: null,
-          status: 'unauthenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'viewer', isLoading: false, isAuthenticated: false, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
       });
     });
 
-    // Story 2.5.1: Edge case - user without role property (M-02 fix)
     describe('Story 2.5.1: Edge case - undefined role', () => {
-      it('hides link when user exists but role is undefined', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'user@eneos.co.th' } }, // no role property
-          status: 'authenticated',
+      it('hides link when role is not admin', () => {
+        mockUseAuth.mockReturnValue({
+          role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         expect(screen.queryByRole('link', { name: /view all/i })).not.toBeInTheDocument();
       });
     });
 
-    // Story 2.5.1 AC#3: Link styling
     describe('Story 2.5.1 AC#3: Link styling', () => {
       it('has hover underline class for styling', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'admin', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         const link = screen.getByRole('link', { name: /view all/i });
@@ -242,13 +217,11 @@ describe('RecentActivity', () => {
       });
 
       it('has arrow icon for navigation indication', () => {
-        mockUseSession.mockReturnValue({
-          data: { user: { email: 'admin@eneos.co.th', role: 'admin' } },
-          status: 'authenticated',
+        mockUseAuth.mockReturnValue({
+          role: 'admin', isLoading: false, isAuthenticated: true, user: null,
         });
         renderWithProvider(<RecentActivity activities={mockActivities} />);
         const link = screen.getByRole('link', { name: /view all/i });
-        // Check the link contains an SVG (ArrowRight icon)
         expect(link.querySelector('svg')).toBeInTheDocument();
       });
     });
@@ -287,7 +260,6 @@ describe('ActivityItem', () => {
     it('displays timestamp', () => {
       const activity = mockActivities[0];
       renderWithProvider(<ActivityItem activity={activity} />);
-      // Should show relative time for recent activities
       expect(screen.getByTestId(`activity-time-${activity.id}`)).toBeInTheDocument();
     });
 
@@ -297,7 +269,6 @@ describe('ActivityItem', () => {
       expect(screen.getByTestId(`activity-icon-${activity.id}`)).toBeInTheDocument();
     });
 
-    // M-02 Fix: Test for long descriptions
     it('handles long descriptions with truncation', () => {
       const longDescription = 'A'.repeat(200);
       const activity = {
@@ -352,16 +323,13 @@ describe('ActivityItem', () => {
       expect(icon).toHaveClass('text-orange-600');
     });
 
-    // H-02 Fix verification: Unknown activity type fallback
     it('handles unknown activity type gracefully', () => {
       const activity = {
         ...mockActivities[0],
-        type: 'unknown_type' as 'claimed', // Force unknown type
+        type: 'unknown_type' as 'claimed',
       };
-      // Should not throw
       expect(() => renderWithProvider(<ActivityItem activity={activity} />)).not.toThrow();
       expect(screen.getByTestId(`activity-icon-${activity.id}`)).toBeInTheDocument();
-      // Should use fallback muted color
       expect(screen.getByTestId(`activity-icon-${activity.id}`)).toHaveClass('text-muted-foreground');
     });
   });
@@ -387,11 +355,9 @@ describe('formatActivityTime', () => {
     it('shows date format for older activities (older than 24h)', () => {
       const oldDate = new Date(FIXED_NOW - 86400000 * 2); // 2 days ago
       const result = formatActivityTime(oldDate.toISOString());
-      // Should be in format like "Jan 12, 10:30 AM"
       expect(result).toMatch(/\w{3} \d{1,2}, \d{1,2}:\d{2} [AP]M/i);
     });
 
-    // H-01 Fix verification: Invalid timestamp handling
     it('handles invalid timestamp gracefully', () => {
       const result = formatActivityTime('invalid-date');
       expect(result).toBe('Unknown time');

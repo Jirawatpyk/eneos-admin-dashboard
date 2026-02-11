@@ -1,76 +1,73 @@
 import { describe, it, expect } from 'vitest';
 import { config } from '@/proxy';
 
-describe('Auth Middleware - AC5: Protected Routes', () => {
+describe('Auth Proxy - AC1: Route Protection', () => {
   const matcher = config.matcher[0];
 
-  // Convert Next.js matcher pattern to actual regex for testing
-  // Next.js pattern: /((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)
   const createMatcherRegex = (pattern: string): RegExp => {
-    // Remove leading slash and create regex
     const regexStr = pattern.slice(1);
     return new RegExp(`^${regexStr}$`);
   };
 
   const matcherRegex = createMatcherRegex(matcher);
 
-  // Test using actual regex matching (more accurate than helper simulation)
-  const matchesMiddleware = (path: string): boolean => {
-    // Remove leading slash for matching
+  const matchesProxy = (path: string): boolean => {
     const pathToTest = path.startsWith('/') ? path.slice(1) : path;
     return matcherRegex.test(pathToTest);
   };
 
-  describe('Route Matching (using actual regex)', () => {
+  describe('Route Matching', () => {
     it('should protect dashboard routes', () => {
-      expect(matchesMiddleware('/dashboard')).toBe(true);
-      expect(matchesMiddleware('/dashboard/leads')).toBe(true);
-      expect(matchesMiddleware('/dashboard/analytics')).toBe(true);
+      expect(matchesProxy('/dashboard')).toBe(true);
+      expect(matchesProxy('/dashboard/leads')).toBe(true);
+      expect(matchesProxy('/dashboard/analytics')).toBe(true);
     });
 
     it('should NOT protect login page', () => {
-      expect(matchesMiddleware('/login')).toBe(false);
-    });
-
-    it('should NOT protect NextAuth API routes', () => {
-      expect(matchesMiddleware('/api/auth/signin')).toBe(false);
-      expect(matchesMiddleware('/api/auth/callback/google')).toBe(false);
-      expect(matchesMiddleware('/api/auth/session')).toBe(false);
+      expect(matchesProxy('/login')).toBe(true); // Matched but proxy handles redirect
     });
 
     it('should NOT protect Next.js static assets', () => {
-      expect(matchesMiddleware('/_next/static/chunks/main.js')).toBe(false);
-      expect(matchesMiddleware('/_next/image')).toBe(false);
+      expect(matchesProxy('/_next/static/chunks/main.js')).toBe(false);
+      expect(matchesProxy('/_next/image')).toBe(false);
     });
 
     it('should NOT protect favicon', () => {
-      expect(matchesMiddleware('/favicon.ico')).toBe(false);
+      expect(matchesProxy('/favicon.ico')).toBe(false);
     });
 
-    it('should NOT protect static image files in public folder', () => {
-      expect(matchesMiddleware('/eneos-logo.svg')).toBe(false);
-      expect(matchesMiddleware('/logo.png')).toBe(false);
-      expect(matchesMiddleware('/image.jpg')).toBe(false);
-      expect(matchesMiddleware('/photo.jpeg')).toBe(false);
-      expect(matchesMiddleware('/icon.gif')).toBe(false);
-      expect(matchesMiddleware('/banner.webp')).toBe(false);
+    it('should NOT protect static image files', () => {
+      expect(matchesProxy('/eneos-logo.svg')).toBe(false);
+      expect(matchesProxy('/logo.png')).toBe(false);
+      expect(matchesProxy('/image.jpg')).toBe(false);
+      expect(matchesProxy('/photo.jpeg')).toBe(false);
+      expect(matchesProxy('/icon.gif')).toBe(false);
+      expect(matchesProxy('/banner.webp')).toBe(false);
     });
 
-    it('should protect other API routes (non-auth)', () => {
-      expect(matchesMiddleware('/api/leads')).toBe(true);
-      expect(matchesMiddleware('/api/dashboard')).toBe(true);
+    it('should NOT protect API routes', () => {
+      expect(matchesProxy('/api/admin/leads')).toBe(false);
+      expect(matchesProxy('/api/admin/dashboard')).toBe(false);
+      expect(matchesProxy('/api/auth/callback')).toBe(false);
     });
 
     it('should protect settings routes', () => {
-      expect(matchesMiddleware('/settings')).toBe(true);
-      expect(matchesMiddleware('/settings/profile')).toBe(true);
+      expect(matchesProxy('/settings')).toBe(true);
+      expect(matchesProxy('/settings/profile')).toBe(true);
+    });
+
+    it('should match public auth routes (handled by proxy logic)', () => {
+      // These are matched by the regex but proxy logic allows them
+      expect(matchesProxy('/reset-password')).toBe(true);
+      expect(matchesProxy('/update-password')).toBe(true);
+      expect(matchesProxy('/auth/callback')).toBe(true);
     });
   });
 
   describe('Matcher Configuration', () => {
-    it('should have correct matcher pattern', () => {
+    it('should have correct matcher pattern excluding API routes', () => {
       expect(matcher).toBe(
-        '/((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'
+        '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'
       );
     });
 
@@ -85,19 +82,12 @@ describe('Auth Middleware - AC5: Protected Routes', () => {
 
   describe('Edge Cases', () => {
     it('should protect root path /', () => {
-      // Root path should be protected and redirected
-      expect(matchesMiddleware('/')).toBe(true);
+      expect(matchesProxy('/')).toBe(true);
     });
 
-    it('should NOT protect paths starting with login (exact and nested)', () => {
-      expect(matchesMiddleware('/login')).toBe(false);
-      expect(matchesMiddleware('/login/error')).toBe(false);
-    });
-
-    it('should protect /logout (not in exclusion list)', () => {
-      // Logout is not in the exclusion list, so it should be protected
-      // This forces logout to go through auth, which is correct
-      expect(matchesMiddleware('/logout')).toBe(true);
+    it('should match login paths (proxy handles auth redirect)', () => {
+      expect(matchesProxy('/login')).toBe(true);
+      expect(matchesProxy('/login/error')).toBe(true);
     });
   });
 });

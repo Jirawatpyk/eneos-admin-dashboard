@@ -1,6 +1,6 @@
 /**
  * Team Management Page Tests
- * Story 7.4: Admin User Management
+ * Story 7.4 / Story 11-4: Migrated to useAuth
  * AC#1: Admin can view all sales team members
  * AC#10: Viewers are redirected to dashboard with toast
  */
@@ -11,10 +11,10 @@ import '@testing-library/jest-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TeamManagementPage from '@/app/(dashboard)/settings/team/page';
 
-// Mock next-auth/react
-const mockUseSession = vi.fn();
-vi.mock('next-auth/react', () => ({
-  useSession: () => mockUseSession(),
+// Mock useAuth
+const mockUseAuth = vi.fn();
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 // Mock next/navigation
@@ -66,19 +66,15 @@ const createWrapper = () => {
 describe('Team Management Page', () => {
   beforeEach(() => {
     cleanup();
-    mockUseSession.mockReset();
+    mockUseAuth.mockReset();
     mockReplace.mockReset();
     mockToast.mockReset();
   });
 
   describe('AC#1: Admin access', () => {
     it('should render team management page for admin', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -87,12 +83,8 @@ describe('Team Management Page', () => {
     });
 
     it('should display page title', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -101,12 +93,8 @@ describe('Team Management Page', () => {
     });
 
     it('should render TeamManagementCard for admin', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -115,12 +103,8 @@ describe('Team Management Page', () => {
     });
 
     it('should display back link to settings', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -133,12 +117,8 @@ describe('Team Management Page', () => {
 
   describe('AC#10: Viewer restriction with redirect', () => {
     it('should redirect viewer to dashboard', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -149,12 +129,8 @@ describe('Team Management Page', () => {
     });
 
     it('should show toast when redirecting viewer', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -170,12 +146,8 @@ describe('Team Management Page', () => {
     });
 
     it('should show redirecting state for viewer', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -184,12 +156,8 @@ describe('Team Management Page', () => {
     });
 
     it('should not render TeamManagementCard for viewer', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -199,10 +167,9 @@ describe('Team Management Page', () => {
   });
 
   describe('Loading state', () => {
-    it('should show loading skeleton while session is loading', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
+    it('should show loading skeleton while auth is loading', () => {
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: true, isAuthenticated: false, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
@@ -214,9 +181,8 @@ describe('Team Management Page', () => {
 
   describe('Unauthenticated state', () => {
     it('should redirect unauthenticated users to dashboard', async () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: false, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });

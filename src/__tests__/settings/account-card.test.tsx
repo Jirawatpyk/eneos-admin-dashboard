@@ -1,128 +1,116 @@
 /**
  * Account Card Component Tests
- * Story 7.1: User Profile (Consolidated)
+ * Story 7.1 / Story 11-4: Migrated to Supabase Auth (useAuth + supabase.signOut)
  *
  * Tests for combined ProfileCard + SessionCard functionality
  * AC#2 (Profile Information Display), AC#3 (Profile Card Layout), AC#4 (Session Information)
  */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { signOut, useSession } from 'next-auth/react';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { useAuth } from '@/hooks/use-auth';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import type { User } from '@supabase/supabase-js';
 
-// Mock next-auth/react
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(),
-  signOut: vi.fn(),
+// Mock useAuth
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: vi.fn(),
+}));
+
+// Mock Supabase client
+const mockSignOut = vi.fn().mockResolvedValue({});
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      signOut: mockSignOut,
+    },
+  }),
+}));
+
+// Mock next/navigation
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
 }));
 
 // Import component after mocking
 import { AccountCard } from '@/components/settings/account-card';
 
-// Helper to create mock session (only admin/viewer roles exist in production)
-function createMockSession(overrides: {
+// Helper to create mock auth state with Supabase User shape
+function createMockAuth(overrides: {
   name?: string | null;
   email?: string;
   image?: string | null;
   role?: 'admin' | 'viewer';
-  expires?: string;
+  provider?: string;
 } = {}) {
-  return {
-    data: {
-      user: {
-        id: 'user-123',
-        name: 'name' in overrides ? overrides.name : 'Test User',
-        email: overrides.email ?? 'test@eneos.co.th',
-        image: 'image' in overrides ? overrides.image : null,
-        role: overrides.role ?? 'admin',
-      },
-      expires: overrides.expires ?? '2026-01-20T00:00:00.000Z',
+  const user = {
+    id: 'user-123',
+    email: overrides.email ?? 'test@eneos.co.th',
+    user_metadata: {
+      name: 'name' in overrides ? overrides.name : 'Test User',
+      avatar_url: 'image' in overrides ? overrides.image : null,
     },
-    status: 'authenticated' as const,
-    update: vi.fn(),
+    app_metadata: {
+      role: overrides.role ?? 'admin',
+      provider: overrides.provider ?? 'google',
+    },
+  } as unknown as User;
+
+  return {
+    user,
+    role: overrides.role ?? 'admin',
+    isLoading: false,
+    isAuthenticated: true,
   };
 }
 
-// Helper to create expired session for testing edge cases
-function createExpiredSession() {
+// Helper to create unauthenticated state (user exists but marked unauthenticated)
+function createExpiredAuth() {
+  const user = {
+    id: 'user-123',
+    email: 'test@eneos.co.th',
+    user_metadata: { name: 'Test User', avatar_url: null },
+    app_metadata: { role: 'admin', provider: 'google' },
+  } as unknown as User;
+
   return {
-    data: {
-      user: {
-        id: 'user-123',
-        name: 'Test User',
-        email: 'test@eneos.co.th',
-        image: null,
-        role: 'admin' as const,
-      },
-      expires: '2026-01-20T00:00:00.000Z',
-    },
-    status: 'unauthenticated' as const,
-    update: vi.fn(),
-  } as unknown as ReturnType<typeof useSession>;
-}
-
-// Shared spy for BroadcastChannel postMessage
-const mockPostMessage = vi.fn();
-const mockClose = vi.fn();
-
-// Mock BroadcastChannel
-class MockBroadcastChannel {
-  name: string;
-  onmessage: ((event: MessageEvent) => void) | null = null;
-  private listeners: Map<string, Set<EventListener>> = new Map();
-
-  constructor(name: string) {
-    this.name = name;
-  }
-
-  postMessage = mockPostMessage;
-  close = mockClose;
-
-  addEventListener(type: string, listener: EventListener) {
-    if (!this.listeners.has(type)) {
-      this.listeners.set(type, new Set());
-    }
-    this.listeners.get(type)!.add(listener);
-  }
-
-  removeEventListener(type: string, listener: EventListener) {
-    this.listeners.get(type)?.delete(listener);
-  }
+    user,
+    role: 'admin',
+    isLoading: false,
+    isAuthenticated: false,
+  };
 }
 
 describe('AccountCard', () => {
-  let originalBroadcastChannel: typeof BroadcastChannel | undefined;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPostMessage.mockClear();
-    mockClose.mockClear();
-    originalBroadcastChannel = globalThis.BroadcastChannel;
-    globalThis.BroadcastChannel = MockBroadcastChannel as unknown as typeof BroadcastChannel;
-  });
-
-  afterEach(() => {
-    if (originalBroadcastChannel) {
-      globalThis.BroadcastChannel = originalBroadcastChannel;
-    }
   });
 
   describe('AC#2: Profile Information Display', () => {
-    it('displays user name from session', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: 'Test User' }));
+    it('displays user name from auth', () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: 'Test User' }));
 
       render(<AccountCard />);
       expect(screen.getByText('Test User')).toBeInTheDocument();
     });
 
-    it('displays user email from session', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ email: 'test@eneos.co.th' }));
+    it('displays user email from auth', () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ email: 'test@eneos.co.th' }));
 
       render(<AccountCard />);
       expect(screen.getByText('test@eneos.co.th')).toBeInTheDocument();
     });
 
     it('renders avatar component with image src when provided', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ image: 'https://example.com/avatar.jpg' }));
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ image: 'https://example.com/avatar.jpg' }));
 
       render(<AccountCard />);
       const avatar = screen.getByTestId('account-avatar');
@@ -132,40 +120,39 @@ describe('AccountCard', () => {
 
   describe('AC#3: Profile Card Layout', () => {
     it('displays avatar fallback with initials when no image', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: 'Test User', image: null }));
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: 'Test User', image: null }));
 
       render(<AccountCard />);
       expect(screen.getByText('TU')).toBeInTheDocument();
     });
 
     it('displays Admin badge with Shield icon for admin role', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: 'Admin User', role: 'admin' }));
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: 'Admin User', role: 'admin' }));
 
       render(<AccountCard />);
       expect(screen.getByText('Admin')).toBeInTheDocument();
     });
 
     it('displays Viewer badge with Eye icon for viewer role', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: 'Viewer User', role: 'viewer' }));
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: 'Viewer User', role: 'viewer' }));
 
       render(<AccountCard />);
       expect(screen.getByText('Viewer')).toBeInTheDocument();
     });
 
-    // Note: Only admin and viewer roles exist in production
-
     it('renders card with Account title', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       expect(screen.getByText('Account')).toBeInTheDocument();
     });
 
-    it('returns null when no session data', () => {
-      vi.mocked(useSession).mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-        update: vi.fn(),
+    it('returns null when no user', () => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: null,
+        role: 'viewer',
+        isLoading: false,
+        isAuthenticated: false,
       });
 
       const { container } = render(<AccountCard />);
@@ -173,30 +160,39 @@ describe('AccountCard', () => {
     });
 
     it('handles single name initials', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: 'Admin' }));
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: 'Admin' }));
 
       render(<AccountCard />);
       expect(screen.getByText('A')).toBeInTheDocument();
     });
 
-    it('handles null name with fallback', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ name: null }));
+    it('handles null name with fallback to email initial', () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ name: null }));
 
       render(<AccountCard />);
-      expect(screen.getByText('?')).toBeInTheDocument();
+      // Component falls back: name = user.user_metadata?.name || user.email
+      // getInitials('test@eneos.co.th') → 'T'
+      expect(screen.getByText('T')).toBeInTheDocument();
     });
   });
 
   describe('AC#4: Session Information', () => {
-    it('displays Google as login provider', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+    it('displays Google as login provider when using Google', () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ provider: 'google' }));
 
       render(<AccountCard />);
       expect(screen.getByText('Google')).toBeInTheDocument();
     });
 
+    it('displays Email as login provider when using email', () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth({ provider: 'email' }));
+
+      render(<AccountCard />);
+      expect(screen.getByText('Email')).toBeInTheDocument();
+    });
+
     it('displays Active status when authenticated (green)', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       const statusElement = screen.getByTestId('account-status');
@@ -205,7 +201,7 @@ describe('AccountCard', () => {
     });
 
     it('displays Expired status when unauthenticated (red)', () => {
-      vi.mocked(useSession).mockReturnValue(createExpiredSession());
+      vi.mocked(useAuth).mockReturnValue(createExpiredAuth());
 
       render(<AccountCard />);
       const statusElement = screen.getByTestId('account-status');
@@ -213,22 +209,15 @@ describe('AccountCard', () => {
       expect(statusElement).toHaveClass('text-red-600');
     });
 
-    it('displays session expiry time', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession({ expires: '2026-01-20T10:30:00.000Z' }));
-
-      render(<AccountCard />);
-      expect(screen.getByTestId('account-expires')).toBeInTheDocument();
-    });
-
     it('displays Sign Out button', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
     });
 
-    it('triggers signOut with correct callback URL when Sign Out button is clicked', async () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+    it('calls supabase.auth.signOut when Sign Out button is clicked', async () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
@@ -236,13 +225,26 @@ describe('AccountCard', () => {
       fireEvent.click(signOutButton);
 
       await waitFor(() => {
-        expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/login?signedOut=true' });
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+    });
+
+    it('redirects to /login after sign out', async () => {
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
+
+      render(<AccountCard />);
+      const signOutButton = screen.getByRole('button', { name: /sign out/i });
+
+      fireEvent.click(signOutButton);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/login?signedOut=true');
       });
     });
 
     it('shows loading spinner when signing out', async () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
-      vi.mocked(signOut).mockImplementation(() => new Promise(() => {})); // Never resolves
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
+      mockSignOut.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       render(<AccountCard />);
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
@@ -256,8 +258,8 @@ describe('AccountCard', () => {
     });
 
     it('disables Sign Out button while signing out', async () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
-      vi.mocked(signOut).mockImplementation(() => new Promise(() => {})); // Never resolves
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
+      mockSignOut.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       render(<AccountCard />);
       const signOutButton = screen.getByRole('button', { name: /sign out/i });
@@ -269,44 +271,24 @@ describe('AccountCard', () => {
       });
     });
 
-    it('broadcasts logout event to other tabs when signing out', async () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
-
-      render(<AccountCard />);
-      const signOutButton = screen.getByRole('button', { name: /sign out/i });
-
-      fireEvent.click(signOutButton);
-
-      await waitFor(() => {
-        expect(mockPostMessage).toHaveBeenCalledWith({ type: 'logout' });
-      });
-    });
-
     it('displays Provider label', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       expect(screen.getByText('Provider')).toBeInTheDocument();
     });
 
     it('displays Status label', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
 
       render(<AccountCard />);
       expect(screen.getByText('Status')).toBeInTheDocument();
-    });
-
-    it('displays Expires label when session has expiry', () => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
-
-      render(<AccountCard />);
-      expect(screen.getByText('Expires')).toBeInTheDocument();
     });
   });
 
   describe('data-testid attributes', () => {
     beforeEach(() => {
-      vi.mocked(useSession).mockReturnValue(createMockSession());
+      vi.mocked(useAuth).mockReturnValue(createMockAuth());
     });
 
     it('has account-card testid', () => {

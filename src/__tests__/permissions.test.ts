@@ -1,24 +1,22 @@
 /**
  * Permission Utilities Tests
- * Story 1.5: Role-based Access Control
+ * Story 1.5 / Story 11-4: Migrated to useAuth
  * AC: #3 (Admin Access), #4 (Viewer Access)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { ReactNode } from 'react';
 import { permissions } from '../lib/permissions';
 
-// Mock next-auth/react
-const mockUseSession = vi.fn();
-vi.mock('next-auth/react', () => ({
-  useSession: () => mockUseSession(),
-  SessionProvider: ({ children }: { children: ReactNode }) => children,
+// Mock useAuth
+const mockUseAuth = vi.fn();
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 describe('Permission Utilities', () => {
   beforeEach(() => {
-    mockUseSession.mockReset();
+    mockUseAuth.mockReset();
   });
 
   describe('permissions object', () => {
@@ -75,17 +73,8 @@ describe('Permission Utilities', () => {
 
   describe('usePermissions hook', () => {
     it('should return admin permissions for admin user', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: 'user-123',
-            name: 'Admin',
-            email: 'admin@eneos.co.th',
-            role: 'admin',
-          },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');
@@ -99,17 +88,8 @@ describe('Permission Utilities', () => {
     });
 
     it('should return viewer permissions for viewer user', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: 'user-456',
-            name: 'Viewer',
-            email: 'viewer@eneos.co.th',
-            role: 'viewer',
-          },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');
@@ -123,9 +103,8 @@ describe('Permission Utilities', () => {
     });
 
     it('should default to viewer for unauthenticated users', async () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: false, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');
@@ -138,18 +117,9 @@ describe('Permission Utilities', () => {
       expect(result.current.isViewer).toBe(true);
     });
 
-    it('should default to viewer when session has no role', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: 'user-789',
-            name: 'User',
-            email: 'user@eneos.co.th',
-            // No role property
-          },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+    it('should default to viewer when auth has no role', async () => {
+      mockUseAuth.mockReturnValue({
+        role: undefined, isLoading: false, isAuthenticated: true, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');
@@ -159,10 +129,9 @@ describe('Permission Utilities', () => {
       expect(result.current.canExport).toBe(false);
     });
 
-    it('should return isLoading true when session is loading', async () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'loading',
+    it('should return isLoading true when auth is loading', async () => {
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: true, isAuthenticated: false, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');
@@ -171,18 +140,9 @@ describe('Permission Utilities', () => {
       expect(result.current.isLoading).toBe(true);
     });
 
-    it('should return isLoading false when session is loaded', async () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: 'user-123',
-            name: 'Admin',
-            email: 'admin@eneos.co.th',
-            role: 'admin',
-          },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+    it('should return isLoading false when auth is loaded', async () => {
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       const { usePermissions } = await import('../lib/permissions');

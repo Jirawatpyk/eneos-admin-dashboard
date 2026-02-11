@@ -1,6 +1,6 @@
 /**
  * RoleGate Component Tests
- * Story 1.5: Role-based Access Control
+ * Story 1.5 / Story 11-4: Migrated to useAuth
  * AC: #3 (Admin Access), #4 (Viewer Access)
  */
 
@@ -9,10 +9,10 @@ import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { RoleGate, AdminOnly } from '../components/shared/role-gate';
 
-// Mock next-auth/react
-const mockUseSession = vi.fn();
-vi.mock('next-auth/react', () => ({
-  useSession: () => mockUseSession(),
+// Mock useAuth
+const mockUseAuth = vi.fn();
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 // Mock TooltipProvider for tooltip tests
@@ -27,17 +27,13 @@ vi.mock('@radix-ui/react-tooltip', async () => {
 describe('RoleGate Component', () => {
   beforeEach(() => {
     cleanup();
-    mockUseSession.mockReset();
+    mockUseAuth.mockReset();
   });
 
   describe('Access control', () => {
     it('should render children when user has allowed role', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -50,12 +46,8 @@ describe('RoleGate Component', () => {
     });
 
     it('should not render children when user does not have allowed role', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -68,12 +60,8 @@ describe('RoleGate Component', () => {
     });
 
     it('should render fallback when user does not have allowed role', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -90,12 +78,8 @@ describe('RoleGate Component', () => {
     });
 
     it('should allow multiple roles', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -109,10 +93,9 @@ describe('RoleGate Component', () => {
   });
 
   describe('Default behavior', () => {
-    it('should default to viewer role when no session', () => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
+    it('should default to viewer role when unauthenticated', () => {
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: false, user: null,
       });
 
       render(
@@ -124,13 +107,9 @@ describe('RoleGate Component', () => {
       expect(screen.queryByText('Admin Only')).not.toBeInTheDocument();
     });
 
-    it('should default to viewer role when session has no role', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'User', email: 'user@eneos.co.th' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+    it('should default to viewer role when auth has no role', () => {
+      mockUseAuth.mockReturnValue({
+        role: undefined, isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -145,15 +124,10 @@ describe('RoleGate Component', () => {
 
   describe('Tooltip with fallback', () => {
     it('should render fallback with disabled state', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
-      // Test without tooltip to avoid provider issues
       render(
         <RoleGate
           allowedRoles={['admin']}
@@ -163,7 +137,6 @@ describe('RoleGate Component', () => {
         </RoleGate>
       );
 
-      // The disabled button should be rendered as fallback
       expect(screen.getByTestId('disabled-btn')).toBeInTheDocument();
       expect(screen.getByTestId('disabled-btn')).toBeDisabled();
     });
@@ -171,12 +144,8 @@ describe('RoleGate Component', () => {
 
   describe('AdminOnly convenience component', () => {
     it('should render children for admin user', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Admin', email: 'admin@eneos.co.th', role: 'admin' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'admin', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -189,12 +158,8 @@ describe('RoleGate Component', () => {
     });
 
     it('should not render children for viewer user', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(
@@ -207,12 +172,8 @@ describe('RoleGate Component', () => {
     });
 
     it('should render fallback for viewer user', () => {
-      mockUseSession.mockReturnValue({
-        data: {
-          user: { id: '1', name: 'Viewer', email: 'viewer@eneos.co.th', role: 'viewer' },
-          expires: new Date(Date.now() + 86400000).toISOString(),
-        },
-        status: 'authenticated',
+      mockUseAuth.mockReturnValue({
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(

@@ -15,7 +15,7 @@ interface BackendMeResponse {
   data?: {
     email: string;
     name: string;
-    role: 'admin' | 'manager' | 'viewer';
+    role: 'admin' | 'viewer';
   };
   error?: { code: string; message: string };
 }

@@ -1,6 +1,7 @@
 /**
  * Team Management Page (Story 7-4)
  * /settings/team - Admin only access
+ * Story 11-4: Migrated to useAuth
  *
  * AC#1: Admin can view all sales team members in a table
  * AC#10: Viewers are redirected to dashboard with toast message
@@ -8,23 +9,21 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { TeamManagementCard, TeamManagementCardSkeleton } from '@/components/settings';
 import { useToast } from '@/hooks/use-toast';
-import { isAdmin } from '@/config/roles';
+import { isAdmin, type Role } from '@/config/roles';
 
 export default function TeamManagementPage() {
-  const { data: session, status } = useSession();
+  const { role, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const isLoading = status === 'loading';
 
   // Check if user is admin
-  const userRole = session?.user?.role;
-  const hasAccess = userRole && isAdmin(userRole);
+  const hasAccess = role && isAdmin(role as Role);
 
   // AC#10: Redirect non-admin users to dashboard with toast
   useEffect(() => {

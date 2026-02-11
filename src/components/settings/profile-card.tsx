@@ -1,24 +1,16 @@
 /**
  * Profile Card Component
- * Story 7.1: User Profile
- *
- * Displays user profile information from Google OAuth session.
- *
- * AC#2: Profile Information Display - name, email, image, role
- * AC#3: Profile Card Layout - centered avatar, role badge
+ * Story 7.1 / Story 11-4: Migrated to Supabase Auth
  */
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Users } from 'lucide-react';
+import { Shield, Eye } from 'lucide-react';
 import { ROLES, type Role } from '@/config/roles';
 
-/**
- * Get user initials for avatar fallback
- */
 function getInitials(name?: string | null): string {
   if (!name) return '?';
   return name
@@ -29,41 +21,26 @@ function getInitials(name?: string | null): string {
     .slice(0, 2);
 }
 
-/**
- * Get role badge configuration
- */
 function getRoleBadgeConfig(role?: Role) {
   switch (role) {
     case ROLES.ADMIN:
-      return {
-        variant: 'default' as const,
-        icon: Shield,
-        label: 'Admin',
-      };
-    case ROLES.MANAGER:
-      return {
-        variant: 'default' as const,
-        icon: Users,
-        label: 'Manager',
-      };
+      return { variant: 'default' as const, icon: Shield, label: 'Admin' };
     case ROLES.VIEWER:
     default:
-      return {
-        variant: 'secondary' as const,
-        icon: Eye,
-        label: 'Viewer',
-      };
+      return { variant: 'secondary' as const, icon: Eye, label: 'Viewer' };
   }
 }
 
 export function ProfileCard() {
-  const { data: session } = useSession();
+  const { user, role } = useAuth();
 
-  if (!session?.user) return null;
+  if (!user) return null;
 
-  const { name, email, image, role } = session.user;
+  const name = user.user_metadata?.name || user.email;
+  const email = user.email;
+  const image = user.user_metadata?.avatar_url || null;
   const initials = getInitials(name);
-  const roleConfig = getRoleBadgeConfig(role);
+  const roleConfig = getRoleBadgeConfig(role as Role);
   const RoleIcon = roleConfig.icon;
 
   return (

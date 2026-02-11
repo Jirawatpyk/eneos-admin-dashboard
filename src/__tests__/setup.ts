@@ -80,13 +80,12 @@ vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }));
 
-// Mock next-auth/react
-vi.mock('next-auth/react', () => ({
-  signIn: vi.fn(),
-  signOut: vi.fn(),
-  useSession: () => ({
-    data: null,
-    status: 'unauthenticated',
-  }),
-  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+// Mock useAuth hook (Supabase — replaces next-auth/react useSession)
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: vi.fn(() => ({
+    user: null,
+    role: 'viewer',
+    isLoading: false,
+    isAuthenticated: false,
+  })),
 }));

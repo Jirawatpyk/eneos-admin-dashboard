@@ -1,14 +1,12 @@
 /**
  * RoleGate Component
  * Story 1.5: Role-based Access Control
- *
- * AC#3: Admin can see all features
- * AC#4: Viewer sees restricted UI with tooltips
+ * Story 11-4: Migrated from NextAuth useSession to useAuth
  */
 
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { Role, ROLES } from '@/config/roles';
 import {
   Tooltip,
@@ -22,15 +20,10 @@ import {
 // ===========================================
 
 export interface RoleGateProps {
-  /** Roles that are allowed to see the children */
   allowedRoles: Role[];
-  /** Content to render when user has required role */
   children: React.ReactNode;
-  /** Content to render when user does NOT have required role */
   fallback?: React.ReactNode;
-  /** Whether to show tooltip on fallback element */
   showTooltip?: boolean;
-  /** Tooltip message (AC#4: "Contact admin for export access") */
   tooltipMessage?: string;
 }
 
@@ -38,26 +31,6 @@ export interface RoleGateProps {
 // RoleGate Component
 // ===========================================
 
-/**
- * Conditional rendering based on user role
- *
- * @example
- * // Show export button only to admins
- * <RoleGate allowedRoles={['admin']}>
- *   <ExportButton />
- * </RoleGate>
- *
- * @example
- * // Show disabled button with tooltip to viewers
- * <RoleGate
- *   allowedRoles={['admin']}
- *   fallback={<Button disabled>Export</Button>}
- *   showTooltip={true}
- *   tooltipMessage="Contact admin for export access"
- * >
- *   <ExportButton />
- * </RoleGate>
- */
 export function RoleGate({
   allowedRoles,
   children,
@@ -65,17 +38,14 @@ export function RoleGate({
   showTooltip = false,
   tooltipMessage = 'Contact admin for export access',
 }: RoleGateProps) {
-  const { data: session } = useSession();
+  const { role: authRole } = useAuth();
 
-  // Default to viewer role for safety (AC#1)
-  const userRole: Role = (session?.user?.role as Role) || ROLES.VIEWER;
+  const userRole: Role = (authRole as Role) || ROLES.VIEWER;
 
-  // Check if user has an allowed role
   if (allowedRoles.includes(userRole)) {
     return <>{children}</>;
   }
 
-  // User doesn't have required role - show fallback with optional tooltip
   if (showTooltip && fallback) {
     return (
       <TooltipProvider>
@@ -98,9 +68,6 @@ export function RoleGate({
 // Convenience Components
 // ===========================================
 
-/**
- * Show content only to admins
- */
 export function AdminOnly({
   children,
   fallback,

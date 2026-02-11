@@ -1,16 +1,10 @@
 /**
  * Recent Activity Component
- * Story 2.5: Recent Activity Feed
- * Story 2.5.1: View All Activity Link Fix (AC#1, #2, #3)
- *
- * AC#1: Activity Feed Display - panel with latest 10 activities
- * AC#2: Activity Types - different types with distinct icon/color
- * AC#5: View All Link - navigation to activity log (admin only)
- * AC#7: Loading & Empty States
+ * Story 2.5 / Story 11-4: Migrated to useAuth
  */
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,19 +17,11 @@ interface RecentActivityProps {
   isLoading?: boolean;
 }
 
-/**
- * Recent Activity Feed Component
- * Displays a scrollable list of recent sales activities
- */
 export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
-  // Story 2.5.1: Get session data for role-based link visibility
-  const { data: session, status } = useSession();
+  const { role, isAuthenticated } = useAuth();
 
-  // Only show link when authenticated AND admin (prevents flash during loading)
-  // AC#1: Admin sees link, AC#2: Viewer does not see link
-  const isAdmin = status === 'authenticated' && session?.user?.role === 'admin';
+  const isAdmin = isAuthenticated && role === 'admin';
 
-  // AC#7: Loading state
   if (isLoading) {
     return <RecentActivitySkeleton />;
   }
@@ -50,7 +36,6 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[300px] pr-4">
-          {/* AC#7: Empty state */}
           {activities.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-8">
               <Clock className="h-12 w-12 text-muted-foreground/50" />
@@ -61,7 +46,6 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* AC#1: Display up to 10 activities */}
               {activities.slice(0, 10).map((activity) => (
                 <ActivityItem key={activity.id} activity={activity} />
               ))}
@@ -69,8 +53,6 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
           )}
         </ScrollArea>
       </CardContent>
-      {/* Story 2.5.1: AC#1 - Admin sees View All link → /settings/activity */}
-      {/* AC#2 - Viewer does NOT see link, AC#3 - Link styling with arrow icon */}
       {isAdmin && (
         <CardFooter className="pt-3 border-t">
           <Link

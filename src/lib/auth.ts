@@ -84,12 +84,12 @@ async function fetchRoleFromBackend(idToken: string | undefined): Promise<typeof
 
     if (data.success && data.data?.role) {
       const role = data.data.role.toLowerCase();
-      if (role === 'admin' || role === 'manager') {
+      if (role === 'admin') {
         // Only log in development
         if (process.env.NODE_ENV === 'development') {
           console.log('[Auth] Role fetched from backend:', role);
         }
-        return role as typeof ROLES[keyof typeof ROLES];
+        return ROLES.ADMIN;
       }
     }
 

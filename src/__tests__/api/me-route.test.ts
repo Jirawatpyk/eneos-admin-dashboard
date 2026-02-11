@@ -167,29 +167,6 @@ describe('GET /api/admin/me', () => {
       expect(data.data.role).toBe('viewer');
     });
 
-    it('should return manager role correctly', async () => {
-      // GIVEN: Valid auth and manager user
-      mockGetToken.mockResolvedValue({
-        sub: 'user-789',
-        idToken: 'google-id-token-manager',
-      });
-
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({
-          success: true,
-          data: { email: 'manager@company.com', name: 'Manager', role: 'manager' },
-        }),
-      });
-
-      // WHEN: Request is made
-      const response = await GET(createRequest());
-      const data = await response.json();
-
-      // THEN: Returns manager role
-      expect(data.data.role).toBe('manager');
-    });
   });
 
   // ===========================================

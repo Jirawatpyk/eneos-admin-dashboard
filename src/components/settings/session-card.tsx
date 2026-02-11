@@ -1,90 +1,39 @@
 /**
  * Session Card Component
- * Story 7.1: User Profile
- *
- * Displays session information and sign out functionality.
- *
- * AC#4: Session Information - provider, status, expiry, sign out button
+ * Story 7.1 / Story 11-4: Migrated to Supabase Auth (AC-5)
  */
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { signOut, useSession } from 'next-auth/react';
+import { useState, useCallback, useMemo } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogOut, Loader2 } from 'lucide-react';
 
-// Broadcast channel for multi-tab logout sync (consistent with UserNav)
-const LOGOUT_CHANNEL = 'eneos-logout';
-
-/**
- * Format session expiry date for display
- */
-function formatExpiryDate(expiresString: string): string {
-  try {
-    const date = new Date(expiresString);
-    return date.toLocaleString('th-TH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return 'Unknown';
-  }
-}
-
 export function SessionCard() {
-  const { data: session, status } = useSession();
+  const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
 
-  // Handle sign out with loading state and multi-tab sync (M1, M3, M4)
   const handleSignOut = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Broadcast logout event to other tabs (consistent with UserNav)
-      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        const channel = new BroadcastChannel(LOGOUT_CHANNEL);
-        channel.postMessage({ type: 'logout' });
-        channel.close();
-      }
-
-      // Perform sign out with correct callback URL (M3)
-      await signOut({ callbackUrl: '/login?signedOut=true' });
+      await supabase.auth.signOut();
+      router.push('/login?signedOut=true');
     } catch (error) {
       console.error('Sign out error:', error);
       setIsLoading(false);
     }
-  }, []);
+  }, [supabase, router]);
 
-  // Listen for logout events from other tabs
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) {
-      return;
-    }
+  if (!user) return null;
 
-    const channel = new BroadcastChannel(LOGOUT_CHANNEL);
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'logout') {
-        // Another tab logged out, redirect to login
-        window.location.href = '/login?signedOut=true';
-      }
-    };
-
-    channel.addEventListener('message', handleMessage);
-
-    return () => {
-      channel.removeEventListener('message', handleMessage);
-      channel.close();
-    };
-  }, []);
-
-  // Return null when no session (M2 - consistent with ProfileCard)
-  if (!session?.user) return null;
-
-  const isActive = status === 'authenticated';
+  // Determine provider from user metadata
+  const provider = user.app_metadata?.provider || 'email';
+  const providerDisplay = provider === 'google' ? 'Google' : 'Email';
 
   return (
     <Card data-testid="session-card">
@@ -93,35 +42,22 @@ export function SessionCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          {/* Provider */}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Provider</span>
-            <span data-testid="session-provider">Google</span>
+            <span data-testid="session-provider">{providerDisplay}</span>
           </div>
 
-          {/* Status */}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Status</span>
             <span
-              className={isActive ? 'text-green-600' : 'text-red-600'}
+              className={isAuthenticated ? 'text-green-600' : 'text-red-600'}
               data-testid="session-status"
             >
-              {isActive ? 'Active' : 'Expired'}
+              {isAuthenticated ? 'Active' : 'Expired'}
             </span>
           </div>
-
-          {/* Expiry */}
-          {session?.expires && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Expires</span>
-              <span data-testid="session-expires">
-                {formatExpiryDate(session.expires)}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Sign Out Button with loading state (M1) */}
         <Button
           variant="outline"
           className="w-full"

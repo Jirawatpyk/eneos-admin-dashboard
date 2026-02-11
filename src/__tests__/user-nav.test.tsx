@@ -1,68 +1,51 @@
+/**
+ * UserNav Tests
+ * Story 1.4 / Story 11-4: Migrated to Supabase Auth (AC-5)
+ *
+ * UserNav receives user as props. Sign out uses supabase.auth.signOut().
+ * Multi-tab logout sync handled by SupabaseAuthListener (no BroadcastChannel).
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Use vi.hoisted() for mock functions
-const { mockSignOut } = vi.hoisted(() => ({
-  mockSignOut: vi.fn(),
+// Mock Supabase client
+const mockSignOut = vi.fn().mockResolvedValue({});
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      signOut: mockSignOut,
+    },
+  }),
 }));
 
-// Mock next-auth/react
-vi.mock('next-auth/react', () => ({
-  signOut: mockSignOut,
-  useSession: () => ({
-    data: {
-      user: {
-        name: 'Test User',
-        email: 'test@eneos.co.th',
-        image: 'https://example.com/avatar.jpg',
-      },
-    },
-    status: 'authenticated',
+// Mock next/navigation
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
 }));
 
 // Import after mocks
 import { UserNav } from '@/components/layout/user-nav';
 
-describe('UserNav - Story 1.4: Logout', () => {
+describe('UserNav - Story 1.4 / Story 11-4: Supabase Logout', () => {
   const mockUser = {
     name: 'Somchai Jaidee',
     email: 'somchai@eneos.co.th',
     image: 'https://lh3.googleusercontent.com/avatar.jpg',
   };
 
-  // Mock BroadcastChannel
-  let mockBroadcastChannel: {
-    postMessage: ReturnType<typeof vi.fn>;
-    close: ReturnType<typeof vi.fn>;
-    addEventListener: ReturnType<typeof vi.fn>;
-    removeEventListener: ReturnType<typeof vi.fn>;
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockBroadcastChannel = {
-      postMessage: vi.fn(),
-      close: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    };
-
-    // Mock BroadcastChannel constructor properly
-    class MockBroadcastChannel {
-      postMessage = mockBroadcastChannel.postMessage;
-      close = mockBroadcastChannel.close;
-      addEventListener = mockBroadcastChannel.addEventListener;
-      removeEventListener = mockBroadcastChannel.removeEventListener;
-      onmessage = null;
-      onmessageerror = null;
-      name = 'eneos-logout';
-      dispatchEvent = vi.fn();
-    }
-
-    global.BroadcastChannel = MockBroadcastChannel as unknown as typeof BroadcastChannel;
   });
 
   afterEach(() => {
@@ -78,14 +61,11 @@ describe('UserNav - Story 1.4: Logout', () => {
       expect(triggerButton).toBeInTheDocument();
     });
 
-    it('should show user avatar with image when available', async () => {
+    it('should show user avatar with image when available', () => {
       render(<UserNav user={mockUser} />);
 
-      // Avatar is inside the button trigger
       const triggerButton = screen.getByTestId('user-nav-trigger');
       expect(triggerButton).toBeInTheDocument();
-
-      // Check that avatar component renders (fallback shows initials since image loading is async)
       // In test environment, AvatarImage may not load, but AvatarFallback shows initials
       expect(screen.getByText('SJ')).toBeInTheDocument();
     });
@@ -93,7 +73,6 @@ describe('UserNav - Story 1.4: Logout', () => {
     it('should show initials fallback when no image', () => {
       render(<UserNav user={{ ...mockUser, image: null }} />);
 
-      // Click to open menu and check fallback
       expect(screen.getByText('SJ')).toBeInTheDocument();
     });
 
@@ -154,24 +133,36 @@ describe('UserNav - Story 1.4: Logout', () => {
   });
 
   // AC2: Logout Action
-  describe('AC2: Clicking Sign Out triggers signOut()', () => {
-    it('should call signOut with callbackUrl when Sign out is clicked', async () => {
+  describe('AC2: Clicking Sign Out triggers supabase.auth.signOut()', () => {
+    it('should call supabase signOut when Sign out is clicked', async () => {
       render(<UserNav user={mockUser} />);
 
-      // Open dropdown
       const triggerButton = screen.getByTestId('user-nav-trigger');
       await userEvent.click(triggerButton);
 
-      // Click Sign out
       await waitFor(() => {
         const signOutButton = screen.getByTestId('logout-menu-item');
         fireEvent.click(signOutButton);
       });
 
       await waitFor(() => {
-        expect(mockSignOut).toHaveBeenCalledWith({
-          callbackUrl: '/login?signedOut=true',
-        });
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+    });
+
+    it('should redirect to /login after sign out', async () => {
+      render(<UserNav user={mockUser} />);
+
+      const triggerButton = screen.getByTestId('user-nav-trigger');
+      await userEvent.click(triggerButton);
+
+      await waitFor(() => {
+        const signOutButton = screen.getByTestId('logout-menu-item');
+        fireEvent.click(signOutButton);
+      });
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/login?signedOut=true');
       });
     });
 
@@ -182,83 +173,15 @@ describe('UserNav - Story 1.4: Logout', () => {
 
       render(<UserNav user={mockUser} />);
 
-      // Open dropdown
       const triggerButton = screen.getByTestId('user-nav-trigger');
       await userEvent.click(triggerButton);
 
-      // Get the Sign out button before clicking
       const signOutButton = await screen.findByTestId('logout-menu-item');
-
-      // Click Sign out
       fireEvent.click(signOutButton);
 
-      // signOut should have been called
       await waitFor(() => {
         expect(mockSignOut).toHaveBeenCalled();
       });
-    });
-  });
-
-  // AC6: Multi-Tab Logout Sync
-  describe('AC6: Multi-Tab Logout Sync', () => {
-    it('should broadcast logout event when signing out', async () => {
-      render(<UserNav user={mockUser} />);
-
-      // Open dropdown
-      const triggerButton = screen.getByTestId('user-nav-trigger');
-      await userEvent.click(triggerButton);
-
-      // Click Sign out
-      await waitFor(() => {
-        const signOutButton = screen.getByTestId('logout-menu-item');
-        fireEvent.click(signOutButton);
-      });
-
-      await waitFor(() => {
-        expect(mockBroadcastChannel.postMessage).toHaveBeenCalledWith({
-          type: 'logout',
-        });
-      });
-    });
-
-    it('should close broadcast channel after posting message', async () => {
-      render(<UserNav user={mockUser} />);
-
-      // Open dropdown
-      const triggerButton = screen.getByTestId('user-nav-trigger');
-      await userEvent.click(triggerButton);
-
-      // Click Sign out
-      await waitFor(() => {
-        const signOutButton = screen.getByTestId('logout-menu-item');
-        fireEvent.click(signOutButton);
-      });
-
-      await waitFor(() => {
-        expect(mockBroadcastChannel.close).toHaveBeenCalled();
-      });
-    });
-
-    it('should listen for logout events from other tabs', () => {
-      render(<UserNav user={mockUser} />);
-
-      // Verify event listener was added
-      expect(mockBroadcastChannel.addEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function)
-      );
-    });
-
-    it('should clean up event listener on unmount', () => {
-      const { unmount } = render(<UserNav user={mockUser} />);
-
-      unmount();
-
-      expect(mockBroadcastChannel.removeEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function)
-      );
-      expect(mockBroadcastChannel.close).toHaveBeenCalled();
     });
   });
 
@@ -377,31 +300,6 @@ describe('UserNav - Story 1.4: Logout', () => {
       });
 
       consoleError.mockRestore();
-    });
-
-    it('should handle missing BroadcastChannel gracefully', async () => {
-      // Remove BroadcastChannel from window
-      const originalBC = global.BroadcastChannel;
-      // @ts-expect-error - intentionally removing BroadcastChannel
-      delete global.BroadcastChannel;
-
-      render(<UserNav user={mockUser} />);
-
-      const triggerButton = screen.getByTestId('user-nav-trigger');
-      await userEvent.click(triggerButton);
-
-      await waitFor(() => {
-        const signOutButton = screen.getByTestId('logout-menu-item');
-        fireEvent.click(signOutButton);
-      });
-
-      // Should still call signOut without throwing
-      await waitFor(() => {
-        expect(mockSignOut).toHaveBeenCalled();
-      });
-
-      // Restore
-      global.BroadcastChannel = originalBC;
     });
   });
 });

@@ -1,6 +1,7 @@
 /**
  * Activity Log Page (Story 7-7)
  * /settings/activity - Admin only access
+ * Story 11-4: Migrated to useAuth
  *
  * AC#1: Admin only access (redirect viewers with toast)
  * AC#2: Display activity log with pagination
@@ -9,23 +10,21 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { ActivityLogContainer, ActivityLogSkeleton } from '@/components/settings';
 import { useToast } from '@/hooks/use-toast';
-import { isAdmin } from '@/config/roles';
+import { isAdmin, type Role } from '@/config/roles';
 
 export default function ActivityLogPage() {
-  const { data: session, status } = useSession();
+  const { role, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const isLoading = status === 'loading';
 
   // Check if user is admin
-  const userRole = session?.user?.role;
-  const hasAccess = userRole && isAdmin(userRole);
+  const hasAccess = role && isAdmin(role as Role);
 
   // AC#1: Redirect non-admin users to dashboard with toast
   useEffect(() => {

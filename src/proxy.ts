@@ -1,31 +1,38 @@
 /**
  * Next.js Proxy (formerly Middleware)
- * Story 1.5: Role-based Access Control
+ * Story 11-4: Frontend Auth Middleware & Session Management (AC-1)
  *
- * AC#5: Protected routes (requires authentication)
- * AC#6: Unauthorized Access Handling - redirect viewers from admin routes
+ * AC#1: Route protection via Supabase session
+ * - Unauthenticated → redirect to /login
+ * - Authenticated at /login → redirect to /dashboard
+ * - Public routes excluded: /login, /reset-password, /update-password, /auth/callback
+ * - API routes excluded (handled separately)
  */
 
-import { withAuth } from 'next-auth/middleware';
-import type { NextRequestWithAuth } from 'next-auth/middleware';
-import { NextResponse, NextRequest, NextFetchEvent } from 'next/server';
+import { NextResponse, type NextRequest, type NextFetchEvent } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
+
+// ===========================================
+// Public Routes (no auth required)
+// ===========================================
+
+const PUBLIC_ROUTES = ['/login', '/reset-password', '/update-password', '/auth/callback'];
+
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+}
 
 // ===========================================
 // E2E Test Bypass (Development Only)
 // ===========================================
 
-/**
- * Check if E2E test bypass is enabled
- * SECURITY: Only works when NEXT_PUBLIC_E2E_TEST_MODE=true AND NODE_ENV !== 'production'
- * Also supports header-based bypass for Playwright tests
- */
 function isE2ETestBypass(req: NextRequest): boolean {
-  // Method 1: Environment variable (for direct dev:e2e mode)
   const envBypass =
     process.env.NEXT_PUBLIC_E2E_TEST_MODE === 'true' &&
     process.env.NODE_ENV !== 'production';
 
-  // Method 2: Request header (for Playwright tests)
   const headerBypass =
     req.headers.get('x-e2e-test-bypass') === 'true' &&
     process.env.NODE_ENV !== 'production';
@@ -37,15 +44,8 @@ function isE2ETestBypass(req: NextRequest): boolean {
 // Admin-Only Routes
 // ===========================================
 
-/**
- * Routes that require admin role
- * AC#6: Viewers trying to access these routes will be redirected
- */
 export const ADMIN_ROUTES = ['/settings'];
 
-/**
- * Check if a path is an admin-only route
- */
 function isAdminRoute(pathname: string): boolean {
   return ADMIN_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
@@ -53,60 +53,46 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 // ===========================================
-// Auth Handler (using next-auth withAuth)
+// Proxy Handler (Supabase Auth)
 // ===========================================
 
-/**
- * Auth handler with role-based access control
- *
- * Flow:
- * 1. Check if E2E test bypass is enabled (dev only)
- * 2. Check if user is authenticated (handled by withAuth)
- * 3. For admin routes, check if user has admin role
- * 4. Redirect viewers to dashboard with error message
- */
-const authMiddleware = withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const pathname = req.nextUrl.pathname;
-
-    // Check if accessing admin-only route
-    if (isAdminRoute(pathname)) {
-      const role = token?.role || 'viewer';
-
-      // AC#6: Redirect viewers away from admin routes
-      if (role !== 'admin') {
-        const url = req.nextUrl.clone();
-        url.pathname = '/dashboard';
-        url.searchParams.set('error', 'Unauthorized');
-        return NextResponse.redirect(url);
-      }
-    }
-
-    // Allow access
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      // Only proceed to middleware if user is authenticated
-      authorized: ({ token }) => !!token,
-    },
-  }
-);
-
-/**
- * Main proxy export (Next.js 16+ convention)
- * Uses E2E bypass in test mode, normal auth otherwise
- */
-export function proxy(req: NextRequest, event: NextFetchEvent) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function proxy(req: NextRequest, _event: NextFetchEvent) {
   // E2E Test Bypass - ONLY in development with explicit flag or header
   if (isE2ETestBypass(req)) {
     return NextResponse.next();
   }
 
-  // Normal authentication flow - cast req to NextRequestWithAuth
-  // The withAuth wrapper will add the nextauth property
-  return authMiddleware(req as NextRequestWithAuth, event);
+  // Refresh Supabase session (updates cookies)
+  const { user, supabaseResponse } = await updateSession(req);
+  const pathname = req.nextUrl.pathname;
+
+  // Unauthenticated user accessing protected route → redirect to /login
+  if (!user && !isPublicRoute(pathname)) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // Authenticated user accessing /login → redirect to /dashboard
+  if (user && pathname.startsWith('/login')) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  // Admin route protection: redirect non-admin users
+  if (user && isAdminRoute(pathname)) {
+    const role = user.app_metadata?.role || 'viewer';
+    if (role !== 'admin') {
+      const url = req.nextUrl.clone();
+      url.pathname = '/dashboard';
+      url.searchParams.set('error', 'Unauthorized');
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return supabaseResponse;
 }
 
 // ===========================================
@@ -114,14 +100,7 @@ export function proxy(req: NextRequest, event: NextFetchEvent) {
 // ===========================================
 
 export const config = {
-  // Match all routes except:
-  // - /login (auth page)
-  // - /api/auth/* (NextAuth endpoints)
-  // - /_next/static/* (static files)
-  // - /_next/image/* (image optimization)
-  // - /favicon.ico
-  // - Static files (svg, png, jpg, etc.)
   matcher: [
-    '/((?!login|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

@@ -142,8 +142,8 @@ describe('/api/admin/me Route', () => {
     expect(data.error.message).toBe('Network error');
   });
 
-  it('should return user info with all roles (admin, manager, viewer)', async () => {
-    const roles = ['admin', 'manager', 'viewer'] as const;
+  it('should return user info with all roles (admin, viewer)', async () => {
+    const roles = ['admin', 'viewer'] as const;
 
     for (const role of roles) {
       mockGetToken.mockReset();

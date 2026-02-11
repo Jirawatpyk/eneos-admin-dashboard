@@ -1,7 +1,8 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
-import { useState, useCallback, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo } from 'react';
 import { LogOut, Loader2, Shield, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Role } from '@/config/roles';
@@ -16,9 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
-// Broadcast channel for multi-tab logout sync (AC6)
-const LOGOUT_CHANNEL = 'eneos-logout';
-
 interface UserNavProps {
   user: {
     name?: string | null;
@@ -29,18 +27,15 @@ interface UserNavProps {
 }
 
 /**
- * UserNav component with dropdown menu and logout functionality
- * Implements Story 1.4 requirements:
- * - AC1: Logout button visible in header
- * - AC2: Clicking logout triggers signOut()
- * - AC3: Session termination (handled by NextAuth)
- * - AC6: Multi-tab logout sync via BroadcastChannel
- * - AC7: Keyboard accessible
+ * UserNav component with dropdown menu and logout functionality (AC-5)
+ * Uses Supabase signOut() instead of NextAuth.
+ * Multi-tab logout sync handled by SupabaseAuthListener (onAuthStateChange).
  */
 export function UserNav({ user }: UserNavProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
 
-  // Get user initials for avatar fallback
   const getInitials = (name?: string | null): string => {
     if (!name) return 'U';
     return name
@@ -51,47 +46,16 @@ export function UserNav({ user }: UserNavProps) {
       .slice(0, 2);
   };
 
-  // Handle logout with multi-tab sync (AC2, AC6)
   const handleSignOut = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Broadcast logout event to other tabs (AC6)
-      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        const channel = new BroadcastChannel(LOGOUT_CHANNEL);
-        channel.postMessage({ type: 'logout' });
-        channel.close();
-      }
-
-      // Perform sign out (AC2, AC3)
-      await signOut({ callbackUrl: '/login?signedOut=true' });
+      await supabase.auth.signOut();
+      router.push('/login?signedOut=true');
     } catch (error) {
       console.error('Sign out error:', error);
       setIsLoading(false);
     }
-  }, []);
-
-  // Listen for logout events from other tabs (AC6)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) {
-      return;
-    }
-
-    const channel = new BroadcastChannel(LOGOUT_CHANNEL);
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'logout') {
-        // Another tab logged out, redirect to login
-        window.location.href = '/login?signedOut=true';
-      }
-    };
-
-    channel.addEventListener('message', handleMessage);
-
-    return () => {
-      channel.removeEventListener('message', handleMessage);
-      channel.close();
-    };
-  }, []);
+  }, [supabase, router]);
 
   return (
     <DropdownMenu>
@@ -123,7 +87,6 @@ export function UserNav({ user }: UserNavProps) {
               <p className="text-sm font-medium leading-none truncate max-w-[180px]" data-testid="user-name">
                 {user.name || 'User'}
               </p>
-              {/* AC#5: Role Display - Show role badge in user menu */}
               <Badge
                 variant={user.role === 'admin' ? 'default' : 'secondary'}
                 className="text-[10px] px-1.5 py-0"
