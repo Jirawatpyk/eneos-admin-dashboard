@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ENEOS Admin Dashboard - Internal management dashboard for ENEOS Thailand sales team. Built with Next.js 14 App Router for executives to monitor KPIs, sales performance, and lead analytics.
+ENEOS Admin Dashboard - Internal management dashboard for ENEOS Thailand sales team. Built with Next.js 16 App Router for executives to monitor KPIs, sales performance, and lead analytics.
 
 **Tech Stack:**
-- **Framework:** Next.js 14 (App Router, TypeScript strict mode)
-- **Auth:** NextAuth.js with Google OAuth (domain-restricted)
+- **Framework:** Next.js 16 (App Router, TypeScript strict mode)
+- **Auth:** Supabase Auth (`@supabase/ssr`) — Email+Password + Google OAuth
 - **Styling:** Tailwind CSS with ENEOS brand colors
 - **Testing:** Vitest + React Testing Library
 - **Port:** 3001 (Backend API runs on 3000)
@@ -24,12 +24,6 @@ npm run test:ui      # Vitest with UI
 npm run test:coverage # Run tests with coverage report
 ```
 
-### Run Single Test File
-```bash
-npx vitest run src/__tests__/auth.test.ts
-npx vitest src/__tests__/auth.test.ts --watch  # Watch mode
-```
-
 ## Architecture
 
 ### Route Groups
@@ -40,34 +34,39 @@ src/app/
 ├── (dashboard)/      # Protected routes (requires auth)
 │   ├── dashboard/
 │   └── layout.tsx    # Dashboard layout with header
-├── api/auth/         # NextAuth.js API routes
+├── auth/callback/    # Supabase OAuth callback
 └── layout.tsx        # Root layout with providers
 ```
 
-### Authentication Flow
-1. `middleware.ts` - Route protection using NextAuth middleware
-2. `src/lib/auth.ts` - NextAuth config with Google OAuth provider
-3. Domain restriction via `ALLOWED_DOMAINS` env var (defaults to `eneos.co.th`)
-4. Dashboard layout has defense-in-depth session check
+### Authentication Flow (Supabase Auth)
+1. `middleware.ts` - Route protection using Supabase session check
+2. `src/lib/supabase/client.ts` - Browser Supabase client
+3. `src/lib/supabase/server.ts` - Server-side Supabase client
+4. `src/hooks/use-auth.ts` - Client hook for auth state (`useAuth()`)
+5. `src/app/providers.tsx` - Root provider with `SupabaseAuthListener`
+6. Login: Email+Password (`signInWithPassword`) or Google OAuth (`signInWithOAuth`)
+7. Admin invite-only — self-signup disabled (enterprise security)
 
 ### Key Files
-- `src/lib/auth.ts` - NextAuth configuration, domain validation logic
-- `src/middleware.ts` - Route protection (excludes `/login`, `/api/auth`)
+- `src/lib/supabase/client.ts` - Supabase browser client
+- `src/lib/supabase/server.ts` - Supabase server client
+- `src/hooks/use-auth.ts` - Auth hook (user, role, isAuthenticated)
+- `src/middleware.ts` - Route protection
 - `src/app/(dashboard)/layout.tsx` - Protected layout with session check
 - `src/components/user-menu.tsx` - User dropdown with sign out
 
 ### Path Aliases
 ```typescript
-import { authOptions } from '@/lib/auth';  // @/* maps to ./src/*
+import { createClient } from '@/lib/supabase/client';  // @/* maps to ./src/*
 ```
 
 ## Testing
 
 Tests are in `src/__tests__/`:
 - `setup.ts` - Global test setup (imports @testing-library/jest-dom)
-- `auth.test.ts` - Auth configuration tests
 - `middleware.test.ts` - Middleware tests
 - `login.test.tsx` - Login page component tests
+- `providers.test.tsx` - Provider tests
 
 Vitest config uses jsdom environment with globals enabled.
 
@@ -75,11 +74,9 @@ Vitest config uses jsdom environment with globals enabled.
 
 Required in `.env.local`:
 ```bash
-GOOGLE_CLIENT_ID=xxx
-GOOGLE_CLIENT_SECRET=xxx
-NEXTAUTH_SECRET=xxx
-NEXTAUTH_URL=http://localhost:3001
-ALLOWED_DOMAINS=eneos.co.th,example.com  # Comma-separated allowed email domains
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ## Brand Colors

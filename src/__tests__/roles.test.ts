@@ -51,59 +51,6 @@ describe('Role Configuration', () => {
     });
   });
 
-  describe('getUserRole', () => {
-    it('should return "admin" for emails in ADMIN_EMAILS env var', async () => {
-      vi.stubEnv('ADMIN_EMAILS', 'admin@eneos.co.th,lead@eneos.co.th');
-
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('admin@eneos.co.th')).toBe(ROLES.ADMIN);
-      expect(getUserRole('lead@eneos.co.th')).toBe(ROLES.ADMIN);
-    });
-
-    it('should return "viewer" as default for non-admin emails', async () => {
-      vi.stubEnv('ADMIN_EMAILS', 'admin@eneos.co.th');
-
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('user@eneos.co.th')).toBe(ROLES.VIEWER);
-      expect(getUserRole('sales@eneos.co.th')).toBe(ROLES.VIEWER);
-    });
-
-    it('should be case-insensitive for email matching', async () => {
-      vi.stubEnv('ADMIN_EMAILS', 'Admin@eneos.co.th');
-
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('admin@eneos.co.th')).toBe(ROLES.ADMIN);
-      expect(getUserRole('ADMIN@ENEOS.CO.TH')).toBe(ROLES.ADMIN);
-      expect(getUserRole('Admin@Eneos.Co.Th')).toBe(ROLES.ADMIN);
-    });
-
-    it('should return "viewer" for empty email', async () => {
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('')).toBe(ROLES.VIEWER);
-    });
-
-    it('should handle missing ADMIN_EMAILS env var', async () => {
-      vi.stubEnv('ADMIN_EMAILS', '');
-
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('anyone@eneos.co.th')).toBe(ROLES.VIEWER);
-    });
-
-    it('should handle whitespace in ADMIN_EMAILS', async () => {
-      vi.stubEnv('ADMIN_EMAILS', '  admin@eneos.co.th , lead@eneos.co.th  ');
-
-      const { getUserRole, ROLES } = await import('../config/roles');
-
-      expect(getUserRole('admin@eneos.co.th')).toBe(ROLES.ADMIN);
-      expect(getUserRole('lead@eneos.co.th')).toBe(ROLES.ADMIN);
-    });
-  });
-
   describe('isAdmin helper', () => {
     it('should return true for admin role', async () => {
       const { isAdmin, ROLES } = await import('../config/roles');

@@ -128,10 +128,8 @@ jobs:
           CI: true
           NEXT_PUBLIC_E2E_TEST_MODE: 'true'
           NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
-          NEXTAUTH_URL: http://localhost:3001
-          NEXTAUTH_SECRET: ci-test-secret
-          GOOGLE_CLIENT_ID: ci-test-client-id
-          GOOGLE_CLIENT_SECRET: ci-test-client-secret
+          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-test-anon-key
 
       - name: Upload Playwright report
         if: failure()
@@ -258,5 +256,5 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_BASE_URL: https://api.example.com
-          NEXTAUTH_URL: https://admin.example.com
-          NEXTAUTH_SECRET: build-check-secret
+          NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-check-anon-key

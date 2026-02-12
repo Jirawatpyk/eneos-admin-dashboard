@@ -41,7 +41,7 @@ describe('UserNav - Story 1.4 / Story 11-4: Supabase Logout', () => {
   const mockUser = {
     name: 'Somchai Jaidee',
     email: 'somchai@eneos.co.th',
-    image: 'https://lh3.googleusercontent.com/avatar.jpg',
+    image: 'https://example.com/avatar.jpg',
   };
 
   beforeEach(() => {

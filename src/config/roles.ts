@@ -27,48 +27,6 @@ export const ROLES = {
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 // ===========================================
-// Legacy Role Configuration (Deprecated)
-// ===========================================
-
-/**
- * Parse admin emails from environment variable
- *
- * @deprecated Use Backend API (fetchRoleFromBackend in auth.ts) instead.
- */
-function getAdminEmails(): string[] {
-  const adminEmailsEnv = process.env.ADMIN_EMAILS || '';
-
-  if (!adminEmailsEnv.trim()) {
-    return [];
-  }
-
-  return adminEmailsEnv
-    .split(',')
-    .map((email) => email.trim().toLowerCase())
-    .filter((email) => email.length > 0);
-}
-
-/**
- * Get user role based on email from ADMIN_EMAILS env var
- *
- * @deprecated Role is now fetched from Backend API during login.
- */
-export function getUserRole(email: string): Role {
-  if (!email) {
-    return ROLES.VIEWER;
-  }
-
-  const adminEmails = getAdminEmails();
-  const normalizedEmail = email.toLowerCase();
-
-  if (adminEmails.includes(normalizedEmail)) {
-    return ROLES.ADMIN;
-  }
-
-  return ROLES.VIEWER;
-}
-
-// ===========================================
 // Role Helper Functions
 // ===========================================
 

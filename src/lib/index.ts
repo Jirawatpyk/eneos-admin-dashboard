@@ -137,8 +137,7 @@ export {
 } from './campaign-benchmarks';
 
 // ===========================================
-// Auth Configuration (Server-side only)
-// Import directly: import { authOptions } from '@/lib/auth';
+// Auth: Supabase Auth (Story 11-1)
+// Client: import { createClient } from '@/lib/supabase/client';
+// Server: import { createClient } from '@/lib/supabase/server';
 // ===========================================
-// Note: authOptions not exported here to prevent client-side import
-// Use direct import for server components: import { authOptions } from '@/lib/auth';
