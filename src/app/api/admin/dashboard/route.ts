@@ -1,42 +1,18 @@
 /**
  * Dashboard API Proxy Route
- * Proxies requests to Backend API with Google ID token authentication
+ * Proxies requests to Backend API with Supabase auth
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    console.log('[Dashboard API] Token exists:', !!token);
-    console.log('[Dashboard API] Token keys:', token ? Object.keys(token) : 'no token');
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
-
-    // Get Google ID token from JWT
-    const idToken = token.idToken as string;
-
-    console.log('[Dashboard API] idToken exists:', !!idToken);
-
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found. Please sign out and sign in again.' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -49,21 +25,15 @@ export async function GET(request: NextRequest) {
     if (startDate) backendUrl += `&startDate=${encodeURIComponent(startDate)}`;
     if (endDate) backendUrl += `&endDate=${encodeURIComponent(endDate)}`;
 
-    console.log('[Dashboard API] Calling backend:', backendUrl);
-
     const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
-    console.log('[Dashboard API] Backend response status:', response.status);
-
     const data = await response.json();
-
-    console.log('[Dashboard API] Backend response success:', data.success);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {

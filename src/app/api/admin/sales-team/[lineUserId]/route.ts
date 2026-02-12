@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -23,32 +23,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { lineUserId } = await params;
 
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Check if user is admin
-    if (token.role !== 'admin') {
+    if (session.user.app_metadata?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } },
         { status: 403 }
-      );
-    }
-
-    const idToken = token.idToken as string;
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found.' } },
-        { status: 401 }
       );
     }
 
@@ -58,7 +41,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
@@ -84,32 +67,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { lineUserId } = await params;
 
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Check if user is admin
-    if (token.role !== 'admin') {
+    if (session.user.app_metadata?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } },
         { status: 403 }
-      );
-    }
-
-    const idToken = token.idToken as string;
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found.' } },
-        { status: 401 }
       );
     }
 
@@ -120,7 +86,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body),
     });

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -8,30 +8,11 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
  * Fetch sales owners for export filter dropdown
  * Task 5: Filter Application Logic
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Get Google ID token from JWT
-    const idToken = token.idToken as string;
-
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, message: 'Google ID token not found' },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Call backend API (sales-team endpoint - returns { data: { team: [...] } })
     const apiUrl = `${BACKEND_URL}/api/admin/sales-team`;
@@ -40,7 +21,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
@@ -49,7 +30,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: errorData.message || 'Failed to fetch sales owners',
+          error: {
+            code: 'BACKEND_ERROR',
+            message: errorData.message || 'Failed to fetch sales owners',
+          },
         },
         { status: response.status }
       );
@@ -63,7 +47,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Internal server error',
+        error: {
+          code: 'PROXY_ERROR',
+          message: error instanceof Error ? error.message : 'Internal server error',
+        },
       },
       { status: 500 }
     );

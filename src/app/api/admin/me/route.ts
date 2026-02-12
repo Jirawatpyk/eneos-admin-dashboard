@@ -2,11 +2,11 @@
  * User Info API Proxy Route
  * Fetches current user info (including role) from Backend API
  *
- * Single Source of Truth: Role comes from Backend (Google Sheets)
+ * Single Source of Truth: Role comes from Backend (Supabase)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -20,32 +20,11 @@ interface BackendMeResponse {
   error?: { code: string; message: string };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
-
-    // Get Google ID token from JWT
-    const idToken = token.idToken as string | undefined;
-
-    // Guard: Check for missing or invalid token (including literal string "undefined")
-    if (!idToken || idToken === 'undefined') {
-      console.warn('[Auth] ID token missing or invalid - user needs to re-login');
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Forward request to Backend API
     const backendUrl = `${BACKEND_URL}/api/admin/me`;
@@ -54,7 +33,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 

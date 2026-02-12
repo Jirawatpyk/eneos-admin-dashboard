@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -19,34 +19,15 @@ interface RouteParams {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Check if user is admin (AC#16: Admin-only access)
-    if (token.role !== 'admin') {
+    if (session.user.app_metadata?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } },
         { status: 403 }
-      );
-    }
-
-    // Get Google ID token from JWT
-    const idToken = token.idToken as string;
-
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found. Please sign out and sign in again.' } },
-        { status: 401 }
       );
     }
 
@@ -62,7 +43,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body),
     });

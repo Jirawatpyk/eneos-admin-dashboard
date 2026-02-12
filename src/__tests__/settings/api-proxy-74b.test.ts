@@ -8,15 +8,15 @@
  * - PATCH /api/admin/sales-team/email/[email]/link
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Mock next-auth/jwt
-const mockGetToken = vi.fn();
-vi.mock('next-auth/jwt', () => ({
-  getToken: (...args: unknown[]) => mockGetToken(...args),
+// Mock getSessionOrUnauthorized
+const mockGetSessionOrUnauthorized = vi.fn();
+vi.mock('@/lib/supabase/auth-helpers', () => ({
+  getSessionOrUnauthorized: () => mockGetSessionOrUnauthorized(),
 }));
 
-// Mock global fetch for backend proxy
+// Mock global fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
@@ -25,7 +25,37 @@ import { POST } from '@/app/api/admin/sales-team/route';
 import { GET as getUnlinkedLINEAccounts } from '@/app/api/admin/sales-team/unlinked-line-accounts/route';
 import { PATCH as linkLINEAccount } from '@/app/api/admin/sales-team/email/[email]/link/route';
 
-// Helper to create NextRequest
+// Helpers
+function mockAdminSession(token = 'admin-supabase-token') {
+  mockGetSessionOrUnauthorized.mockResolvedValue({
+    session: {
+      access_token: token,
+      user: { email: 'admin@eneos.co.th', app_metadata: { role: 'admin' } },
+    },
+    response: null,
+  });
+}
+
+function mockViewerSession() {
+  mockGetSessionOrUnauthorized.mockResolvedValue({
+    session: {
+      access_token: 'viewer-token',
+      user: { email: 'viewer@eneos.co.th', app_metadata: { role: 'viewer' } },
+    },
+    response: null,
+  });
+}
+
+function mockNoSession() {
+  mockGetSessionOrUnauthorized.mockResolvedValue({
+    session: null,
+    response: NextResponse.json(
+      { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
+      { status: 401 }
+    ),
+  });
+}
+
 function createRequest(method: string, body?: Record<string, unknown>): NextRequest {
   const url = 'http://localhost:3001/api/admin/sales-team';
   const options: { method: string; body?: string; headers?: Record<string, string> } = { method };
@@ -34,38 +64,6 @@ function createRequest(method: string, body?: Record<string, unknown>): NextRequ
     options.headers = { 'Content-Type': 'application/json' };
   }
   return new NextRequest(url, options);
-}
-
-// Helper for authenticated admin token
-function mockAdminToken() {
-  mockGetToken.mockResolvedValue({
-    email: 'admin@eneos.co.th',
-    role: 'admin',
-    idToken: 'google-id-token-123',
-  });
-}
-
-// Helper for authenticated viewer token
-function mockViewerToken() {
-  mockGetToken.mockResolvedValue({
-    email: 'viewer@eneos.co.th',
-    role: 'viewer',
-    idToken: 'google-id-token-viewer',
-  });
-}
-
-// Helper for no auth
-function mockNoToken() {
-  mockGetToken.mockResolvedValue(null);
-}
-
-// Helper for token without idToken
-function mockTokenNoIdToken() {
-  mockGetToken.mockResolvedValue({
-    email: 'admin@eneos.co.th',
-    role: 'admin',
-    idToken: undefined,
-  });
 }
 
 describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
@@ -78,7 +76,7 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
   // =========================================
   describe('POST /api/admin/sales-team (create member)', () => {
     it('should forward request to backend correctly', async () => {
-      mockAdminToken();
+      mockAdminSession();
       mockFetch.mockResolvedValue(
         new Response(JSON.stringify({ success: true, data: { name: 'Test' } }), { status: 201 })
       );
@@ -94,49 +92,34 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            Authorization: 'Bearer google-id-token-123',
+            Authorization: 'Bearer admin-supabase-token',
           }),
         })
       );
     });
 
     it('should return 401 for unauthenticated requests', async () => {
-      mockNoToken();
+      mockNoSession();
 
       const request = createRequest('POST', { name: 'Test' });
       const response = await POST(request);
 
       expect(response.status).toBe(401);
-      const data = await response.json();
-      expect(data.success).toBe(false);
-      expect(data.error.code).toBe('UNAUTHORIZED');
     });
 
     it('should return 403 for non-admin users', async () => {
-      mockViewerToken();
+      mockViewerSession();
 
       const request = createRequest('POST', { name: 'Test' });
       const response = await POST(request);
 
       expect(response.status).toBe(403);
       const data = await response.json();
-      expect(data.success).toBe(false);
       expect(data.error.code).toBe('FORBIDDEN');
     });
 
-    it('should return 401 when Google ID token missing', async () => {
-      mockTokenNoIdToken();
-
-      const request = createRequest('POST', { name: 'Test' });
-      const response = await POST(request);
-
-      expect(response.status).toBe(401);
-      const data = await response.json();
-      expect(data.error.code).toBe('NO_TOKEN');
-    });
-
     it('should return 500 on proxy error', async () => {
-      mockAdminToken();
+      mockAdminSession();
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
       const request = createRequest('POST', { name: 'Test' });
@@ -153,43 +136,34 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
   // =========================================
   describe('GET /api/admin/sales-team/unlinked-line-accounts', () => {
     it('should forward request to backend correctly', async () => {
-      mockAdminToken();
-      const backendData = { success: true, data: [{ lineUserId: 'U123', name: 'Test' }], total: 1 };
+      mockAdminSession();
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(backendData), { status: 200 })
+        new Response(JSON.stringify({ success: true, data: [{ lineUserId: 'U123', name: 'Test' }], total: 1 }), { status: 200 })
       );
 
-      const request = createRequest('GET');
-      const response = await getUnlinkedLINEAccounts(request);
+      const response = await getUnlinkedLINEAccounts();
       const data = await response.json();
 
       expect(data.success).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/unlinked-line-accounts'),
         expect.objectContaining({
-          method: 'GET',
           headers: expect.objectContaining({
-            Authorization: 'Bearer google-id-token-123',
+            Authorization: 'Bearer admin-supabase-token',
           }),
         })
       );
     });
 
     it('should return 401 for unauthenticated requests', async () => {
-      mockNoToken();
-
-      const request = createRequest('GET');
-      const response = await getUnlinkedLINEAccounts(request);
-
+      mockNoSession();
+      const response = await getUnlinkedLINEAccounts();
       expect(response.status).toBe(401);
     });
 
     it('should return 403 for non-admin users', async () => {
-      mockViewerToken();
-
-      const request = createRequest('GET');
-      const response = await getUnlinkedLINEAccounts(request);
-
+      mockViewerSession();
+      const response = await getUnlinkedLINEAccounts();
       expect(response.status).toBe(403);
     });
   });
@@ -201,10 +175,9 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
     const routeParams = { params: Promise.resolve({ email: 'test@eneos.co.th' }) };
 
     it('should forward link request to backend correctly', async () => {
-      mockAdminToken();
-      const backendData = { success: true, data: { lineUserId: 'Uabc', email: 'test@eneos.co.th' } };
+      mockAdminSession();
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(backendData), { status: 200 })
+        new Response(JSON.stringify({ success: true, data: { lineUserId: 'Uabc', email: 'test@eneos.co.th' } }), { status: 200 })
       );
 
       const body = { targetLineUserId: 'Uabc123' };
@@ -218,14 +191,14 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
         expect.objectContaining({
           method: 'PATCH',
           headers: expect.objectContaining({
-            Authorization: 'Bearer google-id-token-123',
+            Authorization: 'Bearer admin-supabase-token',
           }),
         })
       );
     });
 
     it('should return 401 for unauthenticated requests', async () => {
-      mockNoToken();
+      mockNoSession();
 
       const request = createRequest('PATCH', { targetLineUserId: 'U123' });
       const response = await linkLINEAccount(request, routeParams);
@@ -234,7 +207,7 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
     });
 
     it('should return 403 for non-admin users', async () => {
-      mockViewerToken();
+      mockViewerSession();
 
       const request = createRequest('PATCH', { targetLineUserId: 'U123' });
       const response = await linkLINEAccount(request, routeParams);
@@ -242,27 +215,8 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
       expect(response.status).toBe(403);
     });
 
-    it('should pass Google ID token in Authorization header', async () => {
-      mockAdminToken();
-      mockFetch.mockResolvedValue(
-        new Response(JSON.stringify({ success: true }), { status: 200 })
-      );
-
-      const request = createRequest('PATCH', { targetLineUserId: 'U123' });
-      await linkLINEAccount(request, routeParams);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer google-id-token-123',
-          }),
-        })
-      );
-    });
-
     it('should return proper error response on failure', async () => {
-      mockAdminToken();
+      mockAdminSession();
       mockFetch.mockRejectedValue(new Error('Connection refused'));
 
       const request = createRequest('PATCH', { targetLineUserId: 'U123' });
@@ -271,7 +225,6 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
       expect(response.status).toBe(500);
       const data = await response.json();
       expect(data.error.code).toBe('PROXY_ERROR');
-      expect(data.error.message).toBe('Connection refused');
     });
   });
 });

@@ -2,12 +2,12 @@
  * Sales Performance API Proxy Route
  * Story 3.1: Sales Team Performance Table
  *
- * Proxies requests to Backend API with Google ID token authentication
+ * Proxies requests to Backend API with Supabase auth
  * Transforms backend response to match frontend expected format
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { getSessionOrUnauthorized } from '@/lib/supabase/auth-helpers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -51,28 +51,9 @@ interface BackendResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get JWT token from NextAuth session
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (!token) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } },
-        { status: 401 }
-      );
-    }
-
-    // Get Google ID token from JWT
-    const idToken = token.idToken as string;
-
-    if (!idToken) {
-      return NextResponse.json(
-        { success: false, error: { code: 'NO_TOKEN', message: 'Google ID token not found. Please sign out and sign in again.' } },
-        { status: 401 }
-      );
-    }
+    // Get Supabase session
+    const { session, response: authResponse } = await getSessionOrUnauthorized();
+    if (!session) return authResponse;
 
     // Forward request to Backend API with query params
     const searchParams = request.nextUrl.searchParams.toString();
@@ -82,7 +63,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
