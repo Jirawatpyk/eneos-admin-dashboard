@@ -16,6 +16,8 @@ import type {
   LinkLINEAccountInput,
   UnlinkedDashboardMember,
   ReverseLinkInput,
+  InviteTeamMemberInput,
+  InviteTeamMemberResponse,
 } from '@/types/team';
 
 // ===========================================
@@ -136,6 +138,28 @@ async function fetchUnlinkedDashboardMembers(): Promise<UnlinkedDashboardMember[
   return data.data || [];
 }
 
+/**
+ * Invite a new team member via Supabase Auth (Story 13-1)
+ * POST /api/admin/sales-team/invite
+ */
+async function inviteTeamMember(
+  input: InviteTeamMemberInput
+): Promise<InviteTeamMemberResponse> {
+  const response = await fetch('/api/admin/sales-team/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || data.error || 'Failed to invite team member');
+  }
+
+  return data;
+}
+
 // ===========================================
 // Custom Hooks
 // ===========================================
@@ -197,6 +221,21 @@ export function useCreateTeamMember() {
     mutationFn: (input: CreateTeamMemberInput) => createTeamMember(input),
     onSuccess: () => {
       // Invalidate team list to refresh data
+      queryClient.invalidateQueries({ queryKey: ['team-management', 'list'] });
+    },
+  });
+}
+
+/**
+ * Hook for inviting new team member (Story 13-1)
+ * Automatically invalidates team list on success
+ */
+export function useInviteTeamMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: InviteTeamMemberInput) => inviteTeamMember(input),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-management', 'list'] });
     },
   });

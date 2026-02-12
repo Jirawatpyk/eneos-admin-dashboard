@@ -1,11 +1,11 @@
 /**
- * AddMemberModal Component Tests (Story 7-4b Task 15.1)
- * AC#1, AC#2: Form with Name, Email, Phone, Role fields
- * AC#3: Email domain validation (@eneos.co.th)
- * AC#4: Name validation (min 2 chars)
- * AC#5: Phone format validation (Thai format, optional)
- * AC#6: Duplicate email error handling
- * AC#7: Success handling
+ * AddMemberModal (Invite User) Component Tests (Story 13-1)
+ * AC-4: Invite User form with Name, Email, Role fields
+ * - No phone field (can be added later via edit)
+ * - No @eneos.co.th restriction — admin invite-only is the security gate
+ * - Role: admin | viewer (default: viewer)
+ * - Success differentiates authInviteSent true/false
+ * - Duplicate email error handling
  */
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -16,7 +16,7 @@ const mockMutateAsync = vi.fn();
 const mockToast = vi.fn();
 
 vi.mock('@/hooks/use-team-management', () => ({
-  useCreateTeamMember: vi.fn(() => ({
+  useInviteTeamMember: vi.fn(() => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   })),
@@ -30,23 +30,29 @@ vi.mock('@/hooks/use-toast', () => ({
 
 import { AddMemberModal } from '@/components/settings/add-member-modal';
 
-describe('AddMemberModal (Task 15.1)', () => {
+describe('AddMemberModal — Invite User (Story 13-1)', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  // AC#2: Renders form fields correctly
-  it('should render all form fields when open (AC#2)', () => {
+  // --- Rendering ---
+
+  it('should render Name, Email, Role fields when open', () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
 
     expect(screen.getByTestId('name-input')).toBeInTheDocument();
     expect(screen.getByTestId('email-input')).toBeInTheDocument();
-    expect(screen.getByTestId('phone-input')).toBeInTheDocument();
     expect(screen.getByTestId('role-select')).toBeInTheDocument();
     expect(screen.getByTestId('submit-button')).toBeInTheDocument();
     expect(screen.getByTestId('cancel-button')).toBeInTheDocument();
+  });
+
+  it('should NOT render a phone field', () => {
+    render(<AddMemberModal open={true} onClose={mockOnClose} />);
+
+    expect(screen.queryByTestId('phone-input')).not.toBeInTheDocument();
   });
 
   it('should not render when closed', () => {
@@ -55,27 +61,21 @@ describe('AddMemberModal (Task 15.1)', () => {
     expect(screen.queryByTestId('add-member-modal')).not.toBeInTheDocument();
   });
 
-  // AC#3: Email domain validation
-  it('should show error for non-eneos email domain (AC#3)', async () => {
+  it('should show "Invite User" title', () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
-    const user = userEvent.setup();
 
-    await user.type(screen.getByTestId('email-input'), 'test@gmail.com');
-
-    expect(screen.getByTestId('email-error')).toHaveTextContent('@eneos.co.th');
+    expect(screen.getByText('Invite User')).toBeInTheDocument();
   });
 
-  it('should not show error for valid eneos email (AC#3)', async () => {
+  it('should show "Send Invitation" button text', () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
-    const user = userEvent.setup();
 
-    await user.type(screen.getByTestId('email-input'), 'test@eneos.co.th');
-
-    expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
+    expect(screen.getByTestId('submit-button')).toHaveTextContent('Send Invitation');
   });
 
-  // AC#4: Name validation
-  it('should show error for name too short (AC#4)', async () => {
+  // --- Validation ---
+
+  it('should show error for name too short', async () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();
 
@@ -84,83 +84,140 @@ describe('AddMemberModal (Task 15.1)', () => {
     expect(screen.getByTestId('name-error')).toHaveTextContent('minimum 2');
   });
 
-  // AC#5: Phone format validation
-  it('should show error for invalid phone format (AC#5)', async () => {
+  it('should show error for invalid email format', async () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();
 
-    await user.type(screen.getByTestId('phone-input'), '123');
+    await user.type(screen.getByTestId('email-input'), 'not-an-email');
 
-    expect(screen.getByTestId('phone-error')).toHaveTextContent('Thai phone');
+    expect(screen.getByTestId('email-error')).toHaveTextContent('Invalid email');
   });
 
-  it('should not show error for empty phone (optional) (AC#5)', async () => {
-    render(<AddMemberModal open={true} onClose={mockOnClose} />);
-
-    expect(screen.queryByTestId('phone-error')).not.toBeInTheDocument();
-  });
-
-  it('should accept valid Thai phone format (AC#5)', async () => {
+  it('should accept any email domain (no @eneos.co.th restriction)', async () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();
 
-    await user.type(screen.getByTestId('phone-input'), '0812345678');
+    await user.type(screen.getByTestId('email-input'), 'user@gmail.com');
 
-    expect(screen.queryByTestId('phone-error')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
   });
 
-  // AC#7: Submit with valid data
-  it('should submit with valid data and show success toast (AC#7)', async () => {
-    mockMutateAsync.mockResolvedValue({ success: true });
+  it('should accept @eneos.co.th email', async () => {
+    render(<AddMemberModal open={true} onClose={mockOnClose} />);
+    const user = userEvent.setup();
+
+    await user.type(screen.getByTestId('email-input'), 'test@eneos.co.th');
+
+    expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
+  });
+
+  // --- Submit ---
+
+  it('should submit invite with default viewer role and show invitation sent toast', async () => {
+    mockMutateAsync.mockResolvedValue({
+      success: true,
+      data: {
+        member: { name: 'Test User', email: 'test@example.com', role: 'viewer' },
+        authInviteSent: true,
+      },
+    });
 
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();
 
     await user.type(screen.getByTestId('name-input'), 'Test User');
-    await user.type(screen.getByTestId('email-input'), 'test@eneos.co.th');
+    await user.type(screen.getByTestId('email-input'), 'test@example.com');
 
     await user.click(screen.getByTestId('submit-button'));
 
     await waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith({
         name: 'Test User',
-        email: 'test@eneos.co.th',
-        phone: undefined,
-        role: 'sales',
+        email: 'test@example.com',
+        role: 'viewer',
       });
     });
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Member added successfully',
+        title: 'Invitation sent',
       })
     );
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  // AC#6: Duplicate email error
-  it('should show error toast on duplicate email (AC#6)', async () => {
-    mockMutateAsync.mockRejectedValue(new Error('Email already exists'));
+  it('should show "User created" toast when authInviteSent is false', async () => {
+    mockMutateAsync.mockResolvedValue({
+      success: true,
+      data: {
+        member: { name: 'Test User', email: 'test@example.com', role: 'viewer' },
+        authInviteSent: false,
+      },
+    });
 
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();
 
     await user.type(screen.getByTestId('name-input'), 'Test User');
-    await user.type(screen.getByTestId('email-input'), 'dup@eneos.co.th');
+    await user.type(screen.getByTestId('email-input'), 'test@example.com');
 
     await user.click(screen.getByTestId('submit-button'));
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Email already exists',
+          title: 'User created',
+        })
+      );
+    });
+  });
+
+  // --- Duplicate email ---
+
+  it('should show "User already exists" toast on duplicate email', async () => {
+    mockMutateAsync.mockRejectedValue(new Error('User already exists'));
+
+    render(<AddMemberModal open={true} onClose={mockOnClose} />);
+    const user = userEvent.setup();
+
+    await user.type(screen.getByTestId('name-input'), 'Dup User');
+    await user.type(screen.getByTestId('email-input'), 'dup@example.com');
+
+    await user.click(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'User already exists',
           variant: 'destructive',
         })
       );
     });
   });
 
-  // Cancel action
+  it('should show generic error toast on unexpected error', async () => {
+    mockMutateAsync.mockRejectedValue(new Error('Network error'));
+
+    render(<AddMemberModal open={true} onClose={mockOnClose} />);
+    const user = userEvent.setup();
+
+    await user.type(screen.getByTestId('name-input'), 'Fail User');
+    await user.type(screen.getByTestId('email-input'), 'fail@example.com');
+
+    await user.click(screen.getByTestId('submit-button'));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Failed to invite user',
+          variant: 'destructive',
+        })
+      );
+    });
+  });
+
+  // --- Cancel ---
+
   it('should call onClose when cancel is clicked', async () => {
     render(<AddMemberModal open={true} onClose={mockOnClose} />);
     const user = userEvent.setup();

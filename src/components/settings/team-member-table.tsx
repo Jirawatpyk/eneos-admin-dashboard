@@ -49,19 +49,23 @@ function formatDate(dateString: string): string {
 
 /**
  * Role badge with color coding
+ * Story 13-1: Display 'viewer' (legacy 'sales' mapped to viewer)
  */
-function RoleBadge({ role }: { role: 'admin' | 'sales' }) {
+function RoleBadge({ role }: { role: 'admin' | 'sales' | 'viewer' }) {
+  const isAdmin = role === 'admin';
+  // Normalize display: legacy 'sales' → 'Viewer'
+  const displayRole = isAdmin ? 'Admin' : 'Viewer';
   return (
     <Badge
-      variant={role === 'admin' ? 'default' : 'secondary'}
+      variant={isAdmin ? 'default' : 'secondary'}
       className={
-        role === 'admin'
+        isAdmin
           ? 'bg-purple-100 text-purple-800 hover:bg-purple-100'
           : 'bg-blue-100 text-blue-800 hover:bg-blue-100'
       }
       data-testid={`role-badge-${role}`}
     >
-      {role === 'admin' ? 'Admin' : 'Sales'}
+      {displayRole}
     </Badge>
   );
 }

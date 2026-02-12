@@ -142,7 +142,7 @@ export function TeamManagementCard({ isAdmin = true }: TeamManagementCardProps) 
                 className="ml-auto"
               >
                 <UserPlus className="mr-2 h-4 w-4" />
-                Add New Member
+                Invite User
               </Button>
             )}
           </div>

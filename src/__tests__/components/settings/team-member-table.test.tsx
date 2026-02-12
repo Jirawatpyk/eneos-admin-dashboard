@@ -23,10 +23,10 @@ const mockMembers: TeamMember[] = [
   },
   {
     lineUserId: 'U789012abcdef34567890abcdef456789',
-    name: 'Jane Sales',
+    name: 'Jane Viewer',
     email: 'jane@eneos.co.th',
     phone: '0898765432',
-    role: 'sales',
+    role: 'viewer',
     createdAt: '2024-02-20T14:30:00Z',
     status: 'active',
   },
@@ -35,7 +35,7 @@ const mockMembers: TeamMember[] = [
     name: 'Bob Inactive',
     email: null,
     phone: null,
-    role: 'sales',
+    role: 'viewer',
     createdAt: '2023-12-01T08:00:00Z',
     status: 'inactive',
   },
@@ -78,7 +78,7 @@ describe('TeamMemberTable Component', () => {
       );
 
       expect(screen.getByText('John Admin')).toBeInTheDocument();
-      expect(screen.getByText('Jane Sales')).toBeInTheDocument();
+      expect(screen.getByText('Jane Viewer')).toBeInTheDocument();
       expect(screen.getByText('Bob Inactive')).toBeInTheDocument();
     });
 
@@ -110,7 +110,7 @@ describe('TeamMemberTable Component', () => {
       expect(bobRow).toHaveTextContent('-');
     });
 
-    it('should render role badges correctly', () => {
+    it('should render role badges correctly (admin + viewer)', () => {
       render(
         <TeamMemberTable
           members={mockMembers}
@@ -119,9 +119,37 @@ describe('TeamMemberTable Component', () => {
         />
       );
 
-      // Should have Admin and Sales badges
+      // Should have Admin and Viewer badges
       expect(screen.getByTestId('role-badge-admin')).toBeInTheDocument();
-      expect(screen.getAllByTestId('role-badge-sales')).toHaveLength(2);
+      expect(screen.getAllByTestId('role-badge-viewer')).toHaveLength(2);
+      // Display text should be "Viewer" not "Sales"
+      expect(screen.getByTestId('role-badge-admin')).toHaveTextContent('Admin');
+      expect(screen.getAllByTestId('role-badge-viewer')[0]).toHaveTextContent('Viewer');
+    });
+
+    it('should map legacy "sales" role to display "Viewer"', () => {
+      const legacyMembers: TeamMember[] = [
+        {
+          lineUserId: 'Ulegacy12345678901234567890123456',
+          name: 'Legacy Sales',
+          email: null,
+          phone: null,
+          role: 'sales',
+          createdAt: '2024-01-01T00:00:00Z',
+          status: 'active',
+        },
+      ];
+
+      render(
+        <TeamMemberTable
+          members={legacyMembers}
+          isLoading={false}
+          onEdit={mockOnEdit}
+        />
+      );
+
+      // data-testid uses raw role value, but display text is "Viewer"
+      expect(screen.getByTestId('role-badge-sales')).toHaveTextContent('Viewer');
     });
 
     it('should render status badges correctly', () => {

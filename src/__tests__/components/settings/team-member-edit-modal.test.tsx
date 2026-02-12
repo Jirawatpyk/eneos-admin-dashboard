@@ -185,8 +185,8 @@ describe('TeamMemberEditModal Component', () => {
     });
   });
 
-  describe('AC#8: Email domain validation', () => {
-    it('should show error for non-eneos email', () => {
+  describe('AC#8: Email validation (Story 13-1: any domain accepted)', () => {
+    it('should accept any email domain (no @eneos.co.th restriction)', () => {
       render(
         <TeamMemberEditModal
           member={mockMember}
@@ -198,10 +198,10 @@ describe('TeamMemberEditModal Component', () => {
       const emailInput = screen.getByTestId('input-email');
       fireEvent.change(emailInput, { target: { value: 'test@gmail.com' } });
 
-      expect(screen.getByTestId('email-error')).toHaveTextContent('@eneos.co.th');
+      expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
     });
 
-    it('should not show error for valid eneos email', () => {
+    it('should show error for invalid email format', () => {
       render(
         <TeamMemberEditModal
           member={mockMember}
@@ -211,9 +211,9 @@ describe('TeamMemberEditModal Component', () => {
       );
 
       const emailInput = screen.getByTestId('input-email');
-      fireEvent.change(emailInput, { target: { value: 'valid@eneos.co.th' } });
+      fireEvent.change(emailInput, { target: { value: 'not-an-email' } });
 
-      expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('email-error')).toHaveTextContent('Invalid email');
     });
 
     it('should not show error for empty email', () => {
@@ -231,7 +231,7 @@ describe('TeamMemberEditModal Component', () => {
       expect(screen.queryByTestId('email-error')).not.toBeInTheDocument();
     });
 
-    it('should disable save button when email is invalid', () => {
+    it('should disable save button when email format is invalid', () => {
       render(
         <TeamMemberEditModal
           member={mockMember}
@@ -241,7 +241,7 @@ describe('TeamMemberEditModal Component', () => {
       );
 
       const emailInput = screen.getByTestId('input-email');
-      fireEvent.change(emailInput, { target: { value: 'invalid@other.com' } });
+      fireEvent.change(emailInput, { target: { value: 'bad-format' } });
 
       const saveBtn = screen.getByTestId('save-btn');
       expect(saveBtn).toBeDisabled();
@@ -525,31 +525,25 @@ describe('TeamMemberEditModal Component', () => {
   });
 
   describe('AC#9: Role change confirmation dialog', () => {
-    const salesMember: TeamMember = {
+    const viewerMember: TeamMember = {
       ...mockMember,
-      role: 'sales',
+      role: 'viewer',
     };
 
-    it('should show confirmation dialog when changing role from sales to admin', async () => {
+    it('should not show confirmation dialog initially for viewer member', async () => {
       render(
         <TeamMemberEditModal
-          member={salesMember}
+          member={viewerMember}
           open={true}
           onClose={mockOnClose}
         />
       );
 
-      // Change role to admin (this is mocked, so we trigger by changing phone to have a diff)
-      const phoneInput = screen.getByTestId('input-phone');
-      fireEvent.change(phoneInput, { target: { value: '0991234567' } });
-
-      // We need to actually change the role - since Select is mocked, let's simulate direct save
-      // The test proves the dialog exists
-      // First verify the dialog is not shown initially
+      // Verify the dialog is not shown initially
       expect(screen.queryByTestId('role-confirm-dialog')).not.toBeInTheDocument();
     });
 
-    it('should not show confirmation dialog when changing role from admin to sales', async () => {
+    it('should not show confirmation dialog when changing role from admin to viewer', async () => {
       render(
         <TeamMemberEditModal
           member={mockMember}
@@ -558,7 +552,7 @@ describe('TeamMemberEditModal Component', () => {
         />
       );
 
-      // Admin member doesn't need confirmation to become sales
+      // Admin member doesn't need confirmation to become viewer
       const phoneInput = screen.getByTestId('input-phone');
       fireEvent.change(phoneInput, { target: { value: '0991234567' } });
 

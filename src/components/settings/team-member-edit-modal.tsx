@@ -49,15 +49,10 @@ interface TeamMemberEditModalProps {
 }
 
 /**
- * Validate email domain
- * AC#8: Email must be @eneos.co.th or empty
+ * Validate email format (any domain accepted per Story 13-1)
  */
 function validateEmail(email: string): string | null {
   if (!email) return null; // Empty is valid (clear email)
-  if (!email.endsWith('@eneos.co.th')) {
-    return 'Email must be @eneos.co.th domain';
-  }
-  // Basic email format validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return 'Invalid email format';
@@ -90,7 +85,7 @@ export function TeamMemberEditModal({
   // Form state
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState<'admin' | 'sales'>('sales');
+  const [role, setRole] = useState<'admin' | 'viewer'>('viewer');
   const [status, setStatus] = useState<'active' | 'inactive'>('active');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -104,7 +99,8 @@ export function TeamMemberEditModal({
     if (member) {
       setEmail(member.email || '');
       setPhone(member.phone || '');
-      setRole(member.role);
+      // Map legacy 'sales' → 'viewer' (AC-5)
+      setRole(member.role === 'admin' ? 'admin' : 'viewer');
       setStatus(member.status);
       setEmailError(null);
       setPhoneError(null);
@@ -197,8 +193,8 @@ export function TeamMemberEditModal({
       return;
     }
 
-    // AC#9: Show confirmation dialog when changing role from sales to admin
-    if (updates.role === 'admin' && member.role === 'sales') {
+    // AC#9: Show confirmation dialog when changing role to admin
+    if (updates.role === 'admin' && member.role !== 'admin') {
       setPendingUpdates(updates);
       setShowRoleConfirm(true);
       return;
@@ -303,13 +299,13 @@ export function TeamMemberEditModal({
             {/* AC#6: Role (Editable) */}
             <div className="grid gap-2">
               <Label htmlFor="role">Role</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as 'admin' | 'sales')}>
+              <Select value={role} onValueChange={(v) => setRole(v as 'admin' | 'viewer')}>
                 <SelectTrigger id="role" data-testid="select-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
+                  <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>

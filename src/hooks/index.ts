@@ -31,6 +31,9 @@ export {
   useReverseLinkAccount,
 } from './use-team-management';
 
+// Story 13-1: Admin Invite
+export { useInviteTeamMember } from './use-team-management';
+
 // Story 7.5: System Health
 export { useSystemHealth, formatUptime } from './use-system-health';
 export type { SystemHealthData, UseSystemHealthReturn } from './use-system-health';

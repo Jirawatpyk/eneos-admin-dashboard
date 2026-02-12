@@ -12,7 +12,7 @@ export interface TeamMember {
   name: string;
   email: string | null;
   phone: string | null;
-  role: 'admin' | 'sales';
+  role: 'admin' | 'sales' | 'viewer';
   createdAt: string;
   status: 'active' | 'inactive';
 }
@@ -22,7 +22,7 @@ export interface TeamMember {
  */
 export interface TeamFilter {
   status: 'active' | 'inactive' | 'all';
-  role: 'admin' | 'sales' | 'all';
+  role: 'admin' | 'sales' | 'viewer' | 'all';
 }
 
 /**
@@ -31,7 +31,7 @@ export interface TeamFilter {
 export interface TeamMemberUpdate {
   email?: string | null;
   phone?: string | null;
-  role?: 'admin' | 'sales';
+  role?: 'admin' | 'viewer';
   status?: 'active' | 'inactive';
 }
 
@@ -43,6 +43,27 @@ export interface CreateTeamMemberInput {
   email: string;
   phone?: string;
   role: 'admin' | 'sales';
+}
+
+/**
+ * Invite payload for new user (Story 13-1)
+ */
+export interface InviteTeamMemberInput {
+  email: string;
+  name: string;
+  role: 'admin' | 'viewer';
+}
+
+/**
+ * API Response for invite
+ */
+export interface InviteTeamMemberResponse {
+  success: boolean;
+  data: {
+    member: TeamMember;
+    authInviteSent: boolean;
+  };
+  error?: { code: string; message: string };
 }
 
 /**
@@ -91,7 +112,7 @@ export interface UnlinkedDashboardMember {
   lineUserId: null;
   name: string;
   email: string;
-  role: 'admin' | 'sales';
+  role: 'admin' | 'sales' | 'viewer';
   createdAt: string;
   status: 'active' | 'inactive';
 }
