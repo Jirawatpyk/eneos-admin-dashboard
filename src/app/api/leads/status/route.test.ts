@@ -32,7 +32,7 @@ function mockViewerSession() {
   mockGetSessionOrUnauthorized.mockResolvedValue({
     session: {
       access_token: 'viewer-token',
-      user: { app_metadata: { role: 'sales' } },
+      user: { app_metadata: { role: 'viewer' } },
     },
     response: null,
   });

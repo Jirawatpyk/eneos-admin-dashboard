@@ -49,11 +49,9 @@ function formatDate(dateString: string): string {
 
 /**
  * Role badge with color coding
- * Story 13-1: Display 'viewer' (legacy 'sales' mapped to viewer)
  */
-function RoleBadge({ role }: { role: 'admin' | 'sales' | 'viewer' }) {
+function RoleBadge({ role }: { role: 'admin' | 'viewer' }) {
   const isAdmin = role === 'admin';
-  // Normalize display: legacy 'sales' → 'Viewer'
   const displayRole = isAdmin ? 'Admin' : 'Viewer';
   return (
     <Badge

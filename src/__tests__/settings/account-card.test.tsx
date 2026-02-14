@@ -148,7 +148,7 @@ describe('AccountCard', () => {
       expect(screen.getByText('Account')).toBeInTheDocument();
     });
 
-    it('returns null when no user', () => {
+    it('renders skeleton when no user (prevents layout shift)', () => {
       vi.mocked(useAuth).mockReturnValue({
         user: null,
         role: 'viewer',
@@ -156,8 +156,8 @@ describe('AccountCard', () => {
         isAuthenticated: false,
       });
 
-      const { container } = render(<AccountCard />);
-      expect(container).toBeEmptyDOMElement();
+      render(<AccountCard />);
+      expect(screen.getByTestId('account-card-skeleton')).toBeInTheDocument();
     });
 
     it('handles single name initials', () => {

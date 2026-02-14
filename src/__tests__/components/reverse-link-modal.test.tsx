@@ -38,7 +38,7 @@ describe('ReverseLinkModal', () => {
     vi.clearAllMocks();
     mockUseUnlinkedDashboardMembers.mockReturnValue({
       data: [
-        { email: 'alice@co.th', name: 'Alice', role: 'sales' },
+        { email: 'alice@co.th', name: 'Alice', role: 'viewer' },
         { email: 'bob@co.th', name: 'Bob', role: 'admin' },
       ],
       isLoading: false,

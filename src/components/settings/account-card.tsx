@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Shield, Eye, LogOut, Loader2 } from 'lucide-react';
 import { ROLES, type Role } from '@/config/roles';
+import { AccountCardSkeleton } from './account-card-skeleton';
 
 function getInitials(name?: string | null): string {
   if (!name) return '?';
@@ -54,7 +55,7 @@ export function AccountCard() {
     }
   }, [supabase, router]);
 
-  if (!user) return null;
+  if (!user) return <AccountCardSkeleton />;
 
   const name = user.user_metadata?.name || user.email;
   const email = user.email;

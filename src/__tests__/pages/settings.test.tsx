@@ -132,7 +132,7 @@ describe('Settings Page', () => {
 
     it('should NOT show team management link for sales role', () => {
       mockUseAuth.mockReturnValue({
-        role: 'sales', isLoading: false, isAuthenticated: true, user: null,
+        role: 'viewer', isLoading: false, isAuthenticated: true, user: null,
       });
 
       render(<SettingsPage />);

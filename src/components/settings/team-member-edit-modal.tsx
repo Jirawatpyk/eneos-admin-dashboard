@@ -99,7 +99,7 @@ export function TeamMemberEditModal({
     if (member) {
       setEmail(member.email || '');
       setPhone(member.phone || '');
-      // Map legacy 'sales' → 'viewer' (AC-5)
+      // Defensive: ensure role is always 'admin' or 'viewer'
       setRole(member.role === 'admin' ? 'admin' : 'viewer');
       setStatus(member.status);
       setEmailError(null);

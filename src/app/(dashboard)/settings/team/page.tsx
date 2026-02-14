@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { isAdmin } from '@/config/roles';
 
 export default function TeamManagementPage() {
-  const { role, isLoading } = useAuth();
+  const { role, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -26,8 +26,9 @@ export default function TeamManagementPage() {
   const hasAccess = role && isAdmin(role);
 
   // AC#10: Redirect non-admin users to dashboard with toast
+  // Skip toast when user is signing out (isAuthenticated = false) to avoid flash error
   useEffect(() => {
-    if (!isLoading && !hasAccess) {
+    if (!isLoading && isAuthenticated && !hasAccess) {
       toast({
         title: 'Admin access required',
         description: 'Only administrators can access Team Management.',
@@ -35,7 +36,7 @@ export default function TeamManagementPage() {
       });
       router.replace('/');
     }
-  }, [isLoading, hasAccess, router, toast]);
+  }, [isLoading, isAuthenticated, hasAccess, router, toast]);
 
   // Loading state
   if (isLoading) {

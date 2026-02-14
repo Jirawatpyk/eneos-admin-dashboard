@@ -179,17 +179,17 @@ describe('Team Management Page', () => {
     });
   });
 
-  describe('Unauthenticated state', () => {
-    it('should redirect unauthenticated users to dashboard', async () => {
+  describe('Unauthenticated state (sign-out)', () => {
+    it('should not show toast when user is signing out', () => {
       mockUseAuth.mockReturnValue({
         role: 'viewer', isLoading: false, isAuthenticated: false, user: null,
       });
 
       render(<TeamManagementPage />, { wrapper: createWrapper() });
 
-      await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/');
-      });
+      // No toast — SupabaseAuthListener handles redirect to /login
+      expect(mockToast).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
     });
   });
 });

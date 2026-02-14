@@ -2,7 +2,7 @@
  * TeamMemberFilter Component Tests
  * Story 7.4: Admin User Management
  * AC#2: Filter by status (active/inactive)
- * AC#3: Filter by role (admin/sales)
+ * AC#3: Filter by role (admin/viewer)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -129,16 +129,16 @@ describe('TeamMemberFilter Component', () => {
       expect(trigger).toHaveTextContent('Admin');
     });
 
-    it('should show Sales text when role is sales', () => {
+    it('should show Viewer text when role is viewer', () => {
       render(
         <TeamMemberFilter
-          filter={{ status: 'active', role: 'sales' }}
+          filter={{ status: 'active', role: 'viewer' }}
           onFilterChange={mockOnFilterChange}
         />
       );
 
       const trigger = screen.getByTestId('role-filter');
-      expect(trigger).toHaveTextContent('Sales');
+      expect(trigger).toHaveTextContent('Viewer');
     });
   });
 

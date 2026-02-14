@@ -116,7 +116,7 @@ describe('useTeamMember', () => {
       ok: true,
       json: () => Promise.resolve({
         success: true,
-        data: { lineUserId: 'U001', name: 'Rep 1', role: 'sales' },
+        data: { lineUserId: 'U001', name: 'Rep 1', role: 'viewer' },
       }),
     });
 

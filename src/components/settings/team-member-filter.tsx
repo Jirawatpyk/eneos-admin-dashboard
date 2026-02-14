@@ -1,7 +1,7 @@
 /**
  * Team Member Filter Component (Story 7-4)
  * AC#2: Status Filter - Filter by active/inactive
- * AC#3: Role Filter - Filter by admin/sales
+ * AC#3: Role Filter - Filter by admin/viewer
  */
 'use client';
 
@@ -75,7 +75,7 @@ export function TeamMemberFilter({
         <SelectContent>
           <SelectItem value="all">All Roles</SelectItem>
           <SelectItem value="admin">Admin</SelectItem>
-          <SelectItem value="sales">Sales</SelectItem>
+          <SelectItem value="viewer">Viewer</SelectItem>
         </SelectContent>
       </Select>
 

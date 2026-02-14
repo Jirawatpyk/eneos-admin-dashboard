@@ -17,7 +17,7 @@ const mockMember: TeamMember = {
   name: 'Test User',
   email: 'test@eneos.co.th',
   phone: '0812345678',
-  role: 'sales',
+  role: 'viewer',
   createdAt: '2026-01-20T10:00:00Z',
   status: 'active',
 };

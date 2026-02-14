@@ -127,31 +127,6 @@ describe('TeamMemberTable Component', () => {
       expect(screen.getAllByTestId('role-badge-viewer')[0]).toHaveTextContent('Viewer');
     });
 
-    it('should map legacy "sales" role to display "Viewer"', () => {
-      const legacyMembers: TeamMember[] = [
-        {
-          lineUserId: 'Ulegacy12345678901234567890123456',
-          name: 'Legacy Sales',
-          email: null,
-          phone: null,
-          role: 'sales',
-          createdAt: '2024-01-01T00:00:00Z',
-          status: 'active',
-        },
-      ];
-
-      render(
-        <TeamMemberTable
-          members={legacyMembers}
-          isLoading={false}
-          onEdit={mockOnEdit}
-        />
-      );
-
-      // data-testid uses raw role value, but display text is "Viewer"
-      expect(screen.getByTestId('role-badge-sales')).toHaveTextContent('Viewer');
-    });
-
     it('should render status badges correctly', () => {
       render(
         <TeamMemberTable
@@ -200,7 +175,7 @@ describe('TeamMemberTable Component', () => {
           name: 'Test User',
           email: null,
           phone: null,
-          role: 'sales',
+          role: 'viewer',
           createdAt: '',
           status: 'active',
         },

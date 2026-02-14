@@ -81,7 +81,7 @@ describe('API Route Proxies - Story 7-4b (Task 15.5)', () => {
         new Response(JSON.stringify({ success: true, data: { name: 'Test' } }), { status: 201 })
       );
 
-      const body = { name: 'Test User', email: 'test@eneos.co.th', role: 'sales' };
+      const body = { name: 'Test User', email: 'test@eneos.co.th', role: 'viewer' };
       const request = createRequest('POST', body);
       const response = await POST(request);
       const data = await response.json();

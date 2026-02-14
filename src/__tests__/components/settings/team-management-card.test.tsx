@@ -25,10 +25,10 @@ const mockMembers: TeamMember[] = [
   },
   {
     lineUserId: 'U789012',
-    name: 'Jane Sales',
+    name: 'Jane Viewer',
     email: 'jane@eneos.co.th',
     phone: '0898765432',
-    role: 'sales',
+    role: 'viewer',
     createdAt: '2024-02-20T14:30:00Z',
     status: 'active',
   },
@@ -140,7 +140,7 @@ describe('TeamManagementCard Component', () => {
 
       // Should render member names
       expect(screen.getByText('John Admin')).toBeInTheDocument();
-      expect(screen.getByText('Jane Sales')).toBeInTheDocument();
+      expect(screen.getByText('Jane Viewer')).toBeInTheDocument();
     });
   });
 

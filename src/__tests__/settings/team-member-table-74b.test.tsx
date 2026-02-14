@@ -24,7 +24,7 @@ const mockLinkedMember: TeamMember = {
   name: 'Linked User',
   email: 'linked@eneos.co.th',
   phone: '0812345678',
-  role: 'sales',
+  role: 'viewer',
   createdAt: '2026-01-20T10:00:00Z',
   status: 'active',
 };
@@ -34,7 +34,7 @@ const mockUnlinkedMember: TeamMember = {
   name: 'Unlinked User',
   email: 'unlinked@eneos.co.th',
   phone: null,
-  role: 'sales',
+  role: 'viewer',
   createdAt: '2026-01-21T10:00:00Z',
   status: 'active',
 };

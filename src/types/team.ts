@@ -12,7 +12,7 @@ export interface TeamMember {
   name: string;
   email: string | null;
   phone: string | null;
-  role: 'admin' | 'sales' | 'viewer';
+  role: 'admin' | 'viewer';
   createdAt: string;
   status: 'active' | 'inactive';
 }
@@ -22,7 +22,7 @@ export interface TeamMember {
  */
 export interface TeamFilter {
   status: 'active' | 'inactive' | 'all';
-  role: 'admin' | 'sales' | 'viewer' | 'all';
+  role: 'admin' | 'viewer' | 'all';
 }
 
 /**
@@ -42,7 +42,7 @@ export interface CreateTeamMemberInput {
   name: string;
   email: string;
   phone?: string;
-  role: 'admin' | 'sales';
+  role: 'admin' | 'viewer';
 }
 
 /**
@@ -112,7 +112,7 @@ export interface UnlinkedDashboardMember {
   lineUserId: null;
   name: string;
   email: string;
-  role: 'admin' | 'sales' | 'viewer';
+  role: 'admin' | 'viewer';
   createdAt: string;
   status: 'active' | 'inactive';
 }
