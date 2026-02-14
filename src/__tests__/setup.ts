@@ -65,6 +65,22 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock next/dynamic - resolves dynamic imports eagerly for testing
+// next/dynamic uses React.lazy internally which doesn't resolve properly in jsdom
+vi.mock('next/dynamic', () => ({
+  __esModule: true,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default: (loader: () => Promise<(props: any) => React.ReactNode | null>) => {
+    let Resolved: ((props: Record<string, unknown>) => React.ReactNode | null) | null = null;
+    loader().then((mod: (props: Record<string, unknown>) => React.ReactNode | null) => {
+      Resolved = mod;
+    });
+    return function DynamicMock(props: Record<string, unknown>) {
+      return Resolved ? Resolved(props) : null;
+    };
+  },
+}));
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
