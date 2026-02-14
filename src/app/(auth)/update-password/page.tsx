@@ -78,7 +78,7 @@ export default function UpdatePasswordPage() {
       <>
         <div className="bg-card rounded-lg shadow-lg p-8 w-full max-w-md">
           <div className="flex justify-center mb-6">
-            <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority />
+            <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority unoptimized />
           </div>
           <h1 className="text-2xl font-semibold text-center text-foreground mb-2">
             Invalid or Expired Link
@@ -111,7 +111,7 @@ export default function UpdatePasswordPage() {
       <>
         <div className="bg-card rounded-lg shadow-lg p-8 w-full max-w-md">
           <div className="flex justify-center mb-6">
-            <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority />
+            <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority unoptimized />
           </div>
           <div className="flex items-center justify-center gap-2 text-muted-foreground" data-testid="verifying-spinner">
             <Spinner />
@@ -130,7 +130,7 @@ export default function UpdatePasswordPage() {
       <div className="bg-card rounded-lg shadow-lg p-8 w-full max-w-md">
         {/* ENEOS Logo */}
         <div className="flex justify-center mb-6">
-          <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority />
+          <Image src="/eneos-logo.svg" alt="ENEOS Logo" width={120} height={120} priority unoptimized />
         </div>
 
         {/* Title */}

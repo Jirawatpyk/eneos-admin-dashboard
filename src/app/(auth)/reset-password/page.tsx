@@ -42,6 +42,7 @@ export default function ResetPasswordPage() {
             width={120}
             height={120}
             priority
+            unoptimized
           />
         </div>
 

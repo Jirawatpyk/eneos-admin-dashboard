@@ -21,6 +21,7 @@ export function Logo({ onClick }: LogoProps) {
         width={160}
         height={40}
         priority
+        unoptimized
       />
     </Link>
   );

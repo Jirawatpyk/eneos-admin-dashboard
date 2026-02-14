@@ -117,6 +117,7 @@ function LoginContent() {
             width={120}
             height={120}
             priority
+            unoptimized
           />
         </div>
 
